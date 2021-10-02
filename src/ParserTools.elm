@@ -144,7 +144,7 @@ getTextSymbol sym prefix continue str =
 
 {-| Get the longest string
 whose first character satisfies `prefix` and whose remaining
-characters satisfy `continue`. Example:
+characters satisfy `continue`. ParserTests:
 
     line =
         textPS (\c -> Char.isAlpha) [ '\n' ]

@@ -1,4 +1,4 @@
-module Example exposing (..)
+module ParserTests exposing (..)
 
 import Either exposing (Either(..))
 import Expect exposing (Expectation)
@@ -27,4 +27,8 @@ suite =
             \_ ->
                 run "foo [i ABC] [j DEF]"
                     |> Expect.equal { committed = [ GText "foo ", GExpr "i" [ GText "ABC" ], GText " ", GExpr "j" [ GText "DEF" ] ], end = 19, scanPointer = 19, sourceText = "foo [i ABC] [j DEF]", stack = [] }
+        , test "(5) [i foo (ERROR: missing right bracket)" <|
+            \_ ->
+                run "[i foo"
+                    |> Expect.equal { committed = [ GText "I corrected an unmatched '[' in the following expression: ", GExpr "i" [ GText "foo" ] ], end = 6, scanPointer = 6, sourceText = "[i foo", stack = [] }
         ]

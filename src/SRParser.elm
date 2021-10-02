@@ -58,9 +58,17 @@ init str =
 
 -}
 nextState : State -> Step State State
-nextState state =
+nextState state_ =
+    let
+        state =
+            reduce state_
+    in
     if state.scanPointer == state.end then
-        Done (reduce state |> (\st -> { st | committed = List.reverse st.committed }))
+        if state.stack == [] then
+            Done (state |> (\st -> { st | committed = List.reverse st.committed }))
+
+        else
+            Loop (recoverFromError state)
 
     else
         case Tokenizer.get (String.dropLeft state.scanPointer state.sourceText) of
@@ -69,6 +77,15 @@ nextState state =
 
             Ok newToken ->
                 Loop (shift newToken (reduce state))
+
+
+recoverFromError state =
+    case state.stack of
+        (Left (Text str)) :: (Left (Symbol "[")) :: rest ->
+            { state | stack = Left (Symbol "]") :: state.stack, committed = GText "I corrected an unmatched '[' in the following expression: " :: state.committed }
+
+        _ ->
+            { state | stack = [], committed = GText "Error!" :: state.committed }
 
 
 {-|
