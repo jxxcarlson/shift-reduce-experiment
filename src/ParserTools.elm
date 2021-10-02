@@ -34,7 +34,7 @@ type alias Parser a =
 
 
 type alias StringData =
-    { start : Int, finish : Int, content : String }
+    { begin : Int, end : Int, content : String }
 
 
 {-| Apply a parser zero or more times and return a list of the results.
@@ -154,7 +154,7 @@ recognizes lines that start with an alphabetic character.
 -}
 text : (Char -> Bool) -> (Char -> Bool) -> Parser StringData
 text prefix continue =
-    Parser.succeed (\start finish content -> { start = start, finish = finish, content = String.slice start finish content })
+    Parser.succeed (\start finish content -> { begin = start, end = finish, content = String.slice start finish content })
         |= Parser.getOffset
         |. Parser.chompIf (\c -> prefix c) ExpectingPrefix
         |. Parser.chompWhile (\c -> continue c)
@@ -174,7 +174,7 @@ word str =
 
 textAndSpaces : (Char -> Bool) -> (Char -> Bool) -> Parser StringData
 textAndSpaces prefix continue =
-    Parser.succeed (\start finish content -> { start = start, finish = finish, content = String.slice start finish content })
+    Parser.succeed (\start finish content -> { begin = start, end = finish, content = String.slice start finish content })
         |= Parser.getOffset
         |. Parser.chompIf (\c -> prefix c) (UnHandledError 2)
         |. Parser.chompWhile (\c -> continue c)
@@ -185,7 +185,7 @@ textAndSpaces prefix continue =
 
 textWithEndSymbol : String -> (Char -> Bool) -> (Char -> Bool) -> Parser StringData
 textWithEndSymbol symb prefix continue =
-    Parser.succeed (\start finish content -> { start = start, finish = finish, content = String.slice start finish content })
+    Parser.succeed (\start finish content -> { begin = start, end = finish, content = String.slice start finish content })
         |= Parser.getOffset
         |. Parser.chompIf (\c -> prefix c) ExpectingPrefix
         |. Parser.chompWhile (\c -> continue c)
@@ -244,7 +244,7 @@ prefixWith c str =
             stringData
 
         Err _ ->
-            { content = "", finish = 0, start = 0 }
+            { content = "", end = 0, begin = 0 }
 
 
 {-| Return the longest free of the supplied Char.
@@ -256,7 +256,7 @@ prefixFreeOf c str =
             stringData
 
         Err _ ->
-            { content = "", finish = 0, start = 0 }
+            { content = "", end = 0, begin = 0 }
 
 
 nibble : String -> String

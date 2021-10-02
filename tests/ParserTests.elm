@@ -31,4 +31,8 @@ suite =
             \_ ->
                 run "[i foo"
                     |> Expect.equal { committed = [ GText "I corrected an unmatched '[' in the following expression: ", GExpr "i" [ GText "foo" ] ], end = 6, scanPointer = 6, sourceText = "[i foo", stack = [] }
+        , test "(6) foo [i bar] [j UUU (ERROR: missing right bracket)" <|
+            \_ ->
+                run "foo [i bar] [j UUU"
+                    |> Expect.equal { committed = [ GText "foo ", GExpr "i" [ GText "bar" ], GText " ", GText "I corrected an unmatched '[' in the following expression: ", GExpr "j" [ GText "UUU" ] ], end = 18, scanPointer = 18, sourceText = "foo [i bar] [j UUU", stack = [] }
         ]

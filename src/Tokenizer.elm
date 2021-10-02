@@ -3,7 +3,6 @@ module Tokenizer exposing
     , content
     , get
     , length
-    , run
     )
 
 import Error exposing (..)
@@ -12,25 +11,29 @@ import ParserTools
 
 
 type Token
-    = Text String
-    | Math String
-    | Code String
-    | Symbol String
+    = Text String Loc
+    | Math String Loc
+    | Code String Loc
+    | Symbol String Loc
+
+
+type alias Loc =
+    { begin : Int, end : Int }
 
 
 content : Token -> String
 content token =
     case token of
-        Text str ->
+        Text str _ ->
             str
 
-        Math str ->
+        Math str _ ->
             str
 
-        Code str ->
+        Code str _ ->
             str
 
-        Symbol str ->
+        Symbol str _ ->
             str
 
 
@@ -39,14 +42,9 @@ length token =
     String.length (content token)
 
 
-get : String -> Result (List (Parser.DeadEnd Context Problem)) Token
-get input =
-    Parser.run tokenParser input
-
-
-run : String -> Result (List (Parser.DeadEnd Context Problem)) (List Token)
-run input =
-    Parser.run (ParserTools.many tokenParser) input
+get : Int -> String -> Result (List (Parser.DeadEnd Context Problem)) Token
+get start input =
+    Parser.run (tokenParser start) input
 
 
 languageChars =
@@ -59,26 +57,26 @@ languageChars =
       Ok [Text ("Test: "),Symbol "[",Text ("i "),Symbol "[",Text ("j foo bar"),Symbol "]",Symbol "]"]
 
 -}
-tokenParser =
-    Parser.oneOf [ textParser, mathParser, codeParser, symbolParser "[", symbolParser "]" ]
+tokenParser start =
+    Parser.oneOf [ textParser start, mathParser start, codeParser start, symbolParser start '[', symbolParser start ']' ]
 
 
-textParser : Parser Context Problem Token
-textParser =
+textParser : Int -> Parser Context Problem Token
+textParser start =
     ParserTools.text (\c -> not <| List.member c languageChars) (\c -> not <| List.member c languageChars)
-        |> Parser.map (.content >> Text)
+        |> Parser.map (\data -> Text data.content { begin = start, end = start + data.end - data.begin })
 
 
-mathParser : Parser Context Problem Token
-mathParser =
+mathParser : Int -> Parser Context Problem Token
+mathParser start =
     ParserTools.textWithEndSymbol "$" (\c -> c == '$') (\c -> c /= '$')
-        |> Parser.map (.content >> Math)
+        |> Parser.map (\data -> Math data.content { begin = start, end = start + data.end - data.begin })
 
 
-codeParser : Parser Context Problem Token
-codeParser =
+codeParser : Int -> Parser Context Problem Token
+codeParser start =
     ParserTools.textWithEndSymbol "`" (\c -> c == '`') (\c -> c /= '`')
-        |> Parser.map (.content >> Code)
+        |> Parser.map (\data -> Code data.content { begin = start, end = start + data.end - data.begin })
 
 
 
@@ -87,6 +85,7 @@ codeParser =
 --    Parser.spaces |> Parser.map (\_ -> WS " ")
 
 
-symbolParser : String -> Parser Context Problem Token
-symbolParser sym =
-    Parser.symbol (Parser.Token sym (ExpectingSymbol sym)) |> Parser.map (\_ -> Symbol sym)
+symbolParser : Int -> Char -> Parser Context Problem Token
+symbolParser start sym =
+    ParserTools.text (\c -> c == sym) (\c -> False)
+        |> Parser.map (\data -> Symbol data.content { begin = start, end = start + data.end - data.begin })

@@ -71,7 +71,7 @@ nextState state_ =
             Loop (recoverFromError state)
 
     else
-        case Tokenizer.get (String.dropLeft state.scanPointer state.sourceText) of
+        case Tokenizer.get state.scanPointer (String.dropLeft state.scanPointer state.sourceText) of
             Err _ ->
                 Done state
 
@@ -81,8 +81,8 @@ nextState state_ =
 
 recoverFromError state =
     case state.stack of
-        (Left (Text str)) :: (Left (Symbol "[")) :: rest ->
-            { state | stack = Left (Symbol "]") :: state.stack, committed = GText "I corrected an unmatched '[' in the following expression: " :: state.committed }
+        (Left (Text str loc1)) :: (Left (Symbol "[" loc2)) :: rest ->
+            { state | stack = Left (Symbol "]" loc1) :: state.stack, committed = GText "I corrected an unmatched '[' in the following expression: " :: state.committed }
 
         _ ->
             { state | stack = [], committed = GText "Error!" :: state.committed }
@@ -114,13 +114,13 @@ shift token state =
 reduce : State -> State
 reduce state =
     case state.stack of
-        (Left (Text str)) :: [] ->
+        (Left (Text str loc)) :: [] ->
             reduceAux (GText str) [] state
 
-        (Left (Symbol "]")) :: (Left (Text str)) :: (Left (Symbol "[")) :: rest ->
+        (Left (Symbol "]" loc1)) :: (Left (Text str loc2)) :: (Left (Symbol "[" loc3)) :: rest ->
             reduceAux (makeGExpr str) rest state
 
-        (Left (Symbol "]")) :: (Right gexpr) :: (Left (Text name)) :: (Left (Symbol "[")) :: rest ->
+        (Left (Symbol "]" loc1)) :: (Right gexpr) :: (Left (Text name loc2)) :: (Left (Symbol "[" loc3)) :: rest ->
             reduceAux (makeGExpr2 name gexpr) rest state
 
         _ ->
