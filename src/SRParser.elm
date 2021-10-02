@@ -26,7 +26,10 @@ type alias State =
 
 {-|
 
-    > run "foo [i [j ABC]]"
+    Run the parser on some input, returning a value of type state.
+    The stack in the final state should be empty
+
+    > SRParser.run "foo [i [j ABC]]"
     { committed = [GText ("foo "),GExpr "i" [GExpr "j" [GText "ABC"]]], end = 15, scanPointer = 15, sourceText = "foo [i [j ABC]]", stack = [] }
 
 -}
@@ -45,30 +48,52 @@ init str =
     }
 
 
+{-|
+
+    If scanPointer == end, you are done.
+    Otherwise, get a new token from the source text, reduce the stack,
+    and shift the new token onto the stack.
+
+    NOTE: the
+
+-}
 nextState : State -> Step State State
 nextState state =
     if state.scanPointer == state.end then
         Done (reduce state |> (\st -> { st | committed = List.reverse st.committed }))
 
     else
-        nextState_ (reduce state)
+        case Tokenizer.get (String.dropLeft state.scanPointer state.sourceText) of
+            Err _ ->
+                Done state
+
+            Ok newToken ->
+                Loop (shift newToken (reduce state))
 
 
-nextState_ : State -> Step State State
-nextState_ state =
-    case Tokenizer.get (String.dropLeft state.scanPointer state.sourceText) of
-        Err _ ->
-            Done state
+{-|
 
-        Ok newToken ->
-            Loop (shift newToken state)
+    Shift the new token onto the stack and advance the scan pointer
 
-
+-}
 shift : Token -> State -> State
 shift token state =
     { state | scanPointer = state.scanPointer + Tokenizer.length token, stack = Either.Left token :: state.stack }
 
 
+{-|
+
+    Function reduce matches patterns at the top of the stack, then from the given instance
+    of that pattern creates a GExpr.  Let the stack be (a::b::..::rest).  If rest
+    is empty, push the new GExpr onto state.committed.  If not, push (Right GExpr)
+    onto rest.  The stack now reads (Right GExpr)::rest.
+
+    Note that the stack has type List (Either Token GExpr).
+
+    NOTE: The pattern -> action clauses below invert productions in the grammar and so
+    one should be able to deduce them mechanically from the grammar.
+
+-}
 reduce : State -> State
 reduce state =
     case state.stack of
