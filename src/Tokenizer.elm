@@ -3,6 +3,7 @@ module Tokenizer exposing
     , content
     , get
     , length
+    , startPositionOf
     )
 
 import Error exposing (..)
@@ -19,6 +20,22 @@ type Token
 
 type alias Loc =
     { begin : Int, end : Int }
+
+
+startPositionOf : Token -> Int
+startPositionOf token =
+    case token of
+        Text _ loc ->
+            loc.begin
+
+        Math _ loc ->
+            loc.begin
+
+        Code _ loc ->
+            loc.begin
+
+        Symbol _ loc ->
+            loc.begin
 
 
 content : Token -> String
@@ -87,5 +104,5 @@ codeParser start =
 
 symbolParser : Int -> Char -> Parser Context Problem Token
 symbolParser start sym =
-    ParserTools.text (\c -> c == sym) (\c -> False)
+    ParserTools.text (\c -> c == sym) (\_ -> False)
         |> Parser.map (\data -> Symbol data.content { begin = start, end = start + data.end - data.begin })
