@@ -1,11 +1,9 @@
 module ParserTests exposing (..)
 
-import Either exposing (Either(..))
-import Expect exposing (Expectation)
+import Expect
 import Grammar exposing (GExpr(..))
 import SRParser exposing (run)
 import Test exposing (..)
-import Tokenizer exposing (Token(..))
 
 
 suite : Test
@@ -35,18 +33,9 @@ suite =
             \_ ->
                 run "foo [i bar] [j UUU"
                     |> Expect.equal { committed = [ GText "foo ", GExpr "i" [ GText "bar" ], GText " ", GText "I corrected an unmatched '[' in the following expression: ", GExpr "j" [ GText "UUU" ] ], end = 18, scanPointer = 18, sourceText = "foo [i bar] [j UUU", stack = [] }
-        , test "(6) foo [i bar] [j UUU (ERROR: missing right bracket)" <|
+        , test "(7) foo [i bar [j UUU] (ERROR: missing right bracket)" <|
             \_ ->
                 run "foo [i bar [j UUU]"
-                    |> Expect.equal
-                        { committed =
-                            [ GText "foo "
-                            , GText "Error! I added a bracket at then end of what follows: "
-                            , GExpr "i bar" [ GExpr "j" [ GText "UUU" ] ]
-                            ]
-                        , end = 18
-                        , scanPointer = 18
-                        , sourceText = "foo [i bar [j UUU]"
-                        , stack = []
-                        }
+                    |> .committed
+                    |> Expect.equal [ GText "foo ", GText "Error! I added a bracket after this: [i bar [j UUU]", GExpr "i bar" [ GExpr "j" [ GText "UUU" ] ] ]
         ]
