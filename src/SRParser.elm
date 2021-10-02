@@ -73,7 +73,7 @@ reduce : State -> State
 reduce state =
     case state.stack of
         (Left (Text str)) :: [] ->
-            { state | stack = [], committed = GText str :: state.committed }
+            reduceAux (GText str) [] state
 
         (Left (Symbol "]")) :: (Left (Text str)) :: (Left (Symbol "[")) :: rest ->
             reduceAux (makeGExpr str) rest state
