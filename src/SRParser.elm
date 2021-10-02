@@ -16,6 +16,12 @@ type alias State =
     }
 
 
+{-|
+
+    > run "foo [i [j ABC]]"
+    { committed = [GText ("foo "),GExpr "i" [GExpr "j" [GText "ABC"]]], end = 15, scanPointer = 15, sourceText = "foo [i [j ABC]]", stack = [] }
+
+-}
 run : String -> State
 run input =
     loop (init input) nextState
@@ -42,16 +48,17 @@ nextState state =
 
 nextState_ : State -> Step State State
 nextState_ state =
-    let
-        textToProcess =
-            String.dropLeft state.scanPointer state.sourceText
-    in
-    case Tokenizer.get textToProcess of
-        Err errors ->
+    case Tokenizer.get (String.dropLeft state.scanPointer state.sourceText) of
+        Err _ ->
             Done state
 
         Ok newToken ->
-            Loop { state | scanPointer = state.scanPointer + Tokenizer.length newToken, stack = Either.Left newToken :: state.stack }
+            Loop (shift newToken state)
+
+
+shift : Token -> State -> State
+shift token state =
+    { state | scanPointer = state.scanPointer + Tokenizer.length token, stack = Either.Left token :: state.stack }
 
 
 reduce : State -> State
@@ -85,23 +92,13 @@ reduce state =
             { state | stack = Right (GExpr prefix (List.map GText (List.drop 1 words))) :: rest }
 
         (Left (Symbol "]")) :: (Right gexpr) :: (Left (Text name)) :: (Left (Symbol "[")) :: [] ->
-            { state | stack = [], committed = GExpr name [ gexpr ] :: state.committed }
+            { state | stack = [], committed = GExpr (String.trim name) [ gexpr ] :: state.committed }
 
         (Left (Symbol "]")) :: (Right gexpr) :: (Left (Text name)) :: (Left (Symbol "[")) :: rest ->
             { state | stack = Right (GExpr name [ gexpr ]) :: rest }
 
         _ ->
             state
-
-
-matchText : List (Either Token GExpr) -> Maybe GExpr
-matchText items =
-    case items of
-        (Left (Text str)) :: rest ->
-            Just (GText str)
-
-        _ ->
-            Nothing
 
 
 type Step state a
