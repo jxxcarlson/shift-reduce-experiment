@@ -172,6 +172,12 @@ reduce state =
         (Left (Text str _)) :: [] ->
             reduceAux (L1Text str) [] state
 
+        (Left (Math str _)) :: [] ->
+            reduceAux (L1Math str) [] state
+
+        (Left (Code str _)) :: [] ->
+            reduceAux (L1Code str) [] state
+
         (Left (Symbol "]" _)) :: (Left (Text str _)) :: (Left (Symbol "[" _)) :: rest ->
             reduceAux (makeGExpr str) rest state
 
