@@ -2,8 +2,6 @@ module SRParser exposing (run)
 
 import Either exposing (Either(..))
 import Grammar exposing (GExpr(..))
-import ParserTools
-import Result exposing (Result)
 import Tokenizer exposing (Token(..))
 
 

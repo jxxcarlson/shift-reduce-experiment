@@ -25,7 +25,7 @@ module ParserTools exposing
     , word
     )
 
-import Error exposing (Context(..), Problem(..))
+import Error exposing (Context, Problem(..))
 import Parser.Advanced as Parser exposing ((|.), (|=))
 
 
@@ -127,26 +127,6 @@ between p q r =
     p |> Parser.andThen (\_ -> q) |> Parser.andThen (\x -> r |> Parser.map (\_ -> x))
 
 
-{-| textPS = "text prefixText stopCharacters": Get the longest string
-whose first character satisfies the prefixTest and whose remaining
-characters are not in the list of stop characters. Example:
-
-    line =
-        textPS (\c -> Char.isAlpha) [ '\n' ]
-
-recognizes lines that start with an alphabetic character.
-
--}
-textPS : (Char -> Bool) -> List Char -> Parser { start : Int, finish : Int, content : String }
-textPS prefixTest stopChars =
-    Parser.succeed (\start finish content -> { start = start, finish = finish, content = String.slice start finish content })
-        |= Parser.getOffset
-        |. Parser.chompIf (\c -> prefixTest c) (UnHandledError 1)
-        |. Parser.chompWhile (\c -> not (List.member c stopChars))
-        |= Parser.getOffset
-        |= Parser.getSource
-
-
 getText : (Char -> Bool) -> (Char -> Bool) -> String -> Result (List (Parser.DeadEnd Context Problem)) StringData
 getText prefix continue str =
     Parser.run (text prefix continue) str
@@ -228,7 +208,7 @@ oneChar : Parser String
 oneChar =
     Parser.succeed (\begin end data -> String.slice begin end data)
         |= Parser.getOffset
-        |. Parser.chompIf (\c -> True) (UnHandledError 4)
+        |. Parser.chompIf (\_ -> True) (UnHandledError 4)
         |= Parser.getOffset
         |= Parser.getSource
 
@@ -239,7 +219,6 @@ oneChar =
 
 type Step state a
     = Loop state
-    | Done a
 
 
 loop : state -> (state -> Step state a) -> a
@@ -248,18 +227,12 @@ loop s nextState =
         Loop s_ ->
             loop s_ nextState
 
-        Done b ->
-            b
-
 
 mapLoop : (state -> Step state a) -> Step state a -> Step state a
 mapLoop f stepState =
     case stepState of
         Loop s ->
             f s
-
-        Done a ->
-            Done a
 
 
 {-| Return the longest prefix beginning with the supplied Char.

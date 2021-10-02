@@ -7,7 +7,7 @@ module Tokenizer exposing
     )
 
 import Error exposing (..)
-import Parser.Advanced as Parser exposing ((|.), (|=), Parser)
+import Parser.Advanced as Parser exposing (Parser)
 import ParserTools
 
 
