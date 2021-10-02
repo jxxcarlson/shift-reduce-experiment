@@ -7,6 +7,16 @@ import Result exposing (Result)
 import Tokenizer exposing (Token(..))
 
 
+
+{-
+   https://discourse.elm-lang.org/t/parsers-with-error-recovery/6262/3
+   https://www.cocolab.com/products/cocktail/doc.pdf/ell.pdf
+   https://github.com/Janiczek/elm-grammar/tree/master/src
+   https://guide.elm-lang.org/appendix/types_as_sets.html
+   https://www.schoolofhaskell.com/user/bartosz/understanding-algebras
+-}
+
+
 type alias State =
     { sourceText : String
     , scanPointer : Int
@@ -63,42 +73,41 @@ shift token state =
 
 reduce : State -> State
 reduce state =
-    let
-        _ =
-            Debug.log "BEFORE" state
-    in
     case state.stack of
         (Left (Text str)) :: [] ->
-            { state | stack = [], committed = GText str :: state.committed } |> Debug.log "RULE Text"
-
-        (Left (Symbol "]")) :: (Left (Text str)) :: (Left (Symbol "[")) :: [] ->
-            let
-                words =
-                    String.words str
-
-                prefix =
-                    List.head words |> Maybe.withDefault "empty"
-            in
-            { state | stack = [], committed = GExpr prefix (List.map GText (List.drop 1 words)) :: state.committed }
+            { state | stack = [], committed = GText str :: state.committed }
 
         (Left (Symbol "]")) :: (Left (Text str)) :: (Left (Symbol "[")) :: rest ->
-            let
-                words =
-                    String.words str
-
-                prefix =
-                    List.head words |> Maybe.withDefault "empty"
-            in
-            { state | stack = Right (GExpr prefix (List.map GText (List.drop 1 words))) :: rest }
-
-        (Left (Symbol "]")) :: (Right gexpr) :: (Left (Text name)) :: (Left (Symbol "[")) :: [] ->
-            { state | stack = [], committed = GExpr (String.trim name) [ gexpr ] :: state.committed }
+            reduceAux (makeGExpr str) rest state
 
         (Left (Symbol "]")) :: (Right gexpr) :: (Left (Text name)) :: (Left (Symbol "[")) :: rest ->
-            { state | stack = Right (GExpr name [ gexpr ]) :: rest }
+            reduceAux (makeGExpr2 name gexpr) rest state
 
         _ ->
             state
+
+
+makeGExpr2 name gexpr =
+    GExpr (String.trim name) [ gexpr ]
+
+
+makeGExpr str =
+    let
+        words =
+            String.words str
+
+        prefix =
+            List.head words |> Maybe.withDefault "empty"
+    in
+    GExpr prefix (List.map GText (List.drop 1 words))
+
+
+reduceAux newGExpr rest state =
+    if rest == [] then
+        { state | stack = [], committed = newGExpr :: state.committed }
+
+    else
+        { state | stack = Right newGExpr :: rest }
 
 
 type Step state a
