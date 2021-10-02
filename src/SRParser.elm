@@ -1,7 +1,7 @@
 module SRParser exposing (run)
 
 import Either exposing (Either(..))
-import Grammar exposing (L1Expr(..))
+import L1 exposing (L1Expr(..))
 import Tokenizer exposing (Token(..))
 
 
@@ -175,15 +175,15 @@ reduce state =
         (Left (Symbol "]" _)) :: (Left (Text str _)) :: (Left (Symbol "[" _)) :: rest ->
             reduceAux (makeGExpr str) rest state
 
-        (Left (Symbol "]" _)) :: (Right gexpr) :: (Left (Text name _)) :: (Left (Symbol "[" _)) :: rest ->
-            reduceAux (makeGExpr2 name gexpr) rest state
+        (Left (Symbol "]" _)) :: (Right expr) :: (Left (Text name _)) :: (Left (Symbol "[" _)) :: rest ->
+            reduceAux (makeGExpr2 name expr) rest state
 
         _ ->
             state
 
 
-makeGExpr2 name gexpr =
-    L1Expr (String.trim name) [ gexpr ]
+makeGExpr2 name expr =
+    L1Expr (String.trim name) [ expr ]
 
 
 makeGExpr str =

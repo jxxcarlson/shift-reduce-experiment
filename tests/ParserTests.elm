@@ -1,7 +1,7 @@
 module ParserTests exposing (..)
 
 import Expect
-import Grammar exposing (L1Expr(..))
+import L1 exposing (L1Expr(..))
 import SRParser exposing (run)
 import Test exposing (..)
 

@@ -1,4 +1,4 @@
-module Grammar exposing (L1Expr(..))
+module L1 exposing (L1Expr(..))
 
 
 type L1Expr
