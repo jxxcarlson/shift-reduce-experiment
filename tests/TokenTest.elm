@@ -5,8 +5,9 @@ import Parser.Advanced as PA
 import ParserTools exposing (StringData)
 import SRParser exposing (run)
 import Test exposing (..)
-import Token exposing (TokenPart(..), parserFromPartsList)
+import Token exposing (parserFromPartsList)
 import TokenGrammar
+import TokenPart exposing (TokenPart(..))
 
 
 testParser =

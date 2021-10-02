@@ -1,7 +1,7 @@
 module SRParser exposing (run)
 
 import Either exposing (Either(..))
-import Grammar exposing (GExpr(..))
+import Grammar exposing (L1Expr(..))
 import Tokenizer exposing (Token(..))
 
 
@@ -19,8 +19,8 @@ type alias State =
     { sourceText : String
     , scanPointer : Int
     , end : Int
-    , stack : List (Either Token GExpr)
-    , committed : List GExpr
+    , stack : List (Either Token L1Expr)
+    , committed : List L1Expr
     }
 
 
@@ -96,7 +96,7 @@ recoverFromError state =
             Loop
                 { state
                     | stack = Left (Symbol "]" loc1) :: state.stack
-                    , committed = GText "I corrected an unmatched '[' in the following expression: " :: state.committed
+                    , committed = L1Text "I corrected an unmatched '[' in the following expression: " :: state.committed
                 }
 
         (Left (Symbol "[" loc1)) :: (Left (Text _ _)) :: (Left (Symbol "[" _)) :: _ ->
@@ -104,7 +104,7 @@ recoverFromError state =
                 { state
                     | stack = Left (Symbol "]" loc1) :: state.stack
                     , scanPointer = loc1.begin
-                    , committed = GText "I corrected an unmatched '[' in the following expression: " :: state.committed
+                    , committed = L1Text "I corrected an unmatched '[' in the following expression: " :: state.committed
                 }
 
         _ ->
@@ -121,19 +121,19 @@ recoverFromError state =
             Done
                 ({ state
                     | stack = Left (Symbol "]" { begin = state.scanPointer, end = state.scanPointer + 1 }) :: state.stack
-                    , committed = GText errorMessage :: state.committed
+                    , committed = L1Text errorMessage :: state.committed
                  }
                     |> reduce
                     |> (\st -> { st | committed = List.reverse st.committed })
                 )
 
 
-stackBottom : List (Either Token GExpr) -> Maybe (Either Token GExpr)
+stackBottom : List (Either Token L1Expr) -> Maybe (Either Token L1Expr)
 stackBottom stack =
     List.head (List.reverse stack)
 
 
-scanPointerOfItem : Either Token GExpr -> Maybe Int
+scanPointerOfItem : Either Token L1Expr -> Maybe Int
 scanPointerOfItem item =
     case item of
         Left token ->
@@ -170,7 +170,7 @@ reduce : State -> State
 reduce state =
     case state.stack of
         (Left (Text str _)) :: [] ->
-            reduceAux (GText str) [] state
+            reduceAux (L1Text str) [] state
 
         (Left (Symbol "]" _)) :: (Left (Text str _)) :: (Left (Symbol "[" _)) :: rest ->
             reduceAux (makeGExpr str) rest state
@@ -183,7 +183,7 @@ reduce state =
 
 
 makeGExpr2 name gexpr =
-    GExpr (String.trim name) [ gexpr ]
+    L1Expr (String.trim name) [ gexpr ]
 
 
 makeGExpr str =
@@ -194,7 +194,7 @@ makeGExpr str =
         prefix =
             List.head words |> Maybe.withDefault "empty"
     in
-    GExpr prefix (List.map GText (List.drop 1 words))
+    L1Expr prefix (List.map L1Text (List.drop 1 words))
 
 
 reduceAux newGExpr rest state =

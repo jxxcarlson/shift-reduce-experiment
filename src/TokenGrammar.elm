@@ -1,13 +1,24 @@
-module TokenGrammar exposing (acceptCharsParser, rejectCharsParser)
+module TokenGrammar exposing (acceptCharsParser, rejectCharsParser, tokenGrammarParser)
 
 import Error exposing (Context, Problem(..))
+import Maybe.Extra
 import Parser.Advanced as Parser
 import ParserTools exposing (StringData)
-import Token exposing (TokenPart(..))
+import TokenPart exposing (TokenPart(..))
 
 
 type alias Parser a =
     Parser.Parser Context Problem a
+
+
+tokenGrammarParser : Parser (Maybe (List TokenPart))
+tokenGrammarParser =
+    ParserTools.many acceptOrRejectParser |> Parser.map Maybe.Extra.combine
+
+
+acceptOrRejectParser : Parser (Maybe TokenPart)
+acceptOrRejectParser =
+    Parser.oneOf [ acceptCharsParser, rejectCharsParser ]
 
 
 acceptCharsParser : Parser (Maybe TokenPart)
