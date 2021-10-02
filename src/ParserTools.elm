@@ -21,6 +21,7 @@ module ParserTools exposing
     , prefixWith
     , second
     , text
+    , textWithEndBeginAndEndChar
     , textWithEndSymbol
     , word
     )
@@ -191,6 +192,17 @@ textWithEndSymbol symb prefix continue =
         |. Parser.chompWhile (\c -> continue c)
         |. Parser.symbol (Parser.Token symb (ExpectingSymbol symb))
         -- TODO: replace with real "Expecting"
+        |= Parser.getOffset
+        |= Parser.getSource
+
+
+textWithEndBeginAndEndChar : Char -> Char -> (Char -> Bool) -> Parser StringData
+textWithEndBeginAndEndChar beginChar endChar continue =
+    Parser.succeed (\start finish content -> { begin = start, end = finish, content = String.slice start finish content })
+        |= Parser.getOffset
+        |. Parser.chompIf (\c -> c == beginChar) ExpectingPrefix
+        |. Parser.chompWhile (\c -> continue c)
+        |. Parser.chompIf (\c -> c == endChar) ExpectingSuffix
         |= Parser.getOffset
         |= Parser.getSource
 

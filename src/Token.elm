@@ -10,8 +10,10 @@ type alias Parser a =
 
 
 type TokenPart
-    = Char Char
-    | Reject (List Char)
+    = AcceptChar Char
+    | RejectCharList (List Char)
+    | RejectChar Char
+    | AcceptCharList (List Char)
 
 
 parserFromPartsList : List TokenPart -> Parser (List StringData)
@@ -22,10 +24,16 @@ parserFromPartsList tokenParts =
 parserFromPart : TokenPart -> Parser StringData
 parserFromPart tokenPart =
     case tokenPart of
-        Char c ->
+        AcceptChar c ->
             ParserTools.text (\c_ -> c_ == c) (\_ -> False)
 
-        Reject charList ->
+        RejectCharList charList ->
+            ParserTools.text (\c_ -> not (List.member c_ charList)) (\c_ -> not (List.member c_ charList))
+
+        RejectChar c ->
+            ParserTools.text (\c_ -> c_ == c) (\_ -> False)
+
+        AcceptCharList charList ->
             ParserTools.text (\c_ -> not (List.member c_ charList)) (\c_ -> not (List.member c_ charList))
 
 

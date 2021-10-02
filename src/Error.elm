@@ -4,6 +4,7 @@ module Error exposing (Context(..), Problem(..), heading)
 type Problem
     = EndOfInput
     | ExpectingPrefix
+    | ExpectingSuffix
     | ExpectingSymbol String
     | UnHandledError Int
 
