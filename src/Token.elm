@@ -1,7 +1,7 @@
-module Token exposing (TokenPart, parserFromPartsList, testParser)
+module Token exposing (TokenPart(..), parserFromPartsList)
 
 import Error exposing (Context, Problem(..))
-import Parser.Advanced as Parser exposing ((|.), (|=))
+import Parser.Advanced as Parser
 import ParserTools exposing (StringData)
 
 
@@ -12,10 +12,6 @@ type alias Parser a =
 type TokenPart
     = Char Char
     | Reject (List Char)
-
-
-testParser =
-    parserFromPartsList [ Char '$', Reject [ '$' ], Char '$' ]
 
 
 parserFromPartsList : List TokenPart -> Parser (List StringData)
