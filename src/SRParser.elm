@@ -61,9 +61,9 @@ nextState : State -> Step State State
 nextState state_ =
     let
         state =
-            reduce state_
+            reduce (state_ |> Debug.log "STATE")
     in
-    if state.scanPointer == state.end then
+    if state.scanPointer >= state.end then
         if state.stack == [] then
             Done (state |> (\st -> { st | committed = List.reverse st.committed }))
 
@@ -82,10 +82,20 @@ nextState state_ =
 recoverFromError state =
     case state.stack of
         (Left (Text str loc1)) :: (Left (Symbol "[" loc2)) :: rest ->
-            { state | stack = Left (Symbol "]" loc1) :: state.stack, committed = GText "I corrected an unmatched '[' in the following expression: " :: state.committed }
+            { state
+                | stack = Left (Symbol "]" loc1) :: state.stack
+                , committed = GText "I corrected an unmatched '[' in the following expression: " :: state.committed
+            }
+
+        (Left (Symbol "[" loc1)) :: (Left (Text str loc2)) :: (Left (Symbol "[" loc3)) :: rest ->
+            { state
+                | stack = Left (Symbol "]" loc1) :: state.stack
+                , scanPointer = loc1.begin
+                , committed = GText "I corrected an unmatched '[' in the following expression: " :: state.committed
+            }
 
         _ ->
-            { state | stack = [], committed = GText "Error!" :: state.committed }
+            { state | stack = Left (Symbol "]" { begin = state.scanPointer, end = state.scanPointer + 1 }) :: state.stack, committed = GText "Error! I added a bracket at then end of what follows: " :: state.committed }
 
 
 {-|
