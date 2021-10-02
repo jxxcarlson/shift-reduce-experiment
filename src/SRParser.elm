@@ -64,38 +64,83 @@ nextState state_ =
             reduce (state_ |> Debug.log "STATE")
     in
     if state.scanPointer >= state.end then
+        -- Exit
         if state.stack == [] then
             Done (state |> (\st -> { st | committed = List.reverse st.committed }))
 
         else
-            Loop (recoverFromError state)
+            -- Or recover from error
+            recoverFromError state
 
     else
+        -- Grab a new token from the source text
         case Tokenizer.get state.scanPointer (String.dropLeft state.scanPointer state.sourceText) of
             Err _ ->
+                -- Oops, exit
                 Done state
 
             Ok newToken ->
+                -- Process the token: reduce the stack, then shift the token onto it.
                 Loop (shift newToken (reduce state))
 
 
 recoverFromError state =
+    -- Use this when the loop is about to exit but the stack is non-empty.
+    -- Look for error patterns on the top of the stack.
+    -- If one is found, modify the stack and push an error message onto state.committed; then loop
+    -- If no pattern is found, make a best effort: push (Left (Symbol "]")) onto the stack,
+    -- push an error message onto state.committed, then exit as usual: apply function reduce
+    -- to the state and reverse state.committed.
     case state.stack of
-        (Left (Text str loc1)) :: (Left (Symbol "[" loc2)) :: rest ->
-            { state
-                | stack = Left (Symbol "]" loc1) :: state.stack
-                , committed = GText "I corrected an unmatched '[' in the following expression: " :: state.committed
-            }
+        (Left (Text _ loc1)) :: (Left (Symbol "[" _)) :: _ ->
+            Loop
+                { state
+                    | stack = Left (Symbol "]" loc1) :: state.stack
+                    , committed = GText "I corrected an unmatched '[' in the following expression: " :: state.committed
+                }
 
-        (Left (Symbol "[" loc1)) :: (Left (Text str loc2)) :: (Left (Symbol "[" loc3)) :: rest ->
-            { state
-                | stack = Left (Symbol "]" loc1) :: state.stack
-                , scanPointer = loc1.begin
-                , committed = GText "I corrected an unmatched '[' in the following expression: " :: state.committed
-            }
+        (Left (Symbol "[" loc1)) :: (Left (Text _ _)) :: (Left (Symbol "[" _)) :: _ ->
+            Loop
+                { state
+                    | stack = Left (Symbol "]" loc1) :: state.stack
+                    , scanPointer = loc1.begin
+                    , committed = GText "I corrected an unmatched '[' in the following expression: " :: state.committed
+                }
 
         _ ->
-            { state | stack = Left (Symbol "]" { begin = state.scanPointer, end = state.scanPointer + 1 }) :: state.stack, committed = GText "Error! I added a bracket at then end of what follows: " :: state.committed }
+            let
+                position =
+                    state.stack |> stackBottom |> Maybe.andThen scanPointerOfItem |> Maybe.withDefault state.scanPointer
+
+                errorText =
+                    String.dropLeft position state.sourceText
+
+                errorMessage =
+                    "Error! I added a bracket after this: " ++ errorText
+            in
+            Done
+                ({ state
+                    | stack = Left (Symbol "]" { begin = state.scanPointer, end = state.scanPointer + 1 }) :: state.stack
+                    , committed = GText errorMessage :: state.committed
+                 }
+                    |> reduce
+                    |> (\st -> { st | committed = List.reverse st.committed })
+                )
+
+
+stackBottom : List (Either Token GExpr) -> Maybe (Either Token GExpr)
+stackBottom stack =
+    List.head (List.reverse stack)
+
+
+scanPointerOfItem : Either Token GExpr -> Maybe Int
+scanPointerOfItem item =
+    case item of
+        Left token ->
+            Just (Tokenizer.startPositionOf token)
+
+        Right _ ->
+            Nothing
 
 
 {-|
@@ -124,13 +169,13 @@ shift token state =
 reduce : State -> State
 reduce state =
     case state.stack of
-        (Left (Text str loc)) :: [] ->
+        (Left (Text str _)) :: [] ->
             reduceAux (GText str) [] state
 
-        (Left (Symbol "]" loc1)) :: (Left (Text str loc2)) :: (Left (Symbol "[" loc3)) :: rest ->
+        (Left (Symbol "]" _)) :: (Left (Text str _)) :: (Left (Symbol "[" _)) :: rest ->
             reduceAux (makeGExpr str) rest state
 
-        (Left (Symbol "]" loc1)) :: (Right gexpr) :: (Left (Text name loc2)) :: (Left (Symbol "[" loc3)) :: rest ->
+        (Left (Symbol "]" _)) :: (Right gexpr) :: (Left (Text name _)) :: (Left (Symbol "[" _)) :: rest ->
             reduceAux (makeGExpr2 name gexpr) rest state
 
         _ ->
