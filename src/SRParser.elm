@@ -2,7 +2,8 @@ module SRParser exposing (run)
 
 import AST exposing (Expr(..))
 import Either exposing (Either(..))
-import Tokenizer exposing (Token(..))
+import Token exposing (Token(..))
+import Tokenizer
 
 
 
@@ -93,14 +94,14 @@ recoverFromError state =
     -- push an error message onto state.committed, then exit as usual: apply function reduce
     -- to the state and reverse state.committed.
     case state.stack of
-        (Left (Tokenizer.Text _ loc1)) :: (Left (Symbol "[" _)) :: _ ->
+        (Left (Token.Text _ loc1)) :: (Left (Symbol "[" _)) :: _ ->
             Loop
                 { state
                     | stack = Left (Symbol "]" loc1) :: state.stack
                     , committed = AST.Text "I corrected an unmatched '[' in the following expression: " :: state.committed
                 }
 
-        (Left (Symbol "[" loc1)) :: (Left (Tokenizer.Text _ _)) :: (Left (Symbol "[" _)) :: _ ->
+        (Left (Symbol "[" loc1)) :: (Left (Token.Text _ _)) :: (Left (Symbol "[" _)) :: _ ->
             Loop
                 { state
                     | stack = Left (Symbol "]" loc1) :: state.stack
@@ -170,19 +171,16 @@ shift token state =
 reduce : State -> State
 reduce state =
     case state.stack of
-        (Left (Tokenizer.Text str _)) :: [] ->
+        (Left (Token.Text str _)) :: [] ->
             reduceAux (AST.Text str) [] state
 
-        (Left (Math str _)) :: [] ->
-            reduceAux (L1Math str) [] state
+        (Left (Token.Verbatim name str _)) :: [] ->
+            reduceAux (AST.Verbatim name str) [] state
 
-        (Left (Code str _)) :: [] ->
-            reduceAux (L1Code str) [] state
-
-        (Left (Symbol "]" _)) :: (Left (Tokenizer.Text str _)) :: (Left (Symbol "[" _)) :: rest ->
+        (Left (Symbol "]" _)) :: (Left (Token.Text str _)) :: (Left (Symbol "[" _)) :: rest ->
             reduceAux (makeGExpr str) rest state
 
-        (Left (Symbol "]" _)) :: (Right expr) :: (Left (Tokenizer.Text name _)) :: (Left (Symbol "[" _)) :: rest ->
+        (Left (Symbol "]" _)) :: (Right expr) :: (Left (Token.Text name _)) :: (Left (Symbol "[" _)) :: rest ->
             reduceAux (makeGExpr2 name expr) rest state
 
         _ ->

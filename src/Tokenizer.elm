@@ -1,6 +1,5 @@
 module Tokenizer exposing
-    ( Token(..)
-    , content
+    ( content
     , get
     , length
     , startPositionOf
@@ -9,17 +8,7 @@ module Tokenizer exposing
 import Error exposing (..)
 import Parser.Advanced as Parser exposing (Parser)
 import ParserTools
-
-
-type Token
-    = Text String Loc
-    | Math String Loc
-    | Code String Loc
-    | Symbol String Loc
-
-
-type alias Loc =
-    { begin : Int, end : Int }
+import Token exposing (Loc, Token(..))
 
 
 startPositionOf : Token -> Int
@@ -28,10 +17,7 @@ startPositionOf token =
         Text _ loc ->
             loc.begin
 
-        Math _ loc ->
-            loc.begin
-
-        Code _ loc ->
+        Verbatim _ _ loc ->
             loc.begin
 
         Symbol _ loc ->
@@ -44,10 +30,7 @@ content token =
         Text str _ ->
             str
 
-        Math str _ ->
-            str
-
-        Code str _ ->
+        Verbatim _ str _ ->
             str
 
         Symbol str _ ->
@@ -87,13 +70,13 @@ textParser start =
 mathParser : Int -> Parser Context Problem Token
 mathParser start =
     ParserTools.textWithEndSymbol "$" (\c -> c == '$') (\c -> c /= '$')
-        |> Parser.map (\data -> Math data.content { begin = start, end = start + data.end - data.begin })
+        |> Parser.map (\data -> Verbatim "math" data.content { begin = start, end = start + data.end - data.begin })
 
 
 codeParser : Int -> Parser Context Problem Token
 codeParser start =
     ParserTools.textWithEndSymbol "`" (\c -> c == '`') (\c -> c /= '`')
-        |> Parser.map (\data -> Code data.content { begin = start, end = start + data.end - data.begin })
+        |> Parser.map (\data -> Verbatim "code" data.content { begin = start, end = start + data.end - data.begin })
 
 
 

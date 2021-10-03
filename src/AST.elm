@@ -4,7 +4,6 @@ module AST exposing (Expr(..))
 type Expr
     = Text String
     | Verbatim String String
-    | L1Math String
-    | L1Code String
+    | Arg (List Expr)
     | Expr String (List Expr)
     | TokenError String
