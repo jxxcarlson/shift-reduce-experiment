@@ -3,7 +3,7 @@ module SRParser exposing (run)
 import AST exposing (Expr(..))
 import Either exposing (Either(..))
 import Token exposing (Token(..))
-import Tokenizer
+import Tokenizer exposing (Lang(..))
 
 
 
@@ -34,9 +34,9 @@ type alias State =
     { committed = [GText ("foo "),GExpr "i" [GExpr "j" [GText "ABC"]]], end = 15, scanPointer = 15, sourceText = "foo [i [j ABC]]", stack = [] }
 
 -}
-run : String -> State
-run input =
-    loop (init input) nextState
+run : Lang -> String -> State
+run lang input =
+    loop (init input) (nextState lang)
 
 
 init : String -> State
@@ -58,8 +58,8 @@ init str =
     NOTE: the
 
 -}
-nextState : State -> Step State State
-nextState state_ =
+nextState : Lang -> State -> Step State State
+nextState lang state_ =
     let
         state =
             reduce (state_ |> Debug.log "STATE")
@@ -75,7 +75,7 @@ nextState state_ =
 
     else
         -- Grab a new token from the source text
-        case Tokenizer.get state.scanPointer (String.dropLeft state.scanPointer state.sourceText) of
+        case Tokenizer.get lang state.scanPointer (String.dropLeft state.scanPointer state.sourceText) of
             Err _ ->
                 -- Oops, exit
                 Done state
@@ -139,7 +139,7 @@ scanPointerOfItem : Either Token Expr -> Maybe Int
 scanPointerOfItem item =
     case item of
         Left token ->
-            Just (Tokenizer.startPositionOf token)
+            Just (Token.startPositionOf token)
 
         Right _ ->
             Nothing
@@ -152,7 +152,7 @@ scanPointerOfItem item =
 -}
 shift : Token -> State -> State
 shift token state =
-    { state | scanPointer = state.scanPointer + Tokenizer.length token, stack = Either.Left token :: state.stack }
+    { state | scanPointer = state.scanPointer + Token.length token, stack = Either.Left token :: state.stack }
 
 
 {-|

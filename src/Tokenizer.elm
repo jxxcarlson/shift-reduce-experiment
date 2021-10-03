@@ -1,9 +1,4 @@
-module Tokenizer exposing
-    ( content
-    , get
-    , length
-    , startPositionOf
-    )
+module Tokenizer exposing (Lang(..), get)
 
 import Error exposing (..)
 import Parser.Advanced as Parser exposing (Parser)
@@ -11,40 +6,14 @@ import ParserTools
 import Token exposing (Loc, Token(..))
 
 
-startPositionOf : Token -> Int
-startPositionOf token =
-    case token of
-        Text _ loc ->
-            loc.begin
-
-        Verbatim _ _ loc ->
-            loc.begin
-
-        Symbol _ loc ->
-            loc.begin
+get : Lang -> Int -> String -> Result (List (Parser.DeadEnd Context Problem)) Token
+get lang start input =
+    Parser.run (tokenParser lang start) input
 
 
-content : Token -> String
-content token =
-    case token of
-        Text str _ ->
-            str
-
-        Verbatim _ str _ ->
-            str
-
-        Symbol str _ ->
-            str
-
-
-length : Token -> Int
-length token =
-    String.length (content token)
-
-
-get : Int -> String -> Result (List (Parser.DeadEnd Context Problem)) Token
-get start input =
-    Parser.run (tokenParser start) input
+type Lang
+    = L1
+    | MiniLaTeX
 
 
 languageChars =
@@ -57,8 +26,13 @@ languageChars =
       Ok [Text ("Test: "),Symbol "[",Text ("i "),Symbol "[",Text ("j foo bar"),Symbol "]",Symbol "]"]
 
 -}
-tokenParser start =
-    Parser.oneOf [ textParser start, mathParser start, codeParser start, symbolParser start '[', symbolParser start ']' ]
+tokenParser lang start =
+    case lang of
+        L1 ->
+            Parser.oneOf [ textParser start, mathParser start, codeParser start, symbolParser start '[', symbolParser start ']' ]
+
+        MiniLaTeX ->
+            Parser.oneOf [ textParser start, mathParser start, codeParser start, symbolParser start '[', symbolParser start ']' ]
 
 
 textParser : Int -> Parser Context Problem Token
@@ -77,12 +51,6 @@ codeParser : Int -> Parser Context Problem Token
 codeParser start =
     ParserTools.textWithEndSymbol "`" (\c -> c == '`') (\c -> c /= '`')
         |> Parser.map (\data -> Verbatim "code" data.content { begin = start, end = start + data.end - data.begin })
-
-
-
---spacesParser : Parser Context Problem Token
---spacesParser =
---    Parser.spaces |> Parser.map (\_ -> WS " ")
 
 
 symbolParser : Int -> Char -> Parser Context Problem Token
