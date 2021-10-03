@@ -46,6 +46,7 @@ tokenParser lang start =
         Markdown ->
             Parser.oneOf
                 [ markedTextParser start "strong" '*' '*'
+                , markedTextParser start "italic" '_' '_'
                 , markedTextParser start "arg" '(' ')'
                 , markedTextParser start "annotation" '[' ']'
                 , textParser lang start
