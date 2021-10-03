@@ -57,40 +57,45 @@ init str =
 -}
 nextState : Lang -> State -> Step State State
 nextState lang state_ =
-    let
-        count =
-            state_.count + 1
+    { state_ | count = state_.count + 1 }
+        |> debug2 ("STATE (" ++ String.fromInt (state_.count - 1) ++ ")")
+        |> reduce lang
+        |> nextState_ lang
 
-        state =
-            reduce lang ({ state_ | count = count } |> debug2 ("STATE (" ++ String.fromInt count ++ ")"))
-    in
+
+nextState_ : Lang -> State -> Step State State
+nextState_ lang state =
     if state.scanPointer >= state.end then
-        -- Exit
-        if state.stack == [] then
-            Done (state |> (\st -> { st | committed = List.reverse st.committed }))
-
-        else
-            let
-                newState =
-                    reduceFinal lang state
-            in
-            if newState.stack == [] then
-                Done (newState |> (\st -> { st | committed = List.reverse st.committed }))
-
-            else
-                -- Or recover from error
-                recoverFromError lang state |> debug2 "ReduceFinal (2)"
+        finalize lang state
 
     else
-        -- Grab a new token from the source text
-        case Tokenizer.get lang state.scanPointer (String.dropLeft state.scanPointer state.sourceText) of
-            Err _ ->
-                -- Oops, exit
-                Done state
+        processToken lang state
 
-            Ok newToken ->
-                -- Process the token: reduce the stack, then shift the token onto it.
-                Loop (shift newToken (reduce lang state))
+
+finalize : Lang -> State -> Step State State
+finalize lang state =
+    let
+        newState =
+            reduceFinal lang state
+    in
+    if newState.stack == [] then
+        Done (newState |> (\st -> { st | committed = List.reverse st.committed }))
+
+    else
+        -- Or recover from error
+        recoverFromError lang state |> debug2 "ReduceFinal (2)"
+
+
+processToken : Lang -> State -> Step State State
+processToken lang state =
+    case Tokenizer.get lang state.scanPointer (String.dropLeft state.scanPointer state.sourceText) of
+        Err _ ->
+            -- Oops, exit
+            Done state
+
+        Ok newToken ->
+            -- Process the token: reduce the stack, then shift the token onto it.
+            Loop (shift newToken (reduce lang state))
 
 
 reduceFinal : Lang -> State -> State
