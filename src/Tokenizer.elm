@@ -47,6 +47,8 @@ tokenParser lang start =
             Parser.oneOf
                 [ markedTextParser start "strong" '*' '*'
                 , markedTextParser start "italic" '_' '_'
+                , markedTextParser start "code" '`' '`'
+                , markedTextParser start "math" '$' '$'
                 , markedTextParser start "arg" '(' ')'
                 , markedTextParser start "annotation" '[' ']'
                 , textParser lang start

@@ -43,6 +43,12 @@ reduce state =
         (Left (MarkedText "italic" str _)) :: [] ->
             { state | committed = Expr "italic" [ AST.Text str ] :: state.committed, stack = [] }
 
+        (Left (MarkedText "code" str _)) :: [] ->
+            { state | committed = Expr "code" [ AST.Text str ] :: state.committed, stack = [] }
+
+        (Left (MarkedText "math" str _)) :: [] ->
+            { state | committed = Expr "math" [ AST.Text str ] :: state.committed, stack = [] }
+
         (Left (MarkedText "arg" url _)) :: (Left (MarkedText "annotation" label _)) :: [] ->
             { state | committed = Expr "link" [ AST.Text label, AST.Text url ] :: state.committed, stack = [] }
 
