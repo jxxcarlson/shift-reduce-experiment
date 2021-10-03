@@ -1,8 +1,8 @@
-module L1 exposing (L1Expr(..))
+module L1 exposing (Expr(..))
 
 
-type L1Expr
+type Expr
     = L1Text String
     | L1Math String
     | L1Code String
-    | L1Expr String (List L1Expr)
+    | Expr String (List Expr)

@@ -1,7 +1,7 @@
 module SRParser exposing (run)
 
 import Either exposing (Either(..))
-import L1 exposing (L1Expr(..))
+import L1 exposing (Expr(..))
 import Tokenizer exposing (Token(..))
 
 
@@ -19,8 +19,8 @@ type alias State =
     { sourceText : String
     , scanPointer : Int
     , end : Int
-    , stack : List (Either Token L1Expr)
-    , committed : List L1Expr
+    , stack : List (Either Token Expr)
+    , committed : List Expr
     }
 
 
@@ -129,12 +129,12 @@ recoverFromError state =
                 )
 
 
-stackBottom : List (Either Token L1Expr) -> Maybe (Either Token L1Expr)
+stackBottom : List (Either Token Expr) -> Maybe (Either Token Expr)
 stackBottom stack =
     List.head (List.reverse stack)
 
 
-scanPointerOfItem : Either Token L1Expr -> Maybe Int
+scanPointerOfItem : Either Token Expr -> Maybe Int
 scanPointerOfItem item =
     case item of
         Left token ->
@@ -189,12 +189,12 @@ reduce state =
             state
 
 
-makeGExpr2 : String -> L1Expr -> L1Expr
+makeGExpr2 : String -> Expr -> Expr
 makeGExpr2 name expr =
-    L1Expr (String.trim name) [ expr ]
+    Expr (String.trim name) [ expr ]
 
 
-makeGExpr : String -> L1Expr
+makeGExpr : String -> Expr
 makeGExpr str =
     let
         words =
@@ -203,10 +203,10 @@ makeGExpr str =
         prefix =
             List.head words |> Maybe.withDefault "empty"
     in
-    L1Expr prefix (List.map L1Text (List.drop 1 words))
+    Expr prefix (List.map L1Text (List.drop 1 words))
 
 
-reduceAux : L1Expr -> List (Either Token L1Expr) -> State -> State
+reduceAux : Expr -> List (Either Token Expr) -> State -> State
 reduceAux newGExpr rest state =
     if rest == [] then
         { state | stack = [], committed = newGExpr :: state.committed }
