@@ -66,7 +66,7 @@ nextState lang state_ =
 nextState_ : Lang -> State -> Step State State
 nextState_ lang state =
     if state.scanPointer >= state.end then
-        finalize lang state
+        finalize lang (reduceFinal lang state)
 
     else
         processToken lang state
@@ -74,15 +74,10 @@ nextState_ lang state =
 
 finalize : Lang -> State -> Step State State
 finalize lang state =
-    let
-        newState =
-            reduceFinal lang state
-    in
-    if newState.stack == [] then
-        Done (newState |> (\st -> { st | committed = List.reverse st.committed }))
+    if state.stack == [] then
+        Done (state |> (\st -> { st | committed = List.reverse st.committed })) |> debug2 "ReduceFinal (1)"
 
     else
-        -- Or recover from error
         recoverFromError lang state |> debug2 "ReduceFinal (2)"
 
 
