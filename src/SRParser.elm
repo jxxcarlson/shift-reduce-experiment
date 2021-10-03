@@ -84,6 +84,7 @@ nextState state_ =
                 Loop (shift newToken (reduce state))
 
 
+recoverFromError : State -> Step State State
 recoverFromError state =
     -- Use this when the loop is about to exit but the stack is non-empty.
     -- Look for error patterns on the top of the stack.
@@ -188,10 +189,12 @@ reduce state =
             state
 
 
+makeGExpr2 : String -> L1Expr -> L1Expr
 makeGExpr2 name expr =
     L1Expr (String.trim name) [ expr ]
 
 
+makeGExpr : String -> L1Expr
 makeGExpr str =
     let
         words =
@@ -203,6 +206,7 @@ makeGExpr str =
     L1Expr prefix (List.map L1Text (List.drop 1 words))
 
 
+reduceAux : L1Expr -> List (Either Token L1Expr) -> State -> State
 reduceAux newGExpr rest state =
     if rest == [] then
         { state | stack = [], committed = newGExpr :: state.committed }
