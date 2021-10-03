@@ -1,6 +1,5 @@
 module SRParser exposing (run)
 
-import AST exposing (Expr(..))
 import Common exposing (Step(..), loop)
 import Debugger exposing (..)
 import Either exposing (Either(..))
