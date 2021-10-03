@@ -52,7 +52,22 @@ init str =
     Otherwise, get a new token from the source text, reduce the stack,
     and shift the new token onto the stack.
 
-    NOTE: the
+    NOTES:
+
+        - The reduce function is applied in two places: the top-level
+          function nextState and in the Loop branch of processToken.
+
+        - In addition, there is the function reduceFinal, which is applied
+          in the first branch of auxiliary function nextState_
+
+        - Both reduce and reduceFinal call out to corresponding versions
+          of these functions for the language being processed.  See folders
+          L1, MiniLaTeX and Markdown
+
+       - The dependency on language is via (1) the two reduce functions and
+         (2) the tokenization function. In particular, there is no
+         language dependency, other than the lang argument,
+         in the main parser module (this module).
 
 -}
 nextState : Lang -> State -> Step State State
