@@ -1,7 +1,7 @@
 module SRParser exposing (run)
 
+import AST exposing (Expr(..))
 import Either exposing (Either(..))
-import L1 exposing (Expr(..))
 import Tokenizer exposing (Token(..))
 
 
@@ -93,19 +93,19 @@ recoverFromError state =
     -- push an error message onto state.committed, then exit as usual: apply function reduce
     -- to the state and reverse state.committed.
     case state.stack of
-        (Left (Text _ loc1)) :: (Left (Symbol "[" _)) :: _ ->
+        (Left (Tokenizer.Text _ loc1)) :: (Left (Symbol "[" _)) :: _ ->
             Loop
                 { state
                     | stack = Left (Symbol "]" loc1) :: state.stack
-                    , committed = L1Text "I corrected an unmatched '[' in the following expression: " :: state.committed
+                    , committed = AST.Text "I corrected an unmatched '[' in the following expression: " :: state.committed
                 }
 
-        (Left (Symbol "[" loc1)) :: (Left (Text _ _)) :: (Left (Symbol "[" _)) :: _ ->
+        (Left (Symbol "[" loc1)) :: (Left (Tokenizer.Text _ _)) :: (Left (Symbol "[" _)) :: _ ->
             Loop
                 { state
                     | stack = Left (Symbol "]" loc1) :: state.stack
                     , scanPointer = loc1.begin
-                    , committed = L1Text "I corrected an unmatched '[' in the following expression: " :: state.committed
+                    , committed = AST.Text "I corrected an unmatched '[' in the following expression: " :: state.committed
                 }
 
         _ ->
@@ -122,7 +122,7 @@ recoverFromError state =
             Done
                 ({ state
                     | stack = Left (Symbol "]" { begin = state.scanPointer, end = state.scanPointer + 1 }) :: state.stack
-                    , committed = L1Text errorMessage :: state.committed
+                    , committed = AST.Text errorMessage :: state.committed
                  }
                     |> reduce
                     |> (\st -> { st | committed = List.reverse st.committed })
@@ -170,8 +170,8 @@ shift token state =
 reduce : State -> State
 reduce state =
     case state.stack of
-        (Left (Text str _)) :: [] ->
-            reduceAux (L1Text str) [] state
+        (Left (Tokenizer.Text str _)) :: [] ->
+            reduceAux (AST.Text str) [] state
 
         (Left (Math str _)) :: [] ->
             reduceAux (L1Math str) [] state
@@ -179,10 +179,10 @@ reduce state =
         (Left (Code str _)) :: [] ->
             reduceAux (L1Code str) [] state
 
-        (Left (Symbol "]" _)) :: (Left (Text str _)) :: (Left (Symbol "[" _)) :: rest ->
+        (Left (Symbol "]" _)) :: (Left (Tokenizer.Text str _)) :: (Left (Symbol "[" _)) :: rest ->
             reduceAux (makeGExpr str) rest state
 
-        (Left (Symbol "]" _)) :: (Right expr) :: (Left (Text name _)) :: (Left (Symbol "[" _)) :: rest ->
+        (Left (Symbol "]" _)) :: (Right expr) :: (Left (Tokenizer.Text name _)) :: (Left (Symbol "[" _)) :: rest ->
             reduceAux (makeGExpr2 name expr) rest state
 
         _ ->
@@ -203,7 +203,7 @@ makeGExpr str =
         prefix =
             List.head words |> Maybe.withDefault "empty"
     in
-    Expr prefix (List.map L1Text (List.drop 1 words))
+    Expr prefix (List.map AST.Text (List.drop 1 words))
 
 
 reduceAux : Expr -> List (Either Token Expr) -> State -> State
