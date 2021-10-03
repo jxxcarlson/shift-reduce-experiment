@@ -11,4 +11,5 @@ type alias State =
     , end : Int
     , stack : List (Either Token Expr)
     , committed : List Expr
+    , count : Int
     }

@@ -1,10 +1,14 @@
-module L1 exposing (recoverFromError, reduce)
+module L1 exposing (recoverFromError, reduce, reduceFinal)
 
 import AST exposing (Expr(..))
 import Common exposing (Step(..), loop)
 import Either exposing (Either(..))
 import State exposing (State)
 import Token exposing (Token(..))
+
+
+reduceFinal =
+    identity
 
 
 reduce : State -> State

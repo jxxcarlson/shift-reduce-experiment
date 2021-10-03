@@ -11,6 +11,7 @@
             "elm/html": "1.0.0",
             "elm/parser": "1.1.0",
             "elm-community/maybe-extra": "5.2.0",
+            "rtfeldman/console-print": "1.0.1",
             "toastal/either": "3.6.3"
         },
         "indirect": {

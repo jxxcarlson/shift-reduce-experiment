@@ -1,27 +1,42 @@
-module MiniLaTeX exposing (recoverFromError, reduce)
+module MiniLaTeX exposing (recoverFromError, reduce, reduceFinal)
 
 import AST exposing (Expr(..))
 import Common exposing (Step(..), loop)
+import Debugger exposing (debug1, debug2)
 import Either exposing (Either(..))
 import State exposing (State)
 import Token exposing (Token(..))
+
+
+reduceFinal : State -> State
+reduceFinal state =
+    case state.stack of
+        (Right (AST.Expr name args)) :: [] ->
+            { state | committed = AST.Expr name (List.reverse args) :: state.committed, stack = [] } |> debug1 "FINAL RULE 1"
+
+        (Left (FunctionName name _)) :: [] ->
+            { state | committed = AST.Expr name [] :: state.committed, stack = [] } |> debug1 "FINAL RULE 2"
+
+        _ ->
+            state |> debug1 "FINAL RULE 2"
 
 
 reduce : State -> State
 reduce state =
     case state.stack of
         (Left (Token.Text str _)) :: [] ->
-            reduceAux (AST.Text str) [] state
+            reduceAux (AST.Text str) [] state |> debug1 "RULE 1"
 
-        (Left (Token.Verbatim name str _)) :: [] ->
-            reduceAux (AST.Verbatim name str) [] state
+        --(Left (Token.Symbol "}" _)) :: (Left (Token.Text arg1 _)) :: (Left (Token.Symbol "{" _)) :: (Left (Token.Symbol "}" _)) :: (Left (Token.Text arg2 _)) :: (Left (Token.Symbol "{" _)) :: (Left (Token.FunctionName name _)) :: rest ->
+        --    reduceAux (AST.Expr name [ AST.Text arg1, AST.Text arg2 ]) [] state
+        (Left (Token.Symbol "}" _)) :: (Left (Token.Text arg _)) :: (Left (Token.Symbol "{" _)) :: (Left (Token.FunctionName name _)) :: rest ->
+            { state | stack = Right (AST.Expr name [ AST.Text arg ]) :: rest } |> debug1 "RULE 2"
 
-        (Left (Symbol "]" _)) :: (Left (Token.Text str _)) :: (Left (Symbol "[" _)) :: rest ->
-            reduceAux (makeGExpr str) rest state
+        (Left (Token.Symbol "}" _)) :: (Left (Token.Text arg _)) :: (Left (Token.Symbol "{" _)) :: (Right (AST.Expr name args)) :: rest ->
+            { state | stack = Right (AST.Expr name (AST.Text arg :: args)) :: rest } |> debug1 "RULE 3"
 
-        (Left (Symbol "]" _)) :: (Right expr) :: (Left (Token.Text name _)) :: (Left (Symbol "[" _)) :: rest ->
-            reduceAux (makeGExpr2 name expr) rest state
-
+        --(Left (Token.Symbol "}" _)) :: (Left (Token.Text str _)) :: (Left (Token.Symbol "{" _)) :: rest ->
+        --    reduceAux (AST.Arg [ AST.Text str ]) [] state
         _ ->
             state
 

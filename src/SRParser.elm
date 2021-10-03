@@ -2,6 +2,7 @@ module SRParser exposing (run)
 
 import AST exposing (Expr(..))
 import Common exposing (Step(..), loop)
+import Debugger exposing (..)
 import Either exposing (Either(..))
 import L1
 import MiniLaTeX
@@ -31,7 +32,7 @@ import Tokenizer exposing (Lang(..))
 -}
 run : Lang -> String -> State
 run lang input =
-    loop (init input) (nextState lang)
+    loop (init input) (nextState lang) |> debug3 "FINAL STATE"
 
 
 init : String -> State
@@ -41,6 +42,7 @@ init str =
     , end = String.length str
     , stack = []
     , committed = []
+    , count = 0
     }
 
 
@@ -56,8 +58,11 @@ init str =
 nextState : Lang -> State -> Step State State
 nextState lang state_ =
     let
+        count =
+            state_.count + 1
+
         state =
-            reduce lang (state_ |> Debug.log "STATE")
+            reduce lang ({ state_ | count = count } |> debug2 ("STATE (" ++ String.fromInt count ++ ")"))
     in
     if state.scanPointer >= state.end then
         -- Exit
@@ -65,8 +70,16 @@ nextState lang state_ =
             Done (state |> (\st -> { st | committed = List.reverse st.committed }))
 
         else
-            -- Or recover from error
-            recoverFromError lang state
+            let
+                newState =
+                    reduceFinal lang state
+            in
+            if newState.stack == [] then
+                Done (newState |> (\st -> { st | committed = List.reverse st.committed }))
+
+            else
+                -- Or recover from error
+                recoverFromError lang state |> debug2 "ReduceFinal (2)"
 
     else
         -- Grab a new token from the source text
@@ -78,6 +91,16 @@ nextState lang state_ =
             Ok newToken ->
                 -- Process the token: reduce the stack, then shift the token onto it.
                 Loop (shift newToken (reduce lang state))
+
+
+reduceFinal : Lang -> State -> State
+reduceFinal lang =
+    case lang of
+        L1 ->
+            L1.reduceFinal
+
+        MiniLaTeX ->
+            MiniLaTeX.reduceFinal
 
 
 recoverFromError : Lang -> State -> Step State State
