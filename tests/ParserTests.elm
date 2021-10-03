@@ -26,6 +26,10 @@ suiteMiniLaTeX =
             \_ ->
                 run MiniLaTeX "\\foo{1}{2}"
                     |> Expect.equal { committed = [ Expr "\\foo" [ Text "1", Text "2" ] ], count = 8, end = 10, scanPointer = 10, sourceText = "\\foo{1}{2}", stack = [] }
+        , test "(5) abc \\foo{1} def" <|
+            \_ ->
+                run MiniLaTeX "abc \\foo{1} def"
+                    |> Expect.equal { committed = [ Text "abc ", Expr "\\foo" [ Text "1" ], Text " def" ], count = 7, end = 15, scanPointer = 15, sourceText = "abc \\foo{1} def", stack = [] }
         ]
 
 

@@ -27,16 +27,15 @@ reduce state =
         (Left (Token.Text str _)) :: [] ->
             reduceAux (AST.Text str) [] state |> debug1 "RULE 1"
 
-        --(Left (Token.Symbol "}" _)) :: (Left (Token.Text arg1 _)) :: (Left (Token.Symbol "{" _)) :: (Left (Token.Symbol "}" _)) :: (Left (Token.Text arg2 _)) :: (Left (Token.Symbol "{" _)) :: (Left (Token.FunctionName name _)) :: rest ->
-        --    reduceAux (AST.Expr name [ AST.Text arg1, AST.Text arg2 ]) [] state
         (Left (Token.Symbol "}" _)) :: (Left (Token.Text arg _)) :: (Left (Token.Symbol "{" _)) :: (Left (Token.FunctionName name _)) :: rest ->
             { state | stack = Right (AST.Expr name [ AST.Text arg ]) :: rest } |> debug1 "RULE 2"
 
         (Left (Token.Symbol "}" _)) :: (Left (Token.Text arg _)) :: (Left (Token.Symbol "{" _)) :: (Right (AST.Expr name args)) :: rest ->
             { state | stack = Right (AST.Expr name (AST.Text arg :: args)) :: rest } |> debug1 "RULE 3"
 
-        --(Left (Token.Symbol "}" _)) :: (Left (Token.Text str _)) :: (Left (Token.Symbol "{" _)) :: rest ->
-        --    reduceAux (AST.Arg [ AST.Text str ]) [] state
+        (Left (Token.Text str _)) :: (Right (AST.Expr name args)) :: rest ->
+            { state | committed = AST.Text str :: AST.Expr name args :: state.committed, stack = rest } |> debug1 "RULE 4"
+
         _ ->
             state
 
