@@ -1,7 +1,11 @@
 module SRParser exposing (run)
 
 import AST exposing (Expr(..))
+import Common exposing (Step(..), loop)
 import Either exposing (Either(..))
+import L1
+import MiniLaTeX
+import State exposing (State)
 import Token exposing (Token(..))
 import Tokenizer exposing (Lang(..))
 
@@ -14,15 +18,6 @@ import Tokenizer exposing (Lang(..))
    https://guide.elm-lang.org/appendix/types_as_sets.html
    https://www.schoolofhaskell.com/user/bartosz/understanding-algebras
 -}
-
-
-type alias State =
-    { sourceText : String
-    , scanPointer : Int
-    , end : Int
-    , stack : List (Either Token Expr)
-    , committed : List Expr
-    }
 
 
 {-|
@@ -62,7 +57,7 @@ nextState : Lang -> State -> Step State State
 nextState lang state_ =
     let
         state =
-            reduce (state_ |> Debug.log "STATE")
+            reduce lang (state_ |> Debug.log "STATE")
     in
     if state.scanPointer >= state.end then
         -- Exit
@@ -71,7 +66,7 @@ nextState lang state_ =
 
         else
             -- Or recover from error
-            recoverFromError state
+            recoverFromError lang state
 
     else
         -- Grab a new token from the source text
@@ -82,67 +77,17 @@ nextState lang state_ =
 
             Ok newToken ->
                 -- Process the token: reduce the stack, then shift the token onto it.
-                Loop (shift newToken (reduce state))
+                Loop (shift newToken (reduce lang state))
 
 
-recoverFromError : State -> Step State State
-recoverFromError state =
-    -- Use this when the loop is about to exit but the stack is non-empty.
-    -- Look for error patterns on the top of the stack.
-    -- If one is found, modify the stack and push an error message onto state.committed; then loop
-    -- If no pattern is found, make a best effort: push (Left (Symbol "]")) onto the stack,
-    -- push an error message onto state.committed, then exit as usual: apply function reduce
-    -- to the state and reverse state.committed.
-    case state.stack of
-        (Left (Token.Text _ loc1)) :: (Left (Symbol "[" _)) :: _ ->
-            Loop
-                { state
-                    | stack = Left (Symbol "]" loc1) :: state.stack
-                    , committed = AST.Text "I corrected an unmatched '[' in the following expression: " :: state.committed
-                }
+recoverFromError : Lang -> State -> Step State State
+recoverFromError lang state =
+    case lang of
+        L1 ->
+            L1.recoverFromError state
 
-        (Left (Symbol "[" loc1)) :: (Left (Token.Text _ _)) :: (Left (Symbol "[" _)) :: _ ->
-            Loop
-                { state
-                    | stack = Left (Symbol "]" loc1) :: state.stack
-                    , scanPointer = loc1.begin
-                    , committed = AST.Text "I corrected an unmatched '[' in the following expression: " :: state.committed
-                }
-
-        _ ->
-            let
-                position =
-                    state.stack |> stackBottom |> Maybe.andThen scanPointerOfItem |> Maybe.withDefault state.scanPointer
-
-                errorText =
-                    String.dropLeft position state.sourceText
-
-                errorMessage =
-                    "Error! I added a bracket after this: " ++ errorText
-            in
-            Done
-                ({ state
-                    | stack = Left (Symbol "]" { begin = state.scanPointer, end = state.scanPointer + 1 }) :: state.stack
-                    , committed = AST.Text errorMessage :: state.committed
-                 }
-                    |> reduce
-                    |> (\st -> { st | committed = List.reverse st.committed })
-                )
-
-
-stackBottom : List (Either Token Expr) -> Maybe (Either Token Expr)
-stackBottom stack =
-    List.head (List.reverse stack)
-
-
-scanPointerOfItem : Either Token Expr -> Maybe Int
-scanPointerOfItem item =
-    case item of
-        Left token ->
-            Just (Token.startPositionOf token)
-
-        Right _ ->
-            Nothing
+        MiniLaTeX ->
+            MiniLaTeX.recoverFromError state
 
 
 {-|
@@ -168,61 +113,11 @@ shift token state =
     one should be able to deduce them mechanically from the grammar.
 
 -}
-reduce : State -> State
-reduce state =
-    case state.stack of
-        (Left (Token.Text str _)) :: [] ->
-            reduceAux (AST.Text str) [] state
+reduce : Lang -> State -> State
+reduce lang state =
+    case lang of
+        L1 ->
+            L1.reduce state
 
-        (Left (Token.Verbatim name str _)) :: [] ->
-            reduceAux (AST.Verbatim name str) [] state
-
-        (Left (Symbol "]" _)) :: (Left (Token.Text str _)) :: (Left (Symbol "[" _)) :: rest ->
-            reduceAux (makeGExpr str) rest state
-
-        (Left (Symbol "]" _)) :: (Right expr) :: (Left (Token.Text name _)) :: (Left (Symbol "[" _)) :: rest ->
-            reduceAux (makeGExpr2 name expr) rest state
-
-        _ ->
-            state
-
-
-makeGExpr2 : String -> Expr -> Expr
-makeGExpr2 name expr =
-    Expr (String.trim name) [ expr ]
-
-
-makeGExpr : String -> Expr
-makeGExpr str =
-    let
-        words =
-            String.words str
-
-        prefix =
-            List.head words |> Maybe.withDefault "empty"
-    in
-    Expr prefix (List.map AST.Text (List.drop 1 words))
-
-
-reduceAux : Expr -> List (Either Token Expr) -> State -> State
-reduceAux newGExpr rest state =
-    if rest == [] then
-        { state | stack = [], committed = newGExpr :: state.committed }
-
-    else
-        { state | stack = Right newGExpr :: rest }
-
-
-type Step state a
-    = Loop state
-    | Done a
-
-
-loop : state -> (state -> Step state a) -> a
-loop s f =
-    case f s of
-        Loop s_ ->
-            loop s_ f
-
-        Done b ->
-            b
+        MiniLaTeX ->
+            MiniLaTeX.reduce state

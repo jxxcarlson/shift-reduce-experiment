@@ -11,6 +11,7 @@ type Token
     = Text String Loc
     | Verbatim String String Loc
     | Symbol String Loc
+    | FunctionName String Loc
 
 
 type alias Loc =
@@ -29,6 +30,9 @@ startPositionOf token =
         Symbol _ loc ->
             loc.begin
 
+        FunctionName _ loc ->
+            loc.begin
+
 
 content : Token -> String
 content token =
@@ -40,6 +44,9 @@ content token =
             str
 
         Symbol str _ ->
+            str
+
+        FunctionName str _ ->
             str
 
 

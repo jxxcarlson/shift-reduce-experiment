@@ -16,8 +16,12 @@ type Lang
     | MiniLaTeX
 
 
-languageChars =
+l1LanguageChars =
     [ '[', ']', '`', '$' ]
+
+
+miniLaTeXLanguageChars =
+    [ '{', '}', '\\', '$' ]
 
 
 {-|
@@ -29,16 +33,28 @@ languageChars =
 tokenParser lang start =
     case lang of
         L1 ->
-            Parser.oneOf [ textParser start, mathParser start, codeParser start, symbolParser start '[', symbolParser start ']' ]
+            Parser.oneOf [ textParser lang start, mathParser start, codeParser start, symbolParser start '[', symbolParser start ']' ]
 
         MiniLaTeX ->
-            Parser.oneOf [ textParser start, mathParser start, codeParser start, symbolParser start '[', symbolParser start ']' ]
+            Parser.oneOf [ textParser lang start, mathParser start, macroParser start, symbolParser start '{', symbolParser start '}' ]
 
 
-textParser : Int -> Parser Context Problem Token
-textParser start =
-    ParserTools.text (\c -> not <| List.member c languageChars) (\c -> not <| List.member c languageChars)
-        |> Parser.map (\data -> Text data.content { begin = start, end = start + data.end - data.begin })
+textParser : Lang -> Int -> Parser Context Problem Token
+textParser lang start =
+    case lang of
+        L1 ->
+            ParserTools.text (\c -> not <| List.member c l1LanguageChars) (\c -> not <| List.member c l1LanguageChars)
+                |> Parser.map (\data -> Text data.content { begin = start, end = start + data.end - data.begin })
+
+        MiniLaTeX ->
+            ParserTools.text (\c -> not <| List.member c miniLaTeXLanguageChars) (\c -> not <| List.member c miniLaTeXLanguageChars)
+                |> Parser.map (\data -> Text data.content { begin = start, end = start + data.end - data.begin })
+
+
+macroParser : Int -> Parser Context Problem Token
+macroParser start =
+    ParserTools.text (\c -> c == '\\') (\c -> c /= '{')
+        |> Parser.map (\data -> FunctionName data.content { begin = start, end = start + data.end - data.begin })
 
 
 mathParser : Int -> Parser Context Problem Token
