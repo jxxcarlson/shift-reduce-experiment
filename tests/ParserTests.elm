@@ -1,10 +1,24 @@
-module ParserTests exposing (suiteL1, suiteMiniLaTeX)
+module ParserTests exposing (suiteL1, suiteMarkdown, suiteMiniLaTeX)
 
 import AST exposing (Expr(..))
 import Expect
 import SRParser exposing (run)
 import Test exposing (..)
 import Tokenizer exposing (Lang(..))
+
+
+suiteMarkdown : Test
+suiteMarkdown =
+    describe "parsing Markdown"
+        [ test "(1) foo" <|
+            \_ ->
+                run Markdown "foo"
+                    |> Expect.equal { committed = [ Text "foo" ], count = 2, end = 3, scanPointer = 3, sourceText = "foo", stack = [] }
+        , test "(2) *foo*" <|
+            \_ ->
+                run Markdown "*foo*"
+                    |> Expect.equal { committed = [ Expr "strong" [ Text "foo" ], Expr "strong" [ Text "" ] ], count = 3, end = 5, scanPointer = 5, sourceText = "*foo*", stack = [] }
+        ]
 
 
 suiteMiniLaTeX : Test
@@ -17,23 +31,23 @@ suiteMiniLaTeX =
         , test "(2) \\foo" <|
             \_ ->
                 run MiniLaTeX "\\foo"
-                    |> Expect.equal { committed = [ Expr "\\foo" [] ], count = 2, end = 4, scanPointer = 4, sourceText = "\\foo", stack = [] }
+                    |> Expect.equal { committed = [ Expr "foo" [] ], count = 2, end = 4, scanPointer = 4, sourceText = "\\foo", stack = [] }
         , test "(3) \\foo{1}" <|
             \_ ->
                 run MiniLaTeX "\\foo{1}"
-                    |> Expect.equal { committed = [ Expr "\\foo" [ Text "1" ] ], count = 5, end = 7, scanPointer = 7, sourceText = "\\foo{1}", stack = [] }
+                    |> Expect.equal { committed = [ Expr "foo" [ Text "1" ] ], count = 5, end = 7, scanPointer = 7, sourceText = "\\foo{1}", stack = [] }
         , test "(4) \\foo{1}{2}" <|
             \_ ->
                 run MiniLaTeX "\\foo{1}{2}"
-                    |> Expect.equal { committed = [ Expr "\\foo" [ Text "1", Text "2" ] ], count = 8, end = 10, scanPointer = 10, sourceText = "\\foo{1}{2}", stack = [] }
+                    |> Expect.equal { committed = [ Expr "foo" [ Text "1", Text "2" ] ], count = 8, end = 10, scanPointer = 10, sourceText = "\\foo{1}{2}", stack = [] }
         , test "(5) abc \\foo{1} def" <|
             \_ ->
                 run MiniLaTeX "abc \\foo{1} def"
-                    |> Expect.equal { committed = [ Text "abc ", Expr "\\foo" [ Text "1" ], Text " def" ], count = 7, end = 15, scanPointer = 15, sourceText = "abc \\foo{1} def", stack = [] }
+                    |> Expect.equal { committed = [ Text "abc ", Expr "foo" [ Text "1" ], Text " def" ], count = 7, end = 15, scanPointer = 15, sourceText = "abc \\foo{1} def", stack = [] }
         , test "(6) \\foo{\\bar{1}}" <|
             \_ ->
                 run MiniLaTeX "\\foo{\\bar{1}}"
-                    |> Expect.equal { committed = [ Expr "\\foo" [ Expr "\\bar" [ Text "1" ] ] ], count = 8, end = 13, scanPointer = 13, sourceText = "\\foo{\\bar{1}}", stack = [] }
+                    |> Expect.equal { committed = [ Expr "foo" [ Expr "bar" [ Text "1" ] ] ], count = 8, end = 13, scanPointer = 13, sourceText = "\\foo{\\bar{1}}", stack = [] }
         , test "(7) \\foo{\\bar{1}}" <|
             \_ ->
                 run MiniLaTeX "$x^2$"

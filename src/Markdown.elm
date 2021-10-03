@@ -1,4 +1,4 @@
-module MiniLaTeX exposing (recoverFromError, reduce, reduceFinal)
+module Markdown exposing (recoverFromError, reduce, reduceFinal)
 
 import AST exposing (Expr(..))
 import Common exposing (Step(..), loop)
@@ -10,15 +10,19 @@ import Token exposing (Token(..))
 
 reduceFinal : State -> State
 reduceFinal state =
+    let
+        _ =
+            debug1 "reduceFinal (IN)" state
+    in
     case state.stack of
         (Right (AST.Expr name args)) :: [] ->
             { state | committed = AST.Expr name (List.reverse args) :: state.committed, stack = [] } |> debug1 "FINAL RULE 1"
 
-        (Left (FunctionName name _)) :: [] ->
-            { state | committed = AST.Expr name [] :: state.committed, stack = [] } |> debug1 "FINAL RULE 2"
-
+        --
+        --(Left (MarkedText "strong" str _)) :: [] ->
+        --    { state | committed = Expr "strong" [ AST.Text str ] :: state.committed, stack = [] } |> debug1 "FINAL RULE 2"
         _ ->
-            state |> debug1 "FINAL RULE 2"
+            state |> debug1 "FINAL RULE LAST"
 
 
 {-|
@@ -33,20 +37,8 @@ reduce state =
         (Left (Token.Text str _)) :: [] ->
             reduceAux (AST.Text str) [] state |> debug1 "RULE 1"
 
-        (Left (Token.Symbol "}" _)) :: (Left (Token.Text arg _)) :: (Left (Token.Symbol "{" _)) :: (Left (Token.FunctionName name _)) :: rest ->
-            { state | stack = Right (AST.Expr name [ AST.Text arg ]) :: rest } |> debug1 "RULE 2"
-
-        (Left (Token.Symbol "}" _)) :: (Left (Token.Text arg _)) :: (Left (Token.Symbol "{" _)) :: (Right (AST.Expr name args)) :: rest ->
-            { state | stack = Right (AST.Expr name (AST.Text arg :: args)) :: rest } |> debug1 "RULE 3"
-
-        (Left (Token.Text str _)) :: (Right (AST.Expr name args)) :: rest ->
-            { state | committed = AST.Text str :: AST.Expr name args :: state.committed, stack = rest } |> debug1 "RULE 4"
-
-        (Left (Token.Symbol "}" _)) :: (Right (AST.Expr exprName args)) :: (Left (Token.Symbol "{" _)) :: (Left (Token.FunctionName fName _)) :: rest ->
-            { state | committed = AST.Expr fName [ AST.Expr exprName args ] :: state.committed, stack = rest } |> debug1 "RULE 5"
-
-        (Left (Token.Verbatim label content _)) :: [] ->
-            reduceAux (AST.Verbatim label content) [] state |> debug1 "RULE 6"
+        (Left (MarkedText "strong" str _)) :: [] ->
+            { state | committed = Expr "strong" [ AST.Text str ] :: state.committed, stack = [] }
 
         _ ->
             state

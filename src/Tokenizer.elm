@@ -1,4 +1,4 @@
-module Tokenizer exposing (Lang(..), get)
+module Tokenizer exposing (Lang(..), get, markedTextParser, tokenParser)
 
 import Error exposing (..)
 import Parser.Advanced as Parser exposing (Parser)
@@ -14,6 +14,7 @@ get lang start input =
 type Lang
     = L1
     | MiniLaTeX
+    | Markdown
 
 
 l1LanguageChars =
@@ -22,6 +23,10 @@ l1LanguageChars =
 
 miniLaTeXLanguageChars =
     [ '{', '}', '\\', '$' ]
+
+
+markdownLanguageChars =
+    [ '*', '_', '`', '$', '[', ']', '(', ')', '#' ]
 
 
 {-|
@@ -38,6 +43,14 @@ tokenParser lang start =
         MiniLaTeX ->
             Parser.oneOf [ textParser lang start, mathParser start, macroParser start, symbolParser start '{', symbolParser start '}' ]
 
+        Markdown ->
+            Parser.oneOf
+                [ markedTextParser start "strong" '*' '*'
+                , markedTextParser start "arg" '(' ')'
+                , markedTextParser start "annotation" '[' ']'
+                , textParser lang start
+                ]
+
 
 textParser : Lang -> Int -> Parser Context Problem Token
 textParser lang start =
@@ -50,17 +63,27 @@ textParser lang start =
             ParserTools.text (\c -> not <| List.member c miniLaTeXLanguageChars) (\c -> not <| List.member c miniLaTeXLanguageChars)
                 |> Parser.map (\data -> Text data.content { begin = start, end = start + data.end - data.begin })
 
+        Markdown ->
+            ParserTools.text (\c -> not <| List.member c markdownLanguageChars) (\c -> not <| List.member c markdownLanguageChars)
+                |> Parser.map (\data -> Text data.content { begin = start, end = start + data.end - data.begin })
+
 
 macroParser : Int -> Parser Context Problem Token
 macroParser start =
     ParserTools.text (\c -> c == '\\') (\c -> c /= '{')
-        |> Parser.map (\data -> FunctionName data.content { begin = start, end = start + data.end - data.begin })
+        |> Parser.map (\data -> FunctionName (String.dropLeft 1 data.content) { begin = start, end = start + data.end - data.begin })
 
 
 mathParser : Int -> Parser Context Problem Token
 mathParser start =
     ParserTools.textWithEndSymbol "$" (\c -> c == '$') (\c -> c /= '$')
         |> Parser.map (\data -> Verbatim "math" data.content { begin = start, end = start + data.end - data.begin })
+
+
+markedTextParser : Int -> String -> Char -> Char -> Parser Context Problem Token
+markedTextParser start mark begin end =
+    ParserTools.text (\c -> c == begin) (\c -> c /= end)
+        |> Parser.map (\data -> MarkedText mark (String.dropLeft 1 data.content) { begin = start, end = start + data.end - data.begin })
 
 
 codeParser : Int -> Parser Context Problem Token

@@ -5,6 +5,7 @@ import Common exposing (Step(..), loop)
 import Debugger exposing (..)
 import Either exposing (Either(..))
 import L1
+import Markdown
 import MiniLaTeX
 import State exposing (State)
 import Token exposing (Token(..))
@@ -73,7 +74,7 @@ init str =
 nextState : Lang -> State -> Step State State
 nextState lang state_ =
     { state_ | count = state_.count + 1 }
-        |> debug2 ("STATE (" ++ String.fromInt (state_.count - 1) ++ ")")
+        |> debug2 ("STATE (" ++ String.fromInt (state_.count + 1) ++ ")")
         |> reduce lang
         |> nextState_ lang
 
@@ -81,7 +82,7 @@ nextState lang state_ =
 nextState_ : Lang -> State -> Step State State
 nextState_ lang state =
     if state.scanPointer >= state.end then
-        finalize lang (reduceFinal lang state)
+        finalize lang (reduceFinal lang state |> debug1 "reduceFinal (APPL)")
 
     else
         processToken lang state
@@ -117,6 +118,9 @@ reduceFinal lang =
         MiniLaTeX ->
             MiniLaTeX.reduceFinal
 
+        Markdown ->
+            Markdown.reduceFinal
+
 
 recoverFromError : Lang -> State -> Step State State
 recoverFromError lang state =
@@ -126,6 +130,9 @@ recoverFromError lang state =
 
         MiniLaTeX ->
             MiniLaTeX.recoverFromError state
+
+        Markdown ->
+            Markdown.recoverFromError state
 
 
 {-|
@@ -159,3 +166,6 @@ reduce lang state =
 
         MiniLaTeX ->
             MiniLaTeX.reduce state
+
+        Markdown ->
+            Markdown.reduce state

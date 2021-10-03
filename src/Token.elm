@@ -12,6 +12,7 @@ type Token
     | Verbatim String String Loc
     | Symbol String Loc
     | FunctionName String Loc
+    | MarkedText String String Loc
 
 
 type alias Loc =
@@ -33,6 +34,9 @@ startPositionOf token =
         FunctionName _ loc ->
             loc.begin
 
+        MarkedText _ _ loc ->
+            loc.begin
+
 
 content : Token -> String
 content token =
@@ -49,7 +53,24 @@ content token =
         FunctionName str _ ->
             str
 
+        MarkedText _ str _ ->
+            str
+
 
 length : Token -> Int
 length token =
-    String.length (content token)
+    case token of
+        Text _ loc ->
+            loc.end - loc.begin
+
+        Verbatim _ _ loc ->
+            loc.end - loc.begin
+
+        Symbol _ loc ->
+            loc.end - loc.begin
+
+        FunctionName _ loc ->
+            loc.end - loc.begin
+
+        MarkedText _ _ loc ->
+            loc.end - loc.begin
