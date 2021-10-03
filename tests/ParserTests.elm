@@ -30,6 +30,14 @@ suiteMiniLaTeX =
             \_ ->
                 run MiniLaTeX "abc \\foo{1} def"
                     |> Expect.equal { committed = [ Text "abc ", Expr "\\foo" [ Text "1" ], Text " def" ], count = 7, end = 15, scanPointer = 15, sourceText = "abc \\foo{1} def", stack = [] }
+        , test "(6) \\foo{\\bar{1}}" <|
+            \_ ->
+                run MiniLaTeX "\\foo{\\bar{1}}"
+                    |> Expect.equal { committed = [ Expr "\\foo" [ Expr "\\bar" [ Text "1" ] ] ], count = 8, end = 13, scanPointer = 13, sourceText = "\\foo{\\bar{1}}", stack = [] }
+        , test "(7) \\foo{\\bar{1}}" <|
+            \_ ->
+                run MiniLaTeX "$x^2$"
+                    |> Expect.equal { committed = [ Verbatim "math" "$x^2$" ], count = 2, end = 5, scanPointer = 5, sourceText = "$x^2$", stack = [] }
         ]
 
 

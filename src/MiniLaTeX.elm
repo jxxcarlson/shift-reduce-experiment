@@ -36,6 +36,12 @@ reduce state =
         (Left (Token.Text str _)) :: (Right (AST.Expr name args)) :: rest ->
             { state | committed = AST.Text str :: AST.Expr name args :: state.committed, stack = rest } |> debug1 "RULE 4"
 
+        (Left (Token.Symbol "}" _)) :: (Right (AST.Expr exprName args)) :: (Left (Token.Symbol "{" _)) :: (Left (Token.FunctionName fName _)) :: rest ->
+            { state | committed = AST.Expr fName [ AST.Expr exprName args ] :: state.committed, stack = rest } |> debug1 "RULE 5"
+
+        (Left (Token.Verbatim label content _)) :: [] ->
+            reduceAux (AST.Verbatim label content) [] state |> debug1 "RULE 6"
+
         _ ->
             state
 
