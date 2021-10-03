@@ -83,7 +83,7 @@ mathParser start =
 markedTextParser : Int -> String -> Char -> Char -> Parser Context Problem Token
 markedTextParser start mark begin end =
     ParserTools.text (\c -> c == begin) (\c -> c /= end)
-        |> Parser.map (\data -> MarkedText mark (String.dropLeft 1 data.content) { begin = start, end = start + data.end - data.begin })
+        |> Parser.map (\data -> MarkedText mark (String.dropLeft 1 data.content) { begin = start, end = start + data.end - data.begin + 1 })
 
 
 codeParser : Int -> Parser Context Problem Token

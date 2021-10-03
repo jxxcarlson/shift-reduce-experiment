@@ -14,10 +14,14 @@ suiteMarkdown =
             \_ ->
                 run Markdown "foo"
                     |> Expect.equal { committed = [ Text "foo" ], count = 2, end = 3, scanPointer = 3, sourceText = "foo", stack = [] }
-        , test "(2) *foo*" <|
+        , test "(2) BOLD" <|
             \_ ->
                 run Markdown "*foo*"
-                    |> Expect.equal { committed = [ Expr "strong" [ Text "foo" ], Expr "strong" [ Text "" ] ], count = 3, end = 5, scanPointer = 5, sourceText = "*foo*", stack = [] }
+                    |> Expect.equal { committed = [ Expr "strong" [ Text "foo" ] ], count = 2, end = 5, scanPointer = 5, sourceText = "*foo*", stack = [] }
+        , test "(3) LINK" <|
+            \_ ->
+                run Markdown "[N Y T](url)"
+                    |> Expect.equal { committed = [ Expr "link" [ Text "N Y T", Text "url" ] ], count = 3, end = 12, scanPointer = 12, sourceText = "[N Y T](url)", stack = [] }
         ]
 
 

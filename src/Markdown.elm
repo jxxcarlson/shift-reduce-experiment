@@ -40,6 +40,9 @@ reduce state =
         (Left (MarkedText "strong" str _)) :: [] ->
             { state | committed = Expr "strong" [ AST.Text str ] :: state.committed, stack = [] }
 
+        (Left (MarkedText "arg" url _)) :: (Left (MarkedText "annotation" label _)) :: [] ->
+            { state | committed = Expr "link" [ AST.Text label, AST.Text url ] :: state.committed, stack = [] }
+
         _ ->
             state
 
