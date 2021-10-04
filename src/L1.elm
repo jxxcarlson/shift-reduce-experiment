@@ -1,7 +1,7 @@
 module L1 exposing (recoverFromError, reduce, reduceFinal)
 
 import AST exposing (Expr(..))
-import Common exposing (Step(..), loop)
+import Common exposing (Step(..))
 import Either exposing (Either(..))
 import State exposing (State)
 import Token exposing (Token(..))

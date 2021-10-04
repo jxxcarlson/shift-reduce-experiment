@@ -3,7 +3,7 @@ module Tokenizer exposing (Lang(..), get, markedTextParser, tokenParser)
 import Error exposing (..)
 import Parser.Advanced as Parser exposing (Parser)
 import ParserTools
-import Token exposing (Loc, Token(..))
+import Token exposing (Token(..))
 
 
 get : Lang -> Int -> String -> Result (List (Parser.DeadEnd Context Problem)) Token

@@ -1,7 +1,7 @@
 module State exposing (State)
 
 import AST exposing (Expr)
-import Either exposing (Either(..))
+import Either exposing (Either)
 import Token exposing (Token)
 
 

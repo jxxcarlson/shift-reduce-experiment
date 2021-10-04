@@ -2,12 +2,12 @@ module SRParser exposing (run)
 
 import Common exposing (Step(..), loop)
 import Debugger exposing (..)
-import Either exposing (Either(..))
+import Either
 import L1
 import Markdown
 import MiniLaTeX
 import State exposing (State)
-import Token exposing (Token(..))
+import Token exposing (Token)
 import Tokenizer exposing (Lang(..))
 
 

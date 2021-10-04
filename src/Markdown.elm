@@ -1,8 +1,8 @@
 module Markdown exposing (recoverFromError, reduce, reduceFinal)
 
 import AST exposing (Expr(..))
-import Common exposing (Step(..), loop)
-import Debugger exposing (debug1, debug2)
+import Common exposing (Step(..))
+import Debugger exposing (debug1)
 import Either exposing (Either(..))
 import State exposing (State)
 import Token exposing (Token(..))
@@ -10,10 +10,6 @@ import Token exposing (Token(..))
 
 reduceFinal : State -> State
 reduceFinal state =
-    let
-        _ =
-            debug1 "reduceFinal (IN)" state
-    in
     case state.stack of
         (Right (AST.Expr name args)) :: [] ->
             { state | committed = AST.Expr name (List.reverse args) :: state.committed, stack = [] } |> debug1 "FINAL RULE 1"
@@ -108,23 +104,6 @@ recoverFromError state =
                     |> reduce
                     |> (\st -> { st | committed = List.reverse st.committed })
                 )
-
-
-makeGExpr2 : String -> Expr -> Expr
-makeGExpr2 name expr =
-    Expr (String.trim name) [ expr ]
-
-
-makeGExpr : String -> Expr
-makeGExpr str =
-    let
-        words =
-            String.words str
-
-        prefix =
-            List.head words |> Maybe.withDefault "empty"
-    in
-    Expr prefix (List.map AST.Text (List.drop 1 words))
 
 
 stackBottom : List (Either Token Expr) -> Maybe (Either Token Expr)
