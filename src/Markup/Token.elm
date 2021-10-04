@@ -2,6 +2,7 @@ module Markup.Token exposing
     ( Loc
     , Token(..)
     , content
+    , dummyLoc
     , length
     , startPositionOf
     )
@@ -17,6 +18,10 @@ type Token
 
 type alias Loc =
     { begin : Int, end : Int }
+
+
+dummyLoc =
+    { begin = 0, end = 0 }
 
 
 startPositionOf : Token -> Int

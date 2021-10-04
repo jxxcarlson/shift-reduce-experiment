@@ -15,9 +15,9 @@ import Markup.Token as Token
 
 
 type Expr
-    = Text String
-    | Verbatim String String
-    | Expr String (List Expr)
+    = Text String Token.Loc
+    | Verbatim String String Token.Loc
+    | Expr String (List Expr) Token.Loc
 
 
 type alias BlockData =

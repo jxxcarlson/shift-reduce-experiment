@@ -11,11 +11,11 @@ import Markup.Token as Token exposing (Token(..))
 reduceFinal : State -> State
 reduceFinal state =
     case state.stack of
-        (Right (AST.Expr name args)) :: [] ->
-            { state | committed = AST.Expr name (List.reverse args) :: state.committed, stack = [] } |> debug1 "FINAL RULE 1"
+        (Right (AST.Expr name args loc)) :: [] ->
+            { state | committed = AST.Expr name (List.reverse args) loc :: state.committed, stack = [] } |> debug1 "FINAL RULE 1"
 
-        (Left (FunctionName name _)) :: [] ->
-            { state | committed = AST.Expr name [] :: state.committed, stack = [] } |> debug1 "FINAL RULE 2"
+        (Left (FunctionName name loc)) :: [] ->
+            { state | committed = AST.Expr name [] loc :: state.committed, stack = [] } |> debug1 "FINAL RULE 2"
 
         _ ->
             state |> debug1 "FINAL RULE 2"
@@ -30,23 +30,23 @@ reduceFinal state =
 reduce : State -> State
 reduce state =
     case state.stack of
-        (Left (Token.Text str _)) :: [] ->
-            reduceAux (AST.Text str) [] state |> debug1 "RULE 1"
+        (Left (Token.Text str loc)) :: [] ->
+            reduceAux (AST.Text str loc) [] state |> debug1 "RULE 1"
 
-        (Left (Token.Symbol "}" _)) :: (Left (Token.Text arg _)) :: (Left (Token.Symbol "{" _)) :: (Left (Token.FunctionName name _)) :: rest ->
-            { state | stack = Right (AST.Expr name [ AST.Text arg ]) :: rest } |> debug1 "RULE 2"
+        (Left (Token.Symbol "}" loc4)) :: (Left (Token.Text arg loc3)) :: (Left (Token.Symbol "{" loc2)) :: (Left (Token.FunctionName name loc1)) :: rest ->
+            { state | stack = Right (AST.Expr name [ AST.Text arg loc3 ] { begin = loc1.begin, end = loc4.end }) :: rest } |> debug1 "RULE 2"
 
-        (Left (Token.Symbol "}" _)) :: (Left (Token.Text arg _)) :: (Left (Token.Symbol "{" _)) :: (Right (AST.Expr name args)) :: rest ->
-            { state | stack = Right (AST.Expr name (AST.Text arg :: args)) :: rest } |> debug1 "RULE 3"
+        (Left (Token.Symbol "}" loc4)) :: (Left (Token.Text arg loc3)) :: (Left (Token.Symbol "{" loc2)) :: (Right (AST.Expr name args loc1)) :: rest ->
+            { state | stack = Right (AST.Expr name (AST.Text arg loc3 :: args) { begin = loc1.begin, end = loc4.end }) :: rest } |> debug1 "RULE 3"
 
-        (Left (Token.Text str _)) :: (Right (AST.Expr name args)) :: rest ->
-            { state | committed = AST.Text str :: AST.Expr name args :: state.committed, stack = rest } |> debug1 "RULE 4"
+        (Left (Token.Text str loc2)) :: (Right (AST.Expr name args loc1)) :: rest ->
+            { state | committed = AST.Text str loc2 :: AST.Expr name args loc1 :: state.committed, stack = rest } |> debug1 "RULE 4"
 
-        (Left (Token.Symbol "}" _)) :: (Right (AST.Expr exprName args)) :: (Left (Token.Symbol "{" _)) :: (Left (Token.FunctionName fName _)) :: rest ->
-            { state | committed = AST.Expr fName [ AST.Expr exprName args ] :: state.committed, stack = rest } |> debug1 "RULE 5"
+        (Left (Token.Symbol "}" loc4)) :: (Right (AST.Expr exprName args loc3)) :: (Left (Token.Symbol "{" loc2)) :: (Left (Token.FunctionName fName loc1)) :: rest ->
+            { state | committed = AST.Expr fName [ AST.Expr exprName args loc3 ] { begin = loc1.begin, end = loc4.end } :: state.committed, stack = rest } |> debug1 "RULE 5"
 
-        (Left (Token.Verbatim label content _)) :: [] ->
-            reduceAux (AST.Verbatim label content) [] state |> debug1 "RULE 6"
+        (Left (Token.Verbatim label content loc)) :: [] ->
+            reduceAux (AST.Verbatim label content loc) [] state |> debug1 "RULE 6"
 
         _ ->
             state
@@ -74,7 +74,7 @@ recoverFromError state =
             Loop
                 { state
                     | stack = Left (Symbol "]" loc1) :: state.stack
-                    , committed = AST.Text "I corrected an unmatched '[' in the following expression: " :: state.committed
+                    , committed = AST.Text "I corrected an unmatched '[' in the following expression: " Token.dummyLoc :: state.committed
                 }
 
         (Left (Symbol "[" loc1)) :: (Left (Token.Text _ _)) :: (Left (Symbol "[" _)) :: _ ->
@@ -82,7 +82,7 @@ recoverFromError state =
                 { state
                     | stack = Left (Symbol "]" loc1) :: state.stack
                     , scanPointer = loc1.begin
-                    , committed = AST.Text "I corrected an unmatched '[' in the following expression: " :: state.committed
+                    , committed = AST.Text "I corrected an unmatched '[' in the following expression: " Token.dummyLoc :: state.committed
                 }
 
         _ ->
@@ -99,7 +99,7 @@ recoverFromError state =
             Done
                 ({ state
                     | stack = Left (Symbol "]" { begin = state.scanPointer, end = state.scanPointer + 1 }) :: state.stack
-                    , committed = AST.Text errorMessage :: state.committed
+                    , committed = AST.Text errorMessage Token.dummyLoc :: state.committed
                  }
                     |> reduce
                     |> (\st -> { st | committed = List.reverse st.committed })
