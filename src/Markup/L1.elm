@@ -14,17 +14,17 @@ reduceFinal =
 reduce : State -> State
 reduce state =
     case state.stack of
-        (Left (Token.Text str _)) :: [] ->
-            reduceAux (AST.Text str) [] state
+        (Left (Token.Text str loc)) :: [] ->
+            reduceAux (AST.Text str loc) [] state
 
-        (Left (Token.Verbatim name str _)) :: [] ->
-            reduceAux (AST.Verbatim name str) [] state
+        (Left (Token.Verbatim name str loc)) :: [] ->
+            reduceAux (AST.Verbatim name str loc) [] state
 
-        (Left (Symbol "]" _)) :: (Left (Token.Text str _)) :: (Left (Symbol "[" _)) :: rest ->
-            reduceAux (makeGExpr str) rest state
+        (Left (Symbol "]" loc3)) :: (Left (Token.Text str loc2)) :: (Left (Symbol "[" loc1)) :: rest ->
+            reduceAux (makeGExpr { begin = loc1.begin, end = loc3.end } str) rest state
 
-        (Left (Symbol "]" _)) :: (Right expr) :: (Left (Token.Text name _)) :: (Left (Symbol "[" _)) :: rest ->
-            reduceAux (makeGExpr2 name expr) rest state
+        (Left (Symbol "]" loc4)) :: (Right expr) :: (Left (Token.Text name loc2)) :: (Left (Symbol "[" loc1)) :: rest ->
+            reduceAux (makeGExpr2 { begin = loc1.begin, end = loc4.end } name expr) rest state
 
         _ ->
             state
@@ -52,7 +52,7 @@ recoverFromError state =
             Loop
                 { state
                     | stack = Left (Symbol "]" loc1) :: state.stack
-                    , committed = AST.Text "I corrected an unmatched '[' in the following expression: " :: state.committed
+                    , committed = AST.Text "I corrected an unmatched '[' in the following expression: " Token.dummyLoc :: state.committed
                 }
 
         (Left (Symbol "[" loc1)) :: (Left (Token.Text _ _)) :: (Left (Symbol "[" _)) :: _ ->
@@ -60,7 +60,7 @@ recoverFromError state =
                 { state
                     | stack = Left (Symbol "]" loc1) :: state.stack
                     , scanPointer = loc1.begin
-                    , committed = AST.Text "I corrected an unmatched '[' in the following expression: " :: state.committed
+                    , committed = AST.Text "I corrected an unmatched '[' in the following expression: " Token.dummyLoc :: state.committed
                 }
 
         _ ->
@@ -77,20 +77,20 @@ recoverFromError state =
             Done
                 ({ state
                     | stack = Left (Symbol "]" { begin = state.scanPointer, end = state.scanPointer + 1 }) :: state.stack
-                    , committed = AST.Text errorMessage :: state.committed
+                    , committed = AST.Text errorMessage Token.dummyLoc :: state.committed
                  }
                     |> reduce
                     |> (\st -> { st | committed = List.reverse st.committed })
                 )
 
 
-makeGExpr2 : String -> Expr -> Expr
-makeGExpr2 name expr =
-    Expr (String.trim name) [ expr ]
+makeGExpr2 : Token.Loc -> String -> Expr -> Expr
+makeGExpr2 loc name expr =
+    Expr (String.trim name) [ expr ] loc
 
 
-makeGExpr : String -> Expr
-makeGExpr str =
+makeGExpr : Token.Loc -> String -> Expr
+makeGExpr loc str =
     let
         words =
             String.words str
@@ -98,7 +98,8 @@ makeGExpr str =
         prefix =
             List.head words |> Maybe.withDefault "empty"
     in
-    Expr prefix (List.map AST.Text (List.drop 1 words))
+    -- TODO: not a good solution for loc
+    Expr prefix (List.map (AST.Text >> (\t -> t loc)) (List.drop 1 words)) loc
 
 
 stackBottom : List (Either Token Expr) -> Maybe (Either Token Expr)
