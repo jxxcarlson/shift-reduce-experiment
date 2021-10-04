@@ -1,52 +1,30 @@
-module MarkupParser.MiniLaTeX exposing (recoverFromError, reduce, reduceFinal)
+module Markup.L1 exposing (recoverFromError, reduce, reduceFinal)
 
 import Either exposing (Either(..))
-import MarkupParser.AST as AST exposing (Expr)
-import MarkupParser.Common exposing (Step(..))
-import MarkupParser.Debugger exposing (debug1)
-import MarkupParser.State exposing (State)
-import MarkupParser.Token as Token exposing (Token(..))
+import Markup.AST as AST exposing (Expr(..))
+import Markup.Common exposing (Step(..))
+import Markup.State exposing (State)
+import Markup.Token as Token exposing (Token(..))
 
 
-reduceFinal : State -> State
-reduceFinal state =
-    case state.stack of
-        (Right (AST.Expr name args)) :: [] ->
-            { state | committed = AST.Expr name (List.reverse args) :: state.committed, stack = [] } |> debug1 "FINAL RULE 1"
-
-        (Left (FunctionName name _)) :: [] ->
-            { state | committed = AST.Expr name [] :: state.committed, stack = [] } |> debug1 "FINAL RULE 2"
-
-        _ ->
-            state |> debug1 "FINAL RULE 2"
+reduceFinal =
+    identity
 
 
-{-|
-
-    Using patterns of the form a :: b :: c ... :: [ ] instead of a :: b :: c ... :: rest makes
-    the reduction process greedy.
-
--}
 reduce : State -> State
 reduce state =
     case state.stack of
         (Left (Token.Text str _)) :: [] ->
-            reduceAux (AST.Text str) [] state |> debug1 "RULE 1"
+            reduceAux (AST.Text str) [] state
 
-        (Left (Token.Symbol "}" _)) :: (Left (Token.Text arg _)) :: (Left (Token.Symbol "{" _)) :: (Left (Token.FunctionName name _)) :: rest ->
-            { state | stack = Right (AST.Expr name [ AST.Text arg ]) :: rest } |> debug1 "RULE 2"
+        (Left (Token.Verbatim name str _)) :: [] ->
+            reduceAux (AST.Verbatim name str) [] state
 
-        (Left (Token.Symbol "}" _)) :: (Left (Token.Text arg _)) :: (Left (Token.Symbol "{" _)) :: (Right (AST.Expr name args)) :: rest ->
-            { state | stack = Right (AST.Expr name (AST.Text arg :: args)) :: rest } |> debug1 "RULE 3"
+        (Left (Symbol "]" _)) :: (Left (Token.Text str _)) :: (Left (Symbol "[" _)) :: rest ->
+            reduceAux (makeGExpr str) rest state
 
-        (Left (Token.Text str _)) :: (Right (AST.Expr name args)) :: rest ->
-            { state | committed = AST.Text str :: AST.Expr name args :: state.committed, stack = rest } |> debug1 "RULE 4"
-
-        (Left (Token.Symbol "}" _)) :: (Right (AST.Expr exprName args)) :: (Left (Token.Symbol "{" _)) :: (Left (Token.FunctionName fName _)) :: rest ->
-            { state | committed = AST.Expr fName [ AST.Expr exprName args ] :: state.committed, stack = rest } |> debug1 "RULE 5"
-
-        (Left (Token.Verbatim label content _)) :: [] ->
-            reduceAux (AST.Verbatim label content) [] state |> debug1 "RULE 6"
+        (Left (Symbol "]" _)) :: (Right expr) :: (Left (Token.Text name _)) :: (Left (Symbol "[" _)) :: rest ->
+            reduceAux (makeGExpr2 name expr) rest state
 
         _ ->
             state
@@ -104,6 +82,23 @@ recoverFromError state =
                     |> reduce
                     |> (\st -> { st | committed = List.reverse st.committed })
                 )
+
+
+makeGExpr2 : String -> Expr -> Expr
+makeGExpr2 name expr =
+    Expr (String.trim name) [ expr ]
+
+
+makeGExpr : String -> Expr
+makeGExpr str =
+    let
+        words =
+            String.words str
+
+        prefix =
+            List.head words |> Maybe.withDefault "empty"
+    in
+    Expr prefix (List.map AST.Text (List.drop 1 words))
 
 
 stackBottom : List (Either Token Expr) -> Maybe (Either Token Expr)

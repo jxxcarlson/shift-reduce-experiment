@@ -1,8 +1,8 @@
-module MarkupParser.Tokenizer exposing (Lang(..), get, markedTextParser, tokenParser)
+module Markup.Tokenizer exposing (Lang(..), get, markedTextParser, tokenParser)
 
-import MarkupParser.Error exposing (..)
-import MarkupParser.ParserTools as ParserTools
-import MarkupParser.Token exposing (Token(..))
+import Markup.Error exposing (..)
+import Markup.ParserTools as ParserTools
+import Markup.Token exposing (Token(..))
 import Parser.Advanced as Parser exposing (Parser)
 
 

@@ -1,4 +1,4 @@
-module MarkupParser.AST exposing (Expr(..))
+module Markup.AST exposing (Expr(..))
 
 
 type Expr

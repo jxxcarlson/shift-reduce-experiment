@@ -1,14 +1,14 @@
-module MarkupParser.SRParser exposing (run)
+module MarkupParser exposing (run)
 
 import Either
-import MarkupParser.Common exposing (Step(..), loop)
-import MarkupParser.Debugger exposing (..)
-import MarkupParser.L1 as L1
-import MarkupParser.Markdown as Markdown
-import MarkupParser.MiniLaTeX as MiniLaTeX
-import MarkupParser.State exposing (State)
-import MarkupParser.Token as Token exposing (Token)
-import MarkupParser.Tokenizer as Tokenizer exposing (Lang(..))
+import Markup.Common exposing (Step(..), loop)
+import Markup.Debugger exposing (..)
+import Markup.L1 as L1
+import Markup.Markdown as Markdown
+import Markup.MiniLaTeX as MiniLaTeX
+import Markup.State exposing (State)
+import Markup.Token as Token exposing (Token)
+import Markup.Tokenizer as Tokenizer exposing (Lang(..))
 
 
 
@@ -26,7 +26,7 @@ import MarkupParser.Tokenizer as Tokenizer exposing (Lang(..))
     Run the parser on some input, returning a value of type state.
     The stack in the final state should be empty
 
-    > SRParser.run "foo [i [j ABC]]"
+    > MarkupParser.run "foo [i [j ABC]]"
     { committed = [GText ("foo "),GExpr "i" [GExpr "j" [GText "ABC"]]], end = 15, scanPointer = 15, sourceText = "foo [i [j ABC]]", stack = [] }
 
 -}

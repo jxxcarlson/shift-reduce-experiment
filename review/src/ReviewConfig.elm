@@ -11,6 +11,7 @@ when inside the directory containing this file.
 
 -}
 
+import CognitiveComplexity
 import NoUnused.CustomTypeConstructors
 import NoUnused.Dependencies
 import NoUnused.Parameters
@@ -26,4 +27,5 @@ config =
     , NoUnused.Parameters.rule
     , NoUnused.Patterns.rule
     , NoUnused.Variables.rule
+    , CognitiveComplexity.rule 15
     ]
