@@ -1,11 +1,11 @@
-module Markdown exposing (recoverFromError, reduce, reduceFinal)
+module MarkupParser.Markdown exposing (recoverFromError, reduce, reduceFinal)
 
-import AST exposing (Expr(..))
-import Common exposing (Step(..))
-import Debugger exposing (debug1)
 import Either exposing (Either(..))
-import State exposing (State)
-import Token exposing (Token(..))
+import MarkupParser.AST as AST exposing (Expr(..))
+import MarkupParser.Common as Common exposing (Step(..))
+import MarkupParser.Debugger as Debugger exposing (debug1)
+import MarkupParser.State as State exposing (State)
+import MarkupParser.Token as Token exposing (Token(..))
 
 
 reduceFinal : State -> State

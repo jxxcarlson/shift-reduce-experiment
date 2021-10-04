@@ -1,4 +1,4 @@
-module Common exposing (Step(..), loop)
+module MarkupParser.Common exposing (Step(..), loop)
 
 
 type Step state a

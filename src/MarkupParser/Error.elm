@@ -1,4 +1,4 @@
-module Error exposing (Context(..), Problem(..), heading)
+module MarkupParser.Error exposing (Context(..), Problem(..), heading)
 
 
 type Problem

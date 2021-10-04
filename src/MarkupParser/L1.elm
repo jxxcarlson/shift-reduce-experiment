@@ -1,10 +1,10 @@
-module L1 exposing (recoverFromError, reduce, reduceFinal)
+module MarkupParser.L1 exposing (recoverFromError, reduce, reduceFinal)
 
-import AST exposing (Expr(..))
-import Common exposing (Step(..))
 import Either exposing (Either(..))
-import State exposing (State)
-import Token exposing (Token(..))
+import MarkupParser.AST as AST exposing (Expr(..))
+import MarkupParser.Common as Common exposing (Step(..))
+import MarkupParser.State as State exposing (State)
+import MarkupParser.Token as Token exposing (Token(..))
 
 
 reduceFinal =

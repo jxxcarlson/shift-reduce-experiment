@@ -1,10 +1,10 @@
 module ParserTests exposing (suiteL1, suiteMarkdown, suiteMiniLaTeX)
 
-import AST exposing (Expr(..))
 import Expect
-import SRParser exposing (run)
+import MarkupParser.AST exposing (Expr(..))
+import MarkupParser.SRParser exposing (run)
+import MarkupParser.Tokenizer exposing (Lang(..))
 import Test exposing (..)
-import Tokenizer exposing (Lang(..))
 
 
 suiteMarkdown : Test

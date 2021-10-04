@@ -1,4 +1,4 @@
-module Debugger exposing (debug1, debug2, debug3)
+module MarkupParser.Debugger exposing (debug1, debug2, debug3)
 
 import Console
 

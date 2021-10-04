@@ -1,4 +1,4 @@
-module ParserTools exposing
+module MarkupParser.ParserTools exposing
     ( Step(..)
     , StringData
     , between
@@ -27,7 +27,7 @@ module ParserTools exposing
     , word
     )
 
-import Error exposing (Context, Problem(..))
+import MarkupParser.Error exposing (Context, Problem(..))
 import Parser.Advanced as Parser exposing ((|.), (|=))
 
 

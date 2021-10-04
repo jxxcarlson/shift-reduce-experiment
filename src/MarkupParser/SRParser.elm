@@ -1,14 +1,14 @@
-module SRParser exposing (run)
+module MarkupParser.SRParser exposing (run)
 
-import Common exposing (Step(..), loop)
-import Debugger exposing (..)
 import Either
-import L1
-import Markdown
-import MiniLaTeX
-import State exposing (State)
-import Token exposing (Token)
-import Tokenizer exposing (Lang(..))
+import MarkupParser.Common exposing (Step(..), loop)
+import MarkupParser.Debugger exposing (..)
+import MarkupParser.L1 as L1
+import MarkupParser.Markdown as Markdown
+import MarkupParser.MiniLaTeX as MiniLaTeX
+import MarkupParser.State exposing (State)
+import MarkupParser.Token as Token exposing (Token)
+import MarkupParser.Tokenizer as Tokenizer exposing (Lang(..))
 
 
 

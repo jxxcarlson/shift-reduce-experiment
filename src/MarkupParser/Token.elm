@@ -1,4 +1,4 @@
-module Token exposing
+module MarkupParser.Token exposing
     ( Loc
     , Token(..)
     , content

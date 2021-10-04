@@ -1,9 +1,9 @@
-module Tokenizer exposing (Lang(..), get, markedTextParser, tokenParser)
+module MarkupParser.Tokenizer exposing (Lang(..), get, markedTextParser, tokenParser)
 
-import Error exposing (..)
+import MarkupParser.Error exposing (..)
+import MarkupParser.ParserTools as ParserTools
+import MarkupParser.Token exposing (Token(..))
 import Parser.Advanced as Parser exposing (Parser)
-import ParserTools
-import Token exposing (Token(..))
 
 
 get : Lang -> Int -> String -> Result (List (Parser.DeadEnd Context Problem)) Token
