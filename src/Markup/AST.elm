@@ -1,5 +1,6 @@
 module Markup.AST exposing (..)
 
+import List.Extra
 import Markup.Token as Token
 
 
@@ -35,17 +36,20 @@ type alias BlockData2 =
     , blockFirstLine : Int
     , id : String
     , index : List Int
-    , lineLengths : List Int
+    , cumulativeLengths : List Int
     }
 
 
 augment : BlockData -> BlockData2
 augment blockData =
-    { content = blockData.content |> List.map (\s -> s ++ "\n") |> Debug.log "CONTENT"
+    { content = blockData.content |> List.map (\s -> s ++ "\n")
     , blockFirstLine = blockData.blockFirstLine
     , id = blockData.id
     , index = linePositions blockData.content
-    , lineLengths = List.map (String.length >> (\n -> n + 1)) blockData.content
+    , cumulativeLengths =
+        List.map (String.length >> (\n -> n + 1)) blockData.content
+            |> List.Extra.scanl (+) 0
+            |> List.drop 1
     }
 
 
@@ -76,10 +80,10 @@ makeMeta count tokenLoc blockData =
             getLineNumber tokenLoc.end blockData.index
 
         p1 =
-            List.take n1 blockData.lineLengths |> List.sum |> Debug.log "P1"
+            List.take n1 blockData.cumulativeLengths |> List.head |> Maybe.withDefault 0
 
         p2 =
-            List.take n2 blockData.lineLengths |> List.sum |> Debug.log "P2"
+            List.take n2 blockData.cumulativeLengths |> List.head |> Maybe.withDefault 0
 
         first =
             { row = n1, col = tokenLoc.begin - p1 }

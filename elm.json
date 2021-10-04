@@ -8,6 +8,7 @@
         "direct": {
             "elm/core": "1.0.5",
             "elm/parser": "1.1.0",
+            "elm-community/list-extra": "8.5.1",
             "rtfeldman/console-print": "1.0.1",
             "toastal/either": "3.6.3"
         },
