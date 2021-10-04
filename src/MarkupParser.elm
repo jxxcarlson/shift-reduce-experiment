@@ -1,6 +1,7 @@
 module MarkupParser exposing (run)
 
 import Either
+import Markup.AST as AST
 import Markup.Common exposing (Step(..), loop)
 import Markup.Debugger exposing (..)
 import Markup.L1 as L1
@@ -19,6 +20,13 @@ import Markup.Tokenizer as Tokenizer exposing (Lang(..))
    https://guide.elm-lang.org/appendix/types_as_sets.html
    https://www.schoolofhaskell.com/user/bartosz/understanding-algebras
 -}
+--{-| Assume that lines in block are not terminated by newlines.  Is this correct? -}
+--parse : Lang -> AST.BlockData -> List {expr: AST.Expr, meta: AST.Meta}
+--parse lang blockData =
+--    let
+--        expressions = run lang (String.join "\n" blockData.content)
+--    in
+--      List.map (\e -> )
 
 
 {-|
