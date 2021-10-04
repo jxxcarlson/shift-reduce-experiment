@@ -10,7 +10,7 @@
             "jfmengels/elm-review": "2.5.2",
             "jfmengels/elm-review-cognitive-complexity": "1.0.0",
             "jfmengels/elm-review-unused": "1.1.17",
-            "stil4m/elm-syntax": "7.2.7"
+            "stil4m/elm-synt ax": "7.2.7"
         },
         "indirect": {
             "elm/html": "1.0.0",
