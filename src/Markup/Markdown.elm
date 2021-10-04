@@ -11,8 +11,8 @@ import Markup.Token as Token exposing (Token(..))
 reduceFinal : State -> State
 reduceFinal state =
     case state.stack of
-        (Right (AST.Expr name args)) :: [] ->
-            { state | committed = AST.Expr name (List.reverse args) :: state.committed, stack = [] } |> debug1 "FINAL RULE 1"
+        (Right (AST.Expr name args loc)) :: [] ->
+            { state | committed = AST.Expr name (List.reverse args) loc :: state.committed, stack = [] } |> debug1 "FINAL RULE 1"
 
         --
         --(Left (MarkedText "strong" str _)) :: [] ->
@@ -30,23 +30,23 @@ reduceFinal state =
 reduce : State -> State
 reduce state =
     case state.stack of
-        (Left (Token.Text str _)) :: [] ->
-            reduceAux (AST.Text str) [] state |> debug1 "RULE 1"
+        (Left (Token.Text str loc)) :: [] ->
+            reduceAux (AST.Text str loc) [] state |> debug1 "RULE 1"
 
-        (Left (MarkedText "strong" str _)) :: [] ->
-            { state | committed = Expr "strong" [ AST.Text str ] :: state.committed, stack = [] }
+        (Left (MarkedText "strong" str loc)) :: [] ->
+            { state | committed = Expr "strong" [ AST.Text str loc ] loc :: state.committed, stack = [] }
 
-        (Left (MarkedText "italic" str _)) :: [] ->
-            { state | committed = Expr "italic" [ AST.Text str ] :: state.committed, stack = [] }
+        (Left (MarkedText "italic" str loc)) :: [] ->
+            { state | committed = Expr "italic" [ AST.Text str loc ] loc :: state.committed, stack = [] }
 
-        (Left (MarkedText "code" str _)) :: [] ->
-            { state | committed = Expr "code" [ AST.Text str ] :: state.committed, stack = [] }
+        (Left (MarkedText "code" str loc)) :: [] ->
+            { state | committed = Expr "code" [ AST.Text str loc ] loc :: state.committed, stack = [] }
 
-        (Left (MarkedText "math" str _)) :: [] ->
-            { state | committed = Expr "math" [ AST.Text str ] :: state.committed, stack = [] }
+        (Left (MarkedText "math" str loc)) :: [] ->
+            { state | committed = Expr "math" [ AST.Text str loc ] loc :: state.committed, stack = [] }
 
-        (Left (MarkedText "arg" url _)) :: (Left (MarkedText "annotation" label _)) :: [] ->
-            { state | committed = Expr "link" [ AST.Text label, AST.Text url ] :: state.committed, stack = [] }
+        (Left (MarkedText "arg" url loc2)) :: (Left (MarkedText "annotation" label loc1)) :: [] ->
+            { state | committed = Expr "link" [ AST.Text label loc1, AST.Text url loc2 ] { begin = loc1.begin, end = loc2.end } :: state.committed, stack = [] }
 
         _ ->
             state
@@ -70,19 +70,19 @@ recoverFromError state =
     -- push an error message onto state.committed, then exit as usual: apply function reduce
     -- to the state and reverse state.committed.
     case state.stack of
-        (Left (Token.Text _ loc1)) :: (Left (Symbol "[" _)) :: _ ->
+        (Left (Token.Text loc loc2)) :: (Left (Symbol "[" loc1)) :: _ ->
             Loop
                 { state
                     | stack = Left (Symbol "]" loc1) :: state.stack
-                    , committed = AST.Text "I corrected an unmatched '[' in the following expression: " :: state.committed
+                    , committed = AST.Text "I corrected an unmatched '[' in the following expression: " Token.dummyLoc :: state.committed
                 }
 
-        (Left (Symbol "[" loc1)) :: (Left (Token.Text _ _)) :: (Left (Symbol "[" _)) :: _ ->
+        (Left (Symbol "[" loc3)) :: (Left (Token.Text _ loc2)) :: (Left (Symbol "[" loc1)) :: _ ->
             Loop
                 { state
                     | stack = Left (Symbol "]" loc1) :: state.stack
                     , scanPointer = loc1.begin
-                    , committed = AST.Text "I corrected an unmatched '[' in the following expression: " :: state.committed
+                    , committed = AST.Text "I corrected an unmatched '[' in the following expression: " Token.dummyLoc :: state.committed
                 }
 
         _ ->
@@ -99,7 +99,7 @@ recoverFromError state =
             Done
                 ({ state
                     | stack = Left (Symbol "]" { begin = state.scanPointer, end = state.scanPointer + 1 }) :: state.stack
-                    , committed = AST.Text errorMessage :: state.committed
+                    , committed = AST.Text errorMessage Token.dummyLoc :: state.committed
                  }
                     |> reduce
                     |> (\st -> { st | committed = List.reverse st.committed })
