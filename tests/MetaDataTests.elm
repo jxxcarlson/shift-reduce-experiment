@@ -5,8 +5,8 @@ import Markup.Meta as Meta
 import Test exposing (..)
 
 
-blockTest : Int -> Int -> String -> { accept : Bool, input : String, output : String, meta : Meta.ExpressionMeta }
-blockTest begin end content =
+metaDataTest : Int -> Int -> String -> { accept : Bool, input : String, output : String, meta : Meta.ExpressionMeta }
+metaDataTest begin end content =
     let
         lines =
             String.lines content |> Debug.log "RAW LINES" |> List.map (\s -> s ++ "\n") |> Debug.log "INPUT LINES"
@@ -30,23 +30,28 @@ loc i j =
     { begin = i, end = j }
 
 
-suiteMarkdown : Test
-suiteMarkdown =
-    Test.only <|
-        describe "recovering a substring of the source text from metadata"
-            [ test "(1)lockTest 1 6" <|
+suiteMeta : Test
+suiteMeta =
+    describe "recovering a substring of the source text from metadata"
+        [ test "(1) metaDataTest 1 6" <|
+            \_ ->
+                metaDataTest 1 6 "abcd\nefgh\nijkl"
+                    |> .accept
+                    |> Expect.equal True
+        , test "(2) metaDataTest 1 6" <|
+            \_ ->
+                metaDataTest 1 6 "abcd\nefgh\nijkl"
+                    |> .output
+                    |> Expect.equal "bcd\nef"
+        , test "(3) metaDataTest 1 6" <|
+            \_ ->
+                metaDataTest 1 6 "abcd\nefgh\nijkl"
+                    |> (.meta >> .loc)
+                    |> Expect.equal { begin = { row = 0, col = 1 }, end = { row = 1, col = 1 } }
+        , Test.only <|
+            test "(4) metaDataTest 1 6" <|
                 \_ ->
-                    blockTest 1 6 "abcd\nefgh\nijkl"
+                    metaDataTest 0 0 "A\nB\nC\nD\n"
                         |> .accept
                         |> Expect.equal True
-            , test "(2) blockTest 1 6" <|
-                \_ ->
-                    blockTest 1 6 "abcd\nefgh\nijkl"
-                        |> .output
-                        |> Expect.equal "bcd\nef"
-            , test "(3) blockTest 1 6" <|
-                \_ ->
-                    blockTest 1 6 "abcd\nefgh\nijkl"
-                        |> (.meta >> .loc)
-                        |> Expect.equal { begin = { row = 0, col = 1 }, end = { row = 1, col = 1 } }
-            ]
+        ]
