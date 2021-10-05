@@ -1,14 +1,15 @@
 module Markup.Tokenizer exposing (Lang(..), get, markedTextParser, tokenParser)
 
+import Markup.Debugger exposing (..)
 import Markup.Error exposing (..)
 import Markup.ParserTools as ParserTools
-import Markup.Token exposing (Token(..))
+import Markup.Token as Token exposing (Token(..))
 import Parser.Advanced as Parser exposing (Parser)
 
 
 get : Lang -> Int -> String -> Result (List (Parser.DeadEnd Context Problem)) Token
 get lang start input =
-    Parser.run (tokenParser lang start) input
+    Parser.run (tokenParser lang start) input |> debug2 "Tokenizer.get"
 
 
 type Lang
