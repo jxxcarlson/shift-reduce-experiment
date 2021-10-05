@@ -8,8 +8,8 @@ module Markup.Block exposing (..)
 --, test
 --)
 
-import List.Extra
 import Markup.AST as AST exposing (Expr(..))
+import Markup.Debugger exposing (..)
 import Markup.Meta as Meta exposing (ExpressionMeta)
 import Markup.Token as Token
 
@@ -42,7 +42,7 @@ type alias Meta =
     }
 
 
-testSBlock str =
+make str =
     let
         lines =
             String.lines str
