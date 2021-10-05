@@ -28,6 +28,27 @@ type alias Position =
     { row : Int, col : Int }
 
 
+metaDataTest : Int -> Int -> String -> { accept : Bool, input : String, output : String, meta : ExpressionMeta }
+metaDataTest begin end content =
+    let
+        lines =
+            String.lines content |> Debug.log "RAW LINES" |> List.map (\s -> s ++ "\n") |> Debug.log "INPUT LINES"
+
+        tokenLoc =
+            { begin = begin, end = end }
+
+        meta =
+            make 0 tokenLoc lines 0 "1.2"
+
+        str =
+            stringAtLoc meta.loc lines
+
+        input =
+            String.slice begin (end + 1) content
+    in
+    { accept = input == str, input = input, output = str, meta = meta |> Debug.log "META" }
+
+
 {-|
 
     Given a loation = { begin = {row :Int, col: Int}, end = {row: Int, col : Int}
@@ -84,10 +105,10 @@ make count tokenLoc lines blockFirstLine id =
             getLineNumber tokenLoc.end blockData.index |> Debug.log "ROW 2"
 
         p1 =
-            List.take n1 blockData.cumulativeLengths |> List.head |> Maybe.withDefault 0 |> Debug.log "P1"
+            List.drop n1 blockData.cumulativeLengths |> List.head |> Maybe.withDefault 0 |> Debug.log "P1"
 
         p2 =
-            List.take n2 blockData.cumulativeLengths |> List.head |> Maybe.withDefault 0 |> Debug.log "P2"
+            List.drop n2 blockData.cumulativeLengths |> List.head |> Maybe.withDefault 0 |> Debug.log "P2"
 
         c1 =
             tokenLoc.begin - p1 |> Debug.log "COL 1"
@@ -130,7 +151,6 @@ getBlockData lines firstLine id =
     , cumulativeLengths =
         List.map String.length lines
             |> List.Extra.scanl (+) 0
-            |> List.drop 1
             |> Debug.log "CUMULATIVE LENGTHS"
     }
 

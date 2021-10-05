@@ -23,7 +23,7 @@ metaDataTest begin end content =
         input =
             String.slice begin (end + 1) content
     in
-    { accept = input == str, input = input, output = str, meta = meta }
+    { accept = input == str, input = input, output = str, meta = meta |> Debug.log "META" }
 
 
 loc i j =
@@ -48,10 +48,40 @@ suiteMeta =
                 metaDataTest 1 6 "abcd\nefgh\nijkl"
                     |> (.meta >> .loc)
                     |> Expect.equal { begin = { row = 0, col = 1 }, end = { row = 1, col = 1 } }
+        , test "(4) metaDataTest 1 6" <|
+            \_ ->
+                metaDataTest 0 0 "A\nB\nC\nD"
+                    |> .accept
+                    |> Expect.equal True
+        , test "(5) metaDataTest 0 2" <|
+            \_ ->
+                metaDataTest 0 2 "A\nB\nC\nD\n"
+                    |> .accept
+                    |> Expect.equal True
+        , test "(6) metaDataTest 0 3" <|
+            \_ ->
+                metaDataTest 0 3 "A\nB\nC\nD\n"
+                    |> .accept
+                    |> Expect.equal True
+        , test "(7) metaDataTest 0 6" <|
+            \_ ->
+                metaDataTest 0 3 "A\nB\nC\nD\n"
+                    |> .accept
+                    |> Expect.equal True
+        , test "(8) metaDataTest 2 6" <|
+            \_ ->
+                metaDataTest 2 6 "A\nB\nC\nD\n"
+                    |> .accept
+                    |> Expect.equal True
+        , test "(8) metaDataTest 2 5" <|
+            \_ ->
+                metaDataTest 2 5 "A\nBBBB\nCCCC\nD\n"
+                    |> .accept
+                    |> Expect.equal True
         , Test.only <|
-            test "(4) metaDataTest 1 6" <|
+            test "(8) metaDataTest 4 9" <|
                 \_ ->
-                    metaDataTest 0 0 "A\nB\nC\nD\n"
+                    metaDataTest 4 9 "A\nBBBB\nCCCC\nD\n"
                         |> .accept
                         |> Expect.equal True
         ]
