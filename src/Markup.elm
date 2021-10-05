@@ -1,7 +1,8 @@
-module MarkupParser exposing (parse, run)
+module Markup exposing (parse, parseBlock, run)
 
 import Either
 import Markup.AST as AST
+import Markup.Block as Block exposing (Block, SBlock)
 import Markup.Common exposing (Step(..), loop)
 import Markup.Debugger exposing (..)
 import Markup.L1 as L1
@@ -34,12 +35,17 @@ parse lang str =
 --      List.map (\e -> )
 
 
+parseBlock : Lang -> SBlock -> Block
+parseBlock lang sblock =
+    Block.map (parse lang) sblock
+
+
 {-|
 
     Run the parser on some input, returning a value of type state.
     The stack in the final state should be empty
 
-    > MarkupParser.run "foo [i [j ABC]]"
+    > Markup.run "foo [i [j ABC]]"
     { committed = [GText ("foo "),GExpr "i" [GExpr "j" [GText "ABC"]]], end = 15, scanPointer = 15, sourceText = "foo [i [j ABC]]", stack = [] }
 
 -}
