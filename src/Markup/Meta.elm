@@ -123,7 +123,7 @@ make count tokenLoc lines blockFirstLine id =
 getBlockData : List String -> Int -> String -> BlockData
 getBlockData lines firstLine id =
     { lines = lines
-    , content = lines |> List.map (\s -> s ++ "\n") |> String.join ""
+    , content = lines |> List.map (\line -> line ++ "\n") |> String.join ""
     , firstLine = firstLine
     , id = id
     , index = linePositions lines
