@@ -51,7 +51,7 @@ metaDataTest begin end content =
 
 {-|
 
-    Given a loation = { begin = {row :Int, col: Int}, end = {row: Int, col : Int}
+    Given a location = { begin = {row :Int, col: Int}, end = {row: Int, col : Int}
     and list of strings, return the substring specified by that location information.
 
 -}

@@ -42,6 +42,7 @@ type alias Meta =
     }
 
 
+make : String -> SBlock
 make str =
     let
         lines =

@@ -1,4 +1,4 @@
-module Markup exposing (parse, parseBlock, run)
+module Markup exposing (parse, parseBlock, parseToBlock, run)
 
 import Either
 import Markup.AST as AST
@@ -38,6 +38,11 @@ parse lang str =
 parseBlock : Lang -> SBlock -> Block
 parseBlock lang sblock =
     Block.map (parse lang) sblock
+
+
+parseToBlock : Lang -> String -> Block
+parseToBlock lang str =
+    parseBlock lang (Block.make str)
 
 
 {-|
