@@ -1,4 +1,4 @@
-module MarkupParser exposing (run)
+module MarkupParser exposing (parse, run)
 
 import Either
 import Markup.AST as AST
@@ -10,6 +10,11 @@ import Markup.MiniLaTeX as MiniLaTeX
 import Markup.State exposing (State)
 import Markup.Token as Token exposing (Token)
 import Markup.Tokenizer as Tokenizer exposing (Lang(..))
+
+
+parse : Lang -> String -> List AST.Expr
+parse lang str =
+    run lang str |> .committed
 
 
 
