@@ -1,4 +1,4 @@
-module Markup.Tokenizer exposing (Lang(..), get, markedTextParser, tokenParser)
+module Markup.Tokenizer exposing (Lang(..), get)
 
 import Markup.Debugger exposing (..)
 import Markup.Error exposing (..)
@@ -6,6 +6,15 @@ import Markup.ParserTools as ParserTools
 import Markup.Token as Token exposing (Token(..))
 import Parser.Advanced as Parser exposing (Parser)
 
+
+{-|
+
+    NOTES. In the computation of the end field of the Meta component of a Token,
+    one must use the code `end = start + data.end - data.begin  - 1`.  The
+    `-1` is because the data.end comes from the position of the scanPointer,
+    which is at this juncture pointing one character beyond the string chomped.
+
+-}
 
 get : Lang -> Int -> String -> Result (List (Parser.DeadEnd Context Problem)) Token
 get lang start input =
@@ -61,42 +70,42 @@ textParser lang start =
     case lang of
         L1 ->
             ParserTools.text (\c -> not <| List.member c l1LanguageChars) (\c -> not <| List.member c l1LanguageChars)
-                |> Parser.map (\data -> Text data.content { begin = start, end = start + data.end - data.begin })
+                |> Parser.map (\data -> Text data.content { begin = start, end = start + data.end - data.begin  - 1})
 
         MiniLaTeX ->
             ParserTools.text (\c -> not <| List.member c miniLaTeXLanguageChars) (\c -> not <| List.member c miniLaTeXLanguageChars)
-                |> Parser.map (\data -> Text data.content { begin = start, end = start + data.end - data.begin })
+                |> Parser.map (\data -> Text data.content { begin = start, end = start + data.end - data.begin - 1 })
 
         Markdown ->
             ParserTools.text (\c -> not <| List.member c markdownLanguageChars) (\c -> not <| List.member c markdownLanguageChars)
-                |> Parser.map (\data -> Text data.content { begin = start, end = start + data.end - data.begin })
+                |> Parser.map (\data -> Text data.content { begin = start, end = start + data.end - data.begin  - 1})
 
 
 macroParser : Int -> Parser Context Problem Token
 macroParser start =
     ParserTools.text (\c -> c == '\\') (\c -> c /= '{')
-        |> Parser.map (\data -> FunctionName (String.dropLeft 1 data.content) { begin = start, end = start + data.end - data.begin })
+        |> Parser.map (\data -> FunctionName (String.dropLeft 1 data.content) { begin = start, end = start + data.end - data.begin - 1 })
 
 
 mathParser : Int -> Parser Context Problem Token
 mathParser start =
     ParserTools.textWithEndSymbol "$" (\c -> c == '$') (\c -> c /= '$')
-        |> Parser.map (\data -> Verbatim "math" data.content { begin = start, end = start + data.end - data.begin })
+        |> Parser.map (\data -> Verbatim "math" data.content { begin = start, end = start + data.end - data.begin - 1 })
 
 
 markedTextParser : Int -> String -> Char -> Char -> Parser Context Problem Token
 markedTextParser start mark begin end =
     ParserTools.text (\c -> c == begin) (\c -> c /= end)
-        |> Parser.map (\data -> MarkedText mark (String.dropLeft 1 data.content) { begin = start, end = start + data.end - data.begin + 1 })
+        |> Parser.map (\data -> MarkedText mark (String.dropLeft 1 data.content) { begin = start, end = start + data.end - data.begin })
 
 
 codeParser : Int -> Parser Context Problem Token
 codeParser start =
     ParserTools.textWithEndSymbol "`" (\c -> c == '`') (\c -> c /= '`')
-        |> Parser.map (\data -> Verbatim "code" data.content { begin = start, end = start + data.end - data.begin })
+        |> Parser.map (\data -> Verbatim "code" data.content { begin = start, end = start + data.end - data.begin - 1 })
 
 
 symbolParser : Int -> Char -> Parser Context Problem Token
 symbolParser start sym =
     ParserTools.text (\c -> c == sym) (\_ -> False)
-        |> Parser.map (\data -> Symbol data.content { begin = start, end = start + data.end - data.begin })
+        |> Parser.map (\data -> Symbol data.content { begin = start, end = start + data.end - data.begin  - 1})
