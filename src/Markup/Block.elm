@@ -22,7 +22,7 @@ type ExprM
 
 type Block
     = Paragraph (List ExprM) Meta
-    | VerbatimBlock String (List String) Meta
+    | VerbatimBlock String (List String) ExpressionMeta Meta
     | Block String (List Block) Meta
     | BError String
 
@@ -32,6 +32,10 @@ type SBlock
     | SVerbatimBlock String (List String) Meta
     | SBlock String (List SBlock) Meta
     | SError String
+
+
+dummy =
+    { id = "ID", loc = { begin = { row = 0, col = 0 }, end = { row = 1, col = 5 } } }
 
 
 type alias Meta =
@@ -67,7 +71,14 @@ map exprParser sblock =
             Paragraph (List.indexedMap (\i expr -> exprToExprM i blockData expr) (exprParser blockData.content)) meta
 
         SVerbatimBlock name strList meta ->
-            VerbatimBlock name strList meta
+            let
+                exprMeta =
+                    -- TODO: this is incomplete (id, last col)
+                    { id = "verbatim"
+                    , loc = { begin = { row = meta.begin, col = 0 }, end = { row = meta.end, col = 7 } }
+                    }
+            in
+            VerbatimBlock name strList exprMeta meta
 
         SBlock name blocks meta ->
             let
