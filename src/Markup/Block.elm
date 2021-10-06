@@ -22,7 +22,7 @@ type ExprM
 
 type Block
     = Paragraph (List ExprM) Meta
-    | VerbatimBlock String (List String) Meta
+    | VerbatimBlock String (List String) ExpressionMeta Meta
     | Block String (List Block) Meta
     | BError String
 
@@ -34,6 +34,10 @@ type SBlock
     | SError String
 
 
+dummy =
+    { id = "ID", loc = { begin = { row = 0, col = 0 }, end = { row = 1, col = 5 } } }
+
+
 type alias Meta =
     { begin : Int
     , end : Int
@@ -42,13 +46,13 @@ type alias Meta =
     }
 
 
-make : String -> SBlock
-make str =
+make : String -> String -> SBlock
+make id str =
     let
         lines =
             String.lines str
     in
-    SParagraph lines { begin = 0, end = List.length lines, indent = 0, id = "1.2" }
+    SParagraph lines { begin = 0, end = List.length lines, indent = 0, id = id }
 
 
 {-|
@@ -67,7 +71,14 @@ map exprParser sblock =
             Paragraph (List.indexedMap (\i expr -> exprToExprM i blockData expr) (exprParser blockData.content)) meta
 
         SVerbatimBlock name strList meta ->
-            VerbatimBlock name strList meta
+            let
+                exprMeta =
+                    -- TODO: this is incomplete (id, last col)
+                    { id = "verbatim"
+                    , loc = { begin = { row = meta.begin, col = 0 }, end = { row = meta.end, col = 7 } }
+                    }
+            in
+            VerbatimBlock name strList exprMeta meta
 
         SBlock name blocks meta ->
             let
@@ -96,10 +107,10 @@ exprToExprM : Int -> Meta.BlockData -> Expr -> ExprM
 exprToExprM count blockData expr =
     case expr of
         Text str meta ->
-            TextM str (Meta.make count meta blockData.lines blockData.firstLine blockData.id)
+            TextM str (Meta.make Meta.getBlockData count meta blockData.lines blockData.firstLine blockData.id)
 
         Verbatim name content meta ->
-            VerbatimM name content (Meta.make count meta [ content ] blockData.firstLine blockData.id)
+            VerbatimM name content (Meta.make Meta.getBlockData count meta [ content ] blockData.firstLine blockData.id)
 
         Expr name exprList meta ->
-            ExprM name (List.map (exprToExprM count blockData) exprList) (Meta.make count meta [] blockData.firstLine blockData.id)
+            ExprM name (List.map (exprToExprM count blockData) exprList) (Meta.make Meta.getBlockData count meta [] blockData.firstLine blockData.id)

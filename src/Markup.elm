@@ -40,9 +40,9 @@ parseBlock lang sblock =
     Block.map (parse lang) sblock
 
 
-parseToBlock : Lang -> String -> Block
-parseToBlock lang str =
-    parseBlock lang (Block.make str)
+parseToBlock : Lang -> String -> String -> Block
+parseToBlock lang id str =
+    parseBlock lang (Block.make id str)
 
 
 {-|
@@ -165,7 +165,9 @@ recoverFromError lang state =
 -}
 shift : Token -> State -> State
 shift token state =
-    { state | scanPointer = state.scanPointer + Token.length token, stack = Either.Left token :: state.stack }
+    -- It is essential to add 1 to the length of the token so that the scanpointer points to the character
+    -- immediately after the current token in the source text.
+    { state | scanPointer = state.scanPointer + Token.length token + 1, stack = Either.Left token :: state.stack }
 
 
 {-|
