@@ -11,6 +11,14 @@ import Markup.ParserTools as ParserTools
 import Markup.Tokenizer exposing (Lang(..))
 
 
+{-| Top-level functions:
+
+        - reduce
+        - processLine
+        - finalize
+        - recoverFromError
+
+-}
 reduce : State -> State
 reduce state =
     { state | stack = [] }
@@ -31,6 +39,16 @@ recoverFromError state =
     { state | stack = [] }
 
 
+{-|
+
+    Function processLine determines the LineType of the given line
+    using function classify.  After computing some auxilliary
+    information, it passes the data to a dispatcher.  On the
+    basis of the LineType, it then dispatches that data
+    to a function defined in module Block.Handle. That function
+    returns a new State value.
+
+-}
 processLine : Lang -> String -> State -> State
 processLine language line state =
     let

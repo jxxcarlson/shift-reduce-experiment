@@ -10,11 +10,22 @@ import Markup.Tokenizer exposing (Lang)
 -- TOP LEVEL FUNCTIONS
 
 
+{-| -}
 runParser : Lang -> Int -> List String -> State
 runParser language generation input =
     loop (initialState generation input) (nextStep language)
 
 
+{-|
+
+    nextStep depends on four top-level functions in Block.Library:
+
+        - reduce
+        - processLine
+        - finalize
+        - recoverFromError
+
+-}
 nextStep : Lang -> State -> Step State State
 nextStep lang state =
     case List.head state.input of
