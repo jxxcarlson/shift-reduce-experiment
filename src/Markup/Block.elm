@@ -103,7 +103,7 @@ exprToExprM : Int -> Meta.BlockData -> Expr -> ExprM
 exprToExprM count blockData expr =
     case expr of
         Text str meta ->
-            TextM str (Meta.make Meta.getBlockData count meta blockData.lines blockData.firstLine blockData.id)
+            TextM str (Meta.make Meta.getBlockData count meta blockData.lines blockData.firstLine blockData.id |> debug3 "MAKE")
 
         Verbatim name content meta ->
             VerbatimM name content (Meta.make Meta.getBlockData count meta [ content ] blockData.firstLine blockData.id)

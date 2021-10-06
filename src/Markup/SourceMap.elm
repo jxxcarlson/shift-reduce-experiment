@@ -1,17 +1,27 @@
-module Markup.SourceMap exposing (find, getSourceFragment)
+module Markup.SourceMap exposing (find, getFragment)
 
 import Markup.Block as Block exposing (Block(..), ExprM(..), Meta)
 import Markup.Meta as Meta exposing (ExpressionMeta)
 
 
-getSourceFragment : String -> List String -> List Block -> Maybe { str : String, meta : ExpressionMeta }
-getSourceFragment id sourceText blocks =
+getFragment1 : String -> List String -> List Block -> Maybe String
+getFragment1 id sourceText blocks =
     case find id blocks of
         Nothing ->
             Nothing
 
         Just expressionMeta ->
-            Just { str = Meta.stringAtLoc expressionMeta.loc sourceText, meta = expressionMeta }
+            Just (Meta.stringAtLoc expressionMeta.loc sourceText)
+
+
+getFragment : String -> List String -> List Block -> Maybe { fragment : String, meta : ExpressionMeta }
+getFragment id sourceText blocks =
+    case find id blocks of
+        Nothing ->
+            Nothing
+
+        Just expressionMeta ->
+            Just { fragment = Meta.stringAtLoc expressionMeta.loc sourceText, meta = expressionMeta }
 
 
 find : String -> List Block -> Maybe ExpressionMeta

@@ -3,6 +3,7 @@ module SourceMapTest exposing (suiteSourceMap)
 import Expect
 import Markup
 import Markup.Block as Block exposing (Block(..), ExprM(..))
+import Markup.Debugger exposing (..)
 import Markup.Meta as Meta
 import Markup.SourceMap as SourceMap
 import Markup.Tokenizer as Tokenizer exposing (Lang(..))
@@ -22,11 +23,11 @@ block2 =
 
 
 blocks =
-    [ block1, block2 ]
+    [ block1, block2 ] |> debug1 "BLOCKS"
 
 
 source =
-    [ "fee", "", "foo", "bar", "baz", "abc" ]
+    [ "fee\n", "\n", "foo\n", "bar\n", "baz\n", "abc\n" ]
 
 
 b1 =
@@ -44,8 +45,22 @@ suiteSourceMap =
             \_ ->
                 SourceMap.find "1.2.9" blocks
                     |> Expect.equal Nothing
-        , test "(2) find id = 1.2.0" <|
+        , test "(2) find id = 1.1.0" <|
+            \_ ->
+                SourceMap.find "1.1.0" blocks
+                    |> Expect.equal (Just { id = "1.1.0", loc = { begin = { col = 0, row = 0 }, end = { col = 3, row = 0 } } })
+        , test
+            "(3) find id = 1.2.0"
+          <|
             \_ ->
                 SourceMap.find "1.2.0" blocks
-                    |> Expect.equal (Just { id = "1.2.0", loc = { begin = { col = 0, row = 0 }, end = { col = 3, row = 3 } } })
+                    |> Expect.equal (Just { id = "1.2.0", loc = { begin = { col = 0, row = 2 }, end = { col = 3, row = 5 } } })
+        , test "(4) get source fragment" <|
+            \_ ->
+                SourceMap.getFragment "1.1.0" source blocks
+                    |> Expect.equal (Just { fragment = "fee\n", meta = { id = "1.1.0", loc = { begin = { col = 0, row = 0 }, end = { col = 3, row = 0 } } } })
+        , test "(5) get source fragment" <|
+            \_ ->
+                SourceMap.getFragment "1.2.0" source blocks
+                    |> Expect.equal (Just { fragment = "foo\nbar\nbaz\nabc\n", meta = { id = "1.2.0", loc = { begin = { col = 0, row = 2 }, end = { col = 3, row = 5 } } } })
         ]

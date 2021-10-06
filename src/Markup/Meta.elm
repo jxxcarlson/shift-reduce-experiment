@@ -32,7 +32,7 @@ metaDataTest : Int -> Int -> String -> { accept : Bool, input : String, output :
 metaDataTest begin end content =
     let
         lines =
-            String.lines content |> Debug.log "RAW LINES" |> List.map (\s -> s ++ "\n") |> Debug.log "INPUT LINES"
+            String.lines content |> List.map (\s -> s ++ "\n")
 
         tokenLoc =
             { begin = begin, end = end }
@@ -46,7 +46,7 @@ metaDataTest begin end content =
         input =
             String.slice begin (end + 1) content
     in
-    { accept = input == str, input = input, output = str, meta = meta |> Debug.log "META" }
+    { accept = input == str, input = input, output = str, meta = meta }
 
 
 {-|
@@ -59,7 +59,7 @@ stringAtLoc : Loc -> List String -> String
 stringAtLoc loc inputLines =
     let
         selectedLines =
-            List.filter (\( i, _ ) -> i >= loc.begin.row && i <= loc.end.row) (List.indexedMap (\i s -> ( i, s )) inputLines) |> Debug.log "SELECTED LINES"
+            List.filter (\( i, _ ) -> i >= loc.begin.row && i <= loc.end.row) (List.indexedMap (\i s -> ( i, s )) inputLines)
 
         n =
             List.length selectedLines
@@ -70,18 +70,18 @@ stringAtLoc loc inputLines =
 
         transform ( i, line ) =
             if i == loc.begin.row && i /= loc.end.row then
-                String.dropLeft loc.begin.col line |> Debug.log "T, 1"
+                String.dropLeft loc.begin.col line
 
             else if i == loc.begin.row && i == loc.end.row then
-                String.dropLeft loc.begin.col (take loc.end.col line) |> Debug.log "T, 2"
+                String.dropLeft loc.begin.col (take loc.end.col line)
 
             else if i == loc.end.row then
-                take loc.end.col line |> Debug.log "T, 3"
+                take loc.end.col line
 
             else
                 line
     in
-    selectedLines |> List.map transform |> String.join "" |> Debug.log "stringAtLoc, OUT"
+    selectedLines |> List.map transform |> String.join ""
 
 
 {-|
@@ -99,28 +99,28 @@ make getBlockData_ count tokenLoc lines blockFirstLine id =
             getBlockData_ lines blockFirstLine id
 
         n1 =
-            getLineNumber tokenLoc.begin blockData.index |> Debug.log "ROW 1"
+            getLineNumber tokenLoc.begin blockData.index
 
         n2 =
-            getLineNumber tokenLoc.end blockData.index |> Debug.log "ROW 2"
+            getLineNumber tokenLoc.end blockData.index
 
         p1 =
-            List.drop n1 blockData.cumulativeLengths |> List.head |> Maybe.withDefault 0 |> Debug.log "P1"
+            List.drop n1 blockData.cumulativeLengths |> List.head |> Maybe.withDefault 0
 
         p2 =
-            List.drop n2 blockData.cumulativeLengths |> List.head |> Maybe.withDefault 0 |> Debug.log "P2"
+            List.drop n2 blockData.cumulativeLengths |> List.head |> Maybe.withDefault 0
 
         c1 =
-            tokenLoc.begin - p1 |> Debug.log "COL 1"
+            tokenLoc.begin - p1
 
         c2 =
-            tokenLoc.end - p2 |> Debug.log "COL 2"
+            tokenLoc.end - p2
 
         first =
-            { row = n1, col = c1 }
+            { row = blockFirstLine + n1, col = c1 }
 
         last =
-            { row = n2, col = c2 }
+            { row = blockFirstLine + n2, col = c2 }
 
         loc =
             { begin = first, end = last }
@@ -155,7 +155,6 @@ getBlockData lines firstLine id =
     , cumulativeLengths =
         List.map String.length terminatedLines
             |> List.Extra.scanl (+) 0
-            |> Debug.log "CUMULATIVE LENGTHS"
     }
 
 
@@ -169,7 +168,6 @@ getBlockData1 lines firstLine id =
     , cumulativeLengths =
         List.map String.length lines
             |> List.Extra.scanl (+) 0
-            |> Debug.log "CUMULATIVE LENGTHS"
     }
 
 
