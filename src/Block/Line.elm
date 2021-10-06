@@ -1,4 +1,4 @@
-module Block.Line exposing (BlockOption(..), LineType(..), countLeadingSpaces, emptyLineParser, ordinaryLineParser)
+module Block.Line exposing (BlockOption(..), LineData, LineType(..), countLeadingSpaces, emptyLineParser, ordinaryLineParser)
 
 import Parser exposing ((|.), (|=), Parser)
 
@@ -20,6 +20,10 @@ is incorporated into the body of the block, e.g. TODO add example
 type BlockOption
     = AcceptFirstLine
     | RejectFirstLine
+
+
+type alias LineData =
+    { indent : Int, lineType : LineType, content : String }
 
 
 countLeadingSpaces : String -> Int
