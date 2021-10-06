@@ -15,7 +15,7 @@ metaDataTest begin end content =
             { begin = begin, end = end }
 
         meta =
-            Meta.make 0 tokenLoc lines 0 "1.2"
+            Meta.make Meta.getBlockData1 0 tokenLoc lines 0 "1.2"
 
         str =
             Meta.stringAtLoc meta.loc lines
@@ -32,7 +32,8 @@ loc i j =
 
 suiteMeta : Test
 suiteMeta =
-    describe "recovering a substring of the source text from metadata"
+    describe
+        "recovering a substring of the source text from metadata"
         [ test "(1) metaDataTest 1 6" <|
             \_ ->
                 metaDataTest 1 6 "abcd\nefgh\nijkl"
@@ -78,10 +79,9 @@ suiteMeta =
                 metaDataTest 2 5 "A\nBBBB\nCCCC\nD\n"
                     |> .accept
                     |> Expect.equal True
-        ,
-            test "(8) metaDataTest 4 9" <|
-                \_ ->
-                    metaDataTest 4 9 "A\nBBBB\nCCCC\nD\n"
-                        |> .accept
-                        |> Expect.equal True
+        , test "(8) metaDataTest 4 9" <|
+            \_ ->
+                metaDataTest 4 9 "A\nBBBB\nCCCC\nD\n"
+                    |> .accept
+                    |> Expect.equal True
         ]

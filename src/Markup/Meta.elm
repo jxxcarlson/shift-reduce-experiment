@@ -38,7 +38,7 @@ metaDataTest begin end content =
             { begin = begin, end = end }
 
         meta =
-            make 0 tokenLoc lines 0 "1.2"
+            make getBlockData1 0 tokenLoc lines 0 "1.2"
 
         str =
             stringAtLoc meta.loc lines
@@ -92,11 +92,11 @@ stringAtLoc loc inputLines =
         - blockData
 
 -}
-make : Int -> Token.Loc -> List String -> Int -> String -> ExpressionMeta
-make count tokenLoc lines blockFirstLine id =
+make : (List String -> Int -> String -> BlockData) -> Int -> Token.Loc -> List String -> Int -> String -> ExpressionMeta
+make getBlockData_ count tokenLoc lines blockFirstLine id =
     let
         blockData =
-            getBlockData lines blockFirstLine id
+            getBlockData_ lines blockFirstLine id
 
         n1 =
             getLineNumber tokenLoc.begin blockData.index |> Debug.log "ROW 1"
@@ -143,8 +143,26 @@ make count tokenLoc lines blockFirstLine id =
 -}
 getBlockData : List String -> Int -> String -> BlockData
 getBlockData lines firstLine id =
+    let
+        terminatedLines =
+            lines |> List.map (\line -> line ++ "\n")
+    in
     { lines = lines
-    , content = lines |> List.map (\line -> line ++ "\n") |> String.join ""
+    , content = terminatedLines |> String.join ""
+    , firstLine = firstLine
+    , id = id
+    , index = linePositions terminatedLines
+    , cumulativeLengths =
+        List.map String.length terminatedLines
+            |> List.Extra.scanl (+) 0
+            |> Debug.log "CUMULATIVE LENGTHS"
+    }
+
+
+getBlockData1 : List String -> Int -> String -> BlockData
+getBlockData1 lines firstLine id =
+    { lines = lines
+    , content = lines |> String.join "\n"
     , firstLine = firstLine
     , id = id
     , index = linePositions lines

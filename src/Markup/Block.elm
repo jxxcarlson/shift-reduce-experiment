@@ -96,10 +96,10 @@ exprToExprM : Int -> Meta.BlockData -> Expr -> ExprM
 exprToExprM count blockData expr =
     case expr of
         Text str meta ->
-            TextM str (Meta.make count meta blockData.lines blockData.firstLine blockData.id)
+            TextM str (Meta.make Meta.getBlockData count meta blockData.lines blockData.firstLine blockData.id)
 
         Verbatim name content meta ->
-            VerbatimM name content (Meta.make count meta [ content ] blockData.firstLine blockData.id)
+            VerbatimM name content (Meta.make Meta.getBlockData count meta [ content ] blockData.firstLine blockData.id)
 
         Expr name exprList meta ->
-            ExprM name (List.map (exprToExprM count blockData) exprList) (Meta.make count meta [] blockData.firstLine blockData.id)
+            ExprM name (List.map (exprToExprM count blockData) exprList) (Meta.make Meta.getBlockData count meta [] blockData.firstLine blockData.id)
