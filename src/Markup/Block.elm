@@ -34,10 +34,6 @@ type SBlock
     | SError String
 
 
-dummy =
-    { id = "ID", loc = { begin = { row = 0, col = 0 }, end = { row = 1, col = 5 } } }
-
-
 type alias Meta =
     { begin : Int
     , end : Int
@@ -46,13 +42,13 @@ type alias Meta =
     }
 
 
-make : String -> String -> SBlock
-make id str =
+make : String -> Int -> String -> SBlock
+make id firstLine str =
     let
         lines =
             String.lines str
     in
-    SParagraph lines { begin = 0, end = List.length lines, indent = 0, id = id }
+    SParagraph lines { begin = firstLine, end = firstLine + List.length lines, indent = 0, id = id }
 
 
 {-|

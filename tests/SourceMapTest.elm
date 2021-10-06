@@ -14,15 +14,27 @@ makeBlock lang id str =
 
 
 block1 =
-    makeBlock MiniLaTeX "1.1" "foo"
+    makeBlock MiniLaTeX "1.1" 0 "fee"
 
 
 block2 =
-    makeBlock MiniLaTeX "1.2" "foo\nbar\nbaz\nabc"
+    makeBlock MiniLaTeX "1.2" 2 "foo\nbar\nbaz\nabc"
 
 
 blocks =
     [ block1, block2 ]
+
+
+source =
+    [ "fee", "", "foo", "bar", "baz", "abc" ]
+
+
+b1 =
+    Paragraph [ TextM "foo\n" { id = "1.1.0", loc = { begin = { col = 0, row = 0 }, end = { col = 3, row = 0 } } } ] { begin = 0, end = 1, id = "1.1", indent = 0 }
+
+
+b2 =
+    Paragraph [ TextM "foo\nbar\nbaz\nabc\n" { id = "1.2.0", loc = { begin = { col = 0, row = 0 }, end = { col = 3, row = 3 } } } ] { begin = 0, end = 4, id = "1.2", indent = 0 }
 
 
 suiteSourceMap : Test

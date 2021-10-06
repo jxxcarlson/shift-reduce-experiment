@@ -40,9 +40,9 @@ parseBlock lang sblock =
     Block.map (parse lang) sblock
 
 
-parseToBlock : Lang -> String -> String -> Block
-parseToBlock lang id str =
-    parseBlock lang (Block.make id str)
+parseToBlock : Lang -> String -> Int -> String -> Block
+parseToBlock lang id firstLine str =
+    parseBlock lang (Block.make id firstLine str)
 
 
 {-|
