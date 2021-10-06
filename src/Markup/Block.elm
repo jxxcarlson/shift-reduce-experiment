@@ -46,13 +46,13 @@ type alias Meta =
     }
 
 
-make : String -> SBlock
-make str =
+make : String -> String -> SBlock
+make id str =
     let
         lines =
             String.lines str
     in
-    SParagraph lines { begin = 0, end = List.length lines, indent = 0, id = "1.2" }
+    SParagraph lines { begin = 0, end = List.length lines, indent = 0, id = id }
 
 
 {-|

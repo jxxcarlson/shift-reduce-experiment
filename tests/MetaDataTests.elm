@@ -1,4 +1,4 @@
-module MetaDataTests exposing (..)
+module MetaDataTests exposing (suiteMeta)
 
 import Expect
 import Markup.Meta as Meta
