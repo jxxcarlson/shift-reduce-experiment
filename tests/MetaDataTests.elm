@@ -78,7 +78,7 @@ suiteMeta =
                 metaDataTest 2 5 "A\nBBBB\nCCCC\nD\n"
                     |> .accept
                     |> Expect.equal True
-        , Test.only <|
+        ,
             test "(8) metaDataTest 4 9" <|
                 \_ ->
                     metaDataTest 4 9 "A\nBBBB\nCCCC\nD\n"
