@@ -16,6 +16,7 @@ import Markup.Meta as Meta exposing (ExpressionMeta)
 type ExprM
     = TextM String ExpressionMeta
     | VerbatimM String String ExpressionMeta
+    | ArgM (List ExprM) ExpressionMeta
     | ExprM String (List ExprM) ExpressionMeta
 
 
@@ -125,3 +126,6 @@ exprToExprM count blockData expr =
 
         Expr name exprList meta ->
             ExprM name (List.map (exprToExprM count blockData) exprList) (Meta.make Meta.getBlockData count meta [] blockData.firstLine blockData.id)
+
+        Arg exprList meta ->
+            ArgM (List.map (exprToExprM count blockData) exprList) (Meta.make Meta.getBlockData count meta [] blockData.firstLine blockData.id)

@@ -1,8 +1,9 @@
-module Block.State exposing (..)
+module Block.State exposing (Accumulator, State, init)
 
 import Block.Line
 import Dict exposing (Dict)
 import Markup.Block exposing (SBlock)
+import Render.MathMacro
 
 
 
@@ -28,7 +29,7 @@ type alias State =
 
 
 type alias Accumulator =
-    { dict : Dict String String }
+    { macroDict : Render.MathMacro.MathMacroDict }
 
 
 
@@ -55,4 +56,4 @@ init generation input =
 
 
 initialAccumulator =
-    { dict = Dict.empty }
+    { macroDict = Dict.empty }

@@ -55,3 +55,6 @@ getExprMeta expr =
 
         ExprM _ exprMList exprMeta ->
             exprMeta :: (List.map getExprMeta exprMList |> List.concat)
+
+        ArgM exprMList exprMeta ->
+            exprMeta :: (List.map getExprMeta exprMList |> List.concat)
