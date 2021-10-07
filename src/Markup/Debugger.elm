@@ -4,7 +4,7 @@ import Console
 
 
 debug =
-    False
+    True
 
 
 debug1 label =

@@ -107,10 +107,14 @@ args textList =
 
 macro2 : (String -> String -> Element msg) -> Int -> Settings -> Accumulator -> List ExprM -> Element msg
 macro2 element g s a textList =
+    let
+        _ =
+            Debug.log "TEXT LIST" textList
+    in
     case args textList of
         -- TODO: temporary fix: parse is producing the args in reverse order
         arg1 :: arg2 :: rest ->
-            element arg1 arg2
+            element (Debug.log "ARG1" arg1) (Debug.log "ARG2" arg2)
 
         _ ->
             el [ Font.color errorColor ] (Element.text "Invalid arguments")
@@ -121,10 +125,10 @@ link g s a textList =
 
 
 link_ : String -> String -> Element msg
-link_ label url =
+link_ url label =
     newTabLink []
-        { url = url
-        , label = el [ Font.color linkColor, Font.italic ] (Element.text <| label)
+        { url = url |> Debug.log "URL"
+        , label = el [ Font.color linkColor, Font.italic ] (Element.text <| Debug.log "LABEL" label)
         }
 
 

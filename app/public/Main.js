@@ -12974,7 +12974,7 @@ var $rtfeldman$console_print$Console$black = function (str) {
 		_List_fromArray(
 			['\u001B[30m', str, '\u001B[39m']));
 };
-var $author$project$Markup$Debugger$debug = false;
+var $author$project$Markup$Debugger$debug = true;
 var $elm$core$Debug$log = _Debug_log;
 var $author$project$Markup$Debugger$debug3 = function (label) {
 	return $author$project$Markup$Debugger$debug ? $elm$core$Debug$log(
@@ -13973,7 +13973,7 @@ var $author$project$Markup$MiniLaTeX$reduce = function (state) {
 													A3(
 														$author$project$Markup$AST$Expr,
 														$author$project$Markup$MiniLaTeX$transformMacroNames(name),
-														args,
+														$elm$core$List$reverse(args),
 														loc1),
 													state.committed)),
 											stack: rest
@@ -16977,13 +16977,17 @@ var $author$project$Render$Text$args = function (textList) {
 var $author$project$Render$Text$errorColor = A3($mdgriffith$elm_ui$Element$rgb, 0.8, 0, 0);
 var $author$project$Render$Text$macro2 = F5(
 	function (element, g, s, a, textList) {
-		var _v0 = $author$project$Render$Text$args(textList);
-		if (_v0.b && _v0.b.b) {
-			var arg1 = _v0.a;
-			var _v1 = _v0.b;
-			var arg2 = _v1.a;
-			var rest = _v1.b;
-			return A2(element, arg1, arg2);
+		var _v0 = A2($elm$core$Debug$log, 'TEXT LIST', textList);
+		var _v1 = $author$project$Render$Text$args(textList);
+		if (_v1.b && _v1.b.b) {
+			var arg1 = _v1.a;
+			var _v2 = _v1.b;
+			var arg2 = _v2.a;
+			var rest = _v2.b;
+			return A2(
+				element,
+				A2($elm$core$Debug$log, 'ARG1', arg1),
+				A2($elm$core$Debug$log, 'ARG2', arg2));
 		} else {
 			return A2(
 				$mdgriffith$elm_ui$Element$el,
@@ -17172,7 +17176,7 @@ var $author$project$Render$Text$image = F4(
 				]));
 	});
 var $author$project$Render$Text$link_ = F2(
-	function (label, url) {
+	function (url, label) {
 		return A2(
 			$mdgriffith$elm_ui$Element$newTabLink,
 			_List_Nil,
@@ -17184,8 +17188,9 @@ var $author$project$Render$Text$link_ = F2(
 							$mdgriffith$elm_ui$Element$Font$color($author$project$Render$Text$linkColor),
 							$mdgriffith$elm_ui$Element$Font$italic
 						]),
-					$mdgriffith$elm_ui$Element$text(label)),
-				url: url
+					$mdgriffith$elm_ui$Element$text(
+						A2($elm$core$Debug$log, 'LABEL', label))),
+				url: A2($elm$core$Debug$log, 'URL', url)
 			});
 	});
 var $author$project$Render$Text$link = F4(

@@ -60,6 +60,14 @@ suiteMiniLaTeX =
             \_ ->
                 run MiniLaTeX "$x^2$"
                     |> Expect.equal { committed = [ Verbatim "math" "$x^2$" (loc 0 4) ], count = 2, end = 5, scanPointer = 5, sourceText = "$x^2$", stack = [] }
+        , test "(8)  abc \\href{1}{2} def" <|
+            \_ ->
+                run MiniLaTeX "\\href{1}{2}"
+                    |> Expect.equal { committed = [ Expr "href" [ Text "1" { begin = 6, end = 6 }, Text "2" { begin = 9, end = 9 } ] { begin = 0, end = 10 } ], count = 8, end = 11, scanPointer = 11, sourceText = "\\href{1}{2}", stack = [] }
+        , test "(9) \\foo{\\bar{1}}" <|
+            \_ ->
+                run MiniLaTeX "abc \\href{1}{2} def"
+                    |> Expect.equal { committed = [ Text "abc " { begin = 0, end = 3 }, Expr "href" [ Text "1" { begin = 10, end = 10 }, Text "2" { begin = 13, end = 13 } ] { begin = 4, end = 14 }, Text " def" { begin = 15, end = 18 } ], count = 10, end = 19, scanPointer = 19, sourceText = "abc \\href{1}{2} def", stack = [] }
         ]
 
 
