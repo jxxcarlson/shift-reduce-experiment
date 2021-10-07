@@ -1,5 +1,7 @@
-module Markup exposing (parseToBlock, run)
+module Markup exposing (parse2, parseToBlock, run)
 
+import Block.Parser
+import Block.State
 import Either
 import Markup.AST as AST
 import Markup.Block as Block exposing (Block, SBlock)
@@ -11,6 +13,15 @@ import Markup.MiniLaTeX as MiniLaTeX
 import Markup.State exposing (State)
 import Markup.Token as Token exposing (Token)
 import Markup.Tokenizer as Tokenizer exposing (Lang(..))
+
+
+parse2 : Lang -> Int -> List String -> { ast : List Block, accumulator : Block.State.Accumulator }
+parse2 lang generation lines =
+    let
+        state =
+            Block.Parser.run lang generation lines
+    in
+    { ast = List.map (Block.map (parse lang)) state.committed, accumulator = state.accumulator }
 
 
 parse : Lang -> String -> List AST.Expr
@@ -26,13 +37,6 @@ parse lang str =
    https://guide.elm-lang.org/appendix/types_as_sets.html
    https://www.schoolofhaskell.com/user/bartosz/understanding-algebras
 -}
---{-| Assume that lines in block are not terminated by newlines.  Is this correct? -}
---parse : Lang -> AST.BlockData -> List {expr: AST.Expr, meta: AST.Meta}
---parse lang blockData =
---    let
---        expressions = run lang (String.join "\n" blockData.content)
---    in
---      List.map (\e -> )
 
 
 parseBlock : Lang -> SBlock -> Block

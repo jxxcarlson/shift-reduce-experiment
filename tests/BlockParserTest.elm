@@ -42,6 +42,18 @@ suiteL1BlockParser =
             \_ ->
                 run L1 "|| code\n   a[i] = 0\n      b[i] = 1\n\nabc"
                     |> Expect.equal [ SVerbatimBlock "code" [ "   a[i] = 0", "      b[i] = 1" ] { begin = 0, end = 2, id = "0", indent = 0 }, SParagraph [ "abc" ] { begin = 4, end = 4, id = "1", indent = 0 } ]
+        , test
+            "(8) Nested blocks"
+          <|
+            \_ ->
+                run L1 "| foo\n   a\n   b\n   | bar\n      c\n      d"
+                    |> Expect.equal [ SBlock "foo" [ SParagraph [ "   a", "   b" ] { begin = 1, end = 2, id = "1", indent = 3 } ] { begin = 0, end = 2, id = "0", indent = 0 }, SBlock "bar" [ SParagraph [ "      c", "      d" ] { begin = 4, end = 5, id = "4", indent = 6 } ] { begin = 3, end = 5, id = "1", indent = 3 } ]
+        , test
+            "(9) Nested blocks"
+          <|
+            \_ ->
+                run L1 "| foo\n   AAA\n      PQR"
+                    |> Expect.equal [ SBlock "foo" [ SParagraph [ "   AAA" ] { begin = 1, end = 1, id = "1", indent = 3 }, SParagraph [ "      PQR" ] { begin = 2, end = 2, id = "1", indent = 6 } ] { begin = 0, end = 1, id = "0", indent = 0 } ]
         ]
 
 

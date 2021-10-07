@@ -1,4 +1,11 @@
-module Block.Library exposing (classify, finalize, processLine, recoverFromError)
+module Block.Library exposing
+    ( classify
+    , finalize
+    , processLine
+    , recoverFromError
+    , reduce
+    , shiftCurrentBlock
+    )
 
 import Block.L1.Line
 import Block.Line exposing (BlockOption(..), LineData, LineType(..))
@@ -62,7 +69,7 @@ processLine language state =
                         addLineToCurrentBlock state
 
                     GT ->
-                        createBlock state
+                        createBlock state |> debug2 "CREATE BLOCK with ordinary line (GT)"
 
                     LT ->
                         state |> commitBlock |> createBlock
@@ -101,6 +108,26 @@ processLine language state =
             state
 
 
+reduce : State -> State
+reduce state =
+    (case state.stack of
+        block1 :: ((SBlock name blocks meta) as block2) :: rest ->
+            if levelOfBlock block1 > levelOfBlock block2 then
+                reduce { state | stack = SBlock name (block1 :: blocks) meta :: rest }
+
+            else
+                -- TODO: is this correct?
+                reduce { state | committed = block1 :: block2 :: state.committed, stack = List.drop 2 state.stack }
+
+        block :: [] ->
+            { state | committed = reverseContents block :: state.committed, stack = [] }
+
+        _ ->
+            state
+    )
+        |> debug3 "REDUCE"
+
+
 createBlock : State -> State
 createBlock state =
     state |> createBlockPhase1 |> createBlockPhase2
@@ -113,7 +140,7 @@ createBlockPhase1 state =
             commitBlock state
 
         GT ->
-            shiftBlock state
+            shiftCurrentBlock state
 
         LT ->
             commitBlock state
@@ -179,17 +206,35 @@ commitBlock state =
             state
 
         Just block ->
-            { state | committed = reverseContents block :: state.committed, currentBlock = Nothing } |> debug1 "commitBlock"
+            case List.head state.stack of
+                Nothing ->
+                    { state | committed = reverseContents block :: state.committed, currentBlock = Nothing } |> debug1 "commitBlock (1)"
+
+                Just stackTop ->
+                    case compare (levelOfBlock block) (levelOfBlock stackTop) of
+                        GT ->
+                            shiftBlock block state |> debug1 "commitBlock (2)"
+
+                        EQ ->
+                            { state | committed = block :: stackTop :: state.committed, stack = List.drop 1 state.stack, currentBlock = Nothing } |> debug1 "commitBlock (3)"
+
+                        LT ->
+                            { state | committed = block :: stackTop :: state.committed, stack = List.drop 1 state.stack, currentBlock = Nothing } |> debug1 "commitBlock (3)"
 
 
-shiftBlock : State -> State
-shiftBlock state =
+shiftBlock : SBlock -> State -> State
+shiftBlock block state =
+    { state | stack = block :: state.stack, currentBlock = Nothing } |> debug1 "shiftBlock"
+
+
+shiftCurrentBlock : State -> State
+shiftCurrentBlock state =
     case state.currentBlock of
         Nothing ->
             state
 
         Just block ->
-            { state | stack = block :: state.stack, currentBlock = Nothing } |> debug1 "shiftBlock"
+            shiftBlock block state |> debug1 "shiftCURRENTBlock"
 
 
 addLineToCurrentBlock : State -> State
@@ -270,6 +315,22 @@ quantumOfIndentation =
     3
 
 
+levelOfBlock : SBlock -> Int
+levelOfBlock block =
+    case block of
+        SParagraph strings meta ->
+            level meta.indent
+
+        SVerbatimBlock name strings meta ->
+            level meta.indent
+
+        SBlock name blocks meta ->
+            level meta.indent
+
+        SError str ->
+            0
+
+
 level : Int -> Int
 level indentation =
     indentation // quantumOfIndentation
@@ -285,7 +346,7 @@ reverseContents block =
             SVerbatimBlock name (List.reverse strings) meta
 
         SBlock name blocks meta ->
-            SBlock name (List.map reverseContents blocks) meta
+            SBlock name (List.reverse (List.map reverseContents blocks)) meta
 
         SError s ->
             SError s
