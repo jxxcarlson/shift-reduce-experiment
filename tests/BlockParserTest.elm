@@ -1,4 +1,4 @@
-module BlockParserTest exposing (suiteBlockParser)
+module BlockParserTest exposing (suiteL1BlockParser)
 
 import Block.Parser
 import Expect
@@ -11,8 +11,8 @@ run lang str =
     Block.Parser.run lang 0 (String.lines str) |> .committed
 
 
-suiteBlockParser : Test
-suiteBlockParser =
+suiteL1BlockParser : Test
+suiteL1BlockParser =
     describe "recovering a substring of the source text from metadata"
         [ test "(1) " <|
             \_ ->
@@ -34,4 +34,12 @@ suiteBlockParser =
             \_ ->
                 run L1 "| indent\n   abc\n   def\nxyz"
                     |> Expect.equal [ SBlock "indent" [ SParagraph [ "   abc", "   def" ] { begin = 1, end = 2, id = "1", indent = 3 } ] { begin = 0, end = 2, id = "0", indent = 0 }, SParagraph [ "xyz" ] { begin = 3, end = 3, id = "1", indent = 0 } ]
+        , test "(6) " <|
+            \_ ->
+                run L1 "|| code\n   a[i] = 0"
+                    |> Expect.equal [ SVerbatimBlock "code" [ "   a[i] = 0" ] { begin = 0, end = 1, id = "0", indent = 0 } ]
+        , test "(7) " <|
+            \_ ->
+                run L1 "|| code\n   a[i] = 0\n      b[i] = 1\n\nabc"
+                    |> Expect.equal [ SVerbatimBlock "code" [ "   a[i] = 0", "      b[i] = 1" ] { begin = 0, end = 2, id = "0", indent = 0 }, SParagraph [ "abc" ] { begin = 4, end = 4, id = "1", indent = 0 } ]
         ]

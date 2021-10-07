@@ -6,7 +6,7 @@ import Block.Markdown.Line
 import Block.MiniLaTeX.Line
 import Block.State exposing (State)
 import Markup.Block exposing (SBlock(..))
-import Markup.Debugger exposing (debug1, debug3)
+import Markup.Debugger exposing (debug1, debug2, debug3)
 import Markup.Tokenizer exposing (Lang(..))
 
 
@@ -140,6 +140,19 @@ createBlockPhase2 state =
                 , blockCount = state.blockCount + 1
             }
 
+        BeginVerbatimBlock mark ->
+            { state
+                | currentBlock =
+                    Just <|
+                        SVerbatimBlock mark
+                            []
+                            { begin = state.index, end = state.index, id = String.fromInt state.blockCount, indent = state.currentLineData.indent }
+                , currentLineData = incrementLevel state.currentLineData -- do this because a block expects subsequent lines to be indented
+                , inVerbatimBlock = True
+                , verbatimBlockInitialIndent = state.currentLineData.indent + quantumOfIndentation -- account for indentation of succeeding lines
+                , blockCount = state.blockCount + 1
+            }
+
         _ ->
             state
     )
@@ -163,7 +176,7 @@ shiftBlock state =
             state
 
         Just block ->
-            { state | stack = block :: state.stack } |> debug1 "shiftBlock"
+            { state | stack = block :: state.stack, currentBlock = Nothing } |> debug1 "shiftBlock"
 
 
 addLineToCurrentBlock : State -> State
@@ -177,6 +190,9 @@ addLineToCurrentBlock state =
 
         Just (SBlock mark blocks meta) ->
             { state | currentBlock = Just <| SBlock mark (addLineToBlocks state.index state.currentLineData blocks) { meta | end = state.index } }
+
+        Just (SVerbatimBlock mark lines meta) ->
+            { state | currentBlock = Just <| SVerbatimBlock mark (state.currentLineData.content :: lines) { meta | end = state.index } }
 
         _ ->
             state
@@ -199,24 +215,27 @@ addLineToBlocks index lineData blocks =
             SParagraph [ lineData.content ] { begin = index, end = index, id = String.fromInt index, indent = lineData.indent } :: rest
 
 
-classify : Lang -> Bool -> String -> LineData
-classify language inVerbatimBlock str =
+classify : Lang -> Bool -> Int -> String -> LineData
+classify language inVerbatimBlock verbatimBlockInitialIndent str =
     let
         lineType =
             getLineTypeParser language
 
         leadingSpaces =
-            Block.Line.countLeadingSpaces str
+            Block.Line.countLeadingSpaces str |> debug3 "LEADING SPACES"
 
         provisionalLineType =
-            lineType (String.dropLeft leadingSpaces str)
+            lineType (String.dropLeft leadingSpaces str) |> debug1 "provisionalLineType"
 
         lineType_ =
-            if inVerbatimBlock && provisionalLineType == Block.Line.BlankLine then
+            (-- if inVerbatimBlock && provisionalLineType == Block..BlankLine then
+             if inVerbatimBlock && leadingSpaces >= (verbatimBlockInitialIndent |> debug2 "verbatimBlockInitialIndent") then
                 Block.Line.VerbatimLine
 
-            else
+             else
                 provisionalLineType
+            )
+                |> debug1 "FINAL LINE TYPE"
     in
     { indent = leadingSpaces, lineType = lineType_, content = str }
 
