@@ -36,17 +36,22 @@ nextStep lang state =
         finalizeOrRecoverFromError state
 
     else
-        Loop (state |> getLine |> Block.Library.processLine lang)
+        Loop (state |> getLine lang |> Block.Library.processLine lang |> postProcess)
 
 
-getLine : State -> State
-getLine state =
+postProcess : State -> State
+postProcess state =
+    { state | previousLineData = state.currentLineData }
+
+
+getLine : Lang -> State -> State
+getLine language state =
     let
         line =
             List.Extra.getAt state.index state.input |> Maybe.withDefault ""
     in
     { state
-        | currentLine = List.Extra.getAt state.index state.input |> Maybe.withDefault ""
+        | currentLineData = Block.Library.classify language state.inVerbatimBlock (List.Extra.getAt state.index state.input |> Maybe.withDefault "")
         , index = state.index + 1
     }
 

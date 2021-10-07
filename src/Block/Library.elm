@@ -1,4 +1,4 @@
-module Block.Library exposing (finalize, processLine, recoverFromError, reduce)
+module Block.Library exposing (classify, finalize, processLine, recoverFromError, reduce)
 
 import Block.L1.Line
 import Block.Line exposing (BlockOption(..), LineData, LineType(..), countLeadingSpaces, emptyLineParser, ordinaryLineParser)
@@ -36,7 +36,7 @@ finalize state =
 
 recoverFromError : State -> State
 recoverFromError state =
-    { state | stack = [] } |> debug3 "recoverFromError"
+    { state | stack = [] } |> debug3 "recoverFromError "
 
 
 {-|
@@ -52,16 +52,13 @@ recoverFromError state =
 processLine : Lang -> State -> State
 processLine language state =
     let
-        lineData =
-            classify language state.inVerbatimBlock state.currentLine |> debug2 ("LineData, index = " ++ String.fromInt state.index)
-
         inVerbatimBlock =
-            isInVerbatimBlock lineData state
+            isInVerbatimBlock state.previousLineData state
 
         adjustedLineType =
-            adjustLineType lineData inVerbatimBlock
+            adjustLineType state.currentLineData inVerbatimBlock
     in
-    case lineData.lineType of
+    case state.currentLineData.lineType of
         BeginBlock option str ->
             createBlock state
 
@@ -75,11 +72,11 @@ processLine language state =
             commitBlock state
 
         OrdinaryLine ->
-            if state.currentLineData.lineType == BlankLine then
+            if state.previousLineData.lineType == BlankLine then
                 createBlock state
 
             else
-                case compare (level lineData.indent) (level state.indent) of
+                case compare (level state.currentLineData.indent) (level state.indent) of
                     EQ ->
                         addLineToCurrentBlock state
 
@@ -90,11 +87,11 @@ processLine language state =
                         commitBlock state
 
         VerbatimLine ->
-            if state.currentLineData.lineType == VerbatimLine then
+            if state.previousLineData.lineType == VerbatimLine then
                 addLineToCurrentBlock state
 
             else
-                case compare (level lineData.indent) (level state.indent) of
+                case compare (level state.currentLineData.indent) (level state.indent) of
                     EQ ->
                         addLineToCurrentBlock state
 
@@ -105,11 +102,11 @@ processLine language state =
                         commitBlock state
 
         BlankLine ->
-            if state.currentLineData.lineType == BlankLine then
+            if state.previousLineData.lineType == BlankLine then
                 state
 
             else
-                case compare (level lineData.indent) (level state.indent) of
+                case compare (level state.currentLineData.indent) (level state.indent) of
                     EQ ->
                         addLineToCurrentBlock state
 
