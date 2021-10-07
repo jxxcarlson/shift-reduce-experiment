@@ -13,7 +13,7 @@ run lang str =
 
 suiteL1BlockParser : Test
 suiteL1BlockParser =
-    describe "recovering a substring of the source text from metadata"
+    describe "parsing L1 blocks"
         [ test "(1) " <|
             \_ ->
                 run L1 "ABC"
@@ -47,7 +47,7 @@ suiteL1BlockParser =
 
 suiteMiniLaTeXBlockParser : Test
 suiteMiniLaTeXBlockParser =
-    describe "recovering a substring of the source text from metadata"
+    describe "parsing MiniLaTeX blocks"
         [ test "(1) " <|
             \_ ->
                 run MiniLaTeX "\\begin{foo}\n   a\n   b\n\\end{foo}"
@@ -57,7 +57,7 @@ suiteMiniLaTeXBlockParser =
 
 suiteMarkdownBlockParser : Test
 suiteMarkdownBlockParser =
-    describe "recovering a substring of the source text from metadata"
+    describe "parsing Markdown blocks"
         [ test "(1) " <|
             \_ ->
                 run Markdown "# Intro to Chemistry"

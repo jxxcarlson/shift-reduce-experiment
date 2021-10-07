@@ -287,13 +287,18 @@ reverseContents block =
         SBlock name blocks meta ->
             SBlock name (List.map reverseContents blocks) meta
 
-        SSystem s ->
-            SSystem s
+        SError s ->
+            SError s
 
 
 incrementLevel : LineData -> LineData
 incrementLevel lineData =
     { lineData | indent = lineData.indent + quantumOfIndentation }
+
+
+setMetaEnd : Int -> Markup.Block.Meta -> Markup.Block.Meta
+setMetaEnd k meta =
+    { meta | end = k }
 
 
 nibble : String -> String

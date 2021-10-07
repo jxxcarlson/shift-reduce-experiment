@@ -30,7 +30,7 @@ type SBlock
     = SParagraph (List String) Meta
     | SVerbatimBlock String (List String) Meta
     | SBlock String (List SBlock) Meta
-    | SSystem String
+    | SError String
 
 
 type alias Meta =
@@ -39,6 +39,22 @@ type alias Meta =
     , indent : Int
     , id : String
     }
+
+
+mapMeta : (Meta -> Meta) -> SBlock -> SBlock
+mapMeta f block =
+    case block of
+        SParagraph strings meta ->
+            SParagraph strings (f meta)
+
+        SVerbatimBlock name strings meta ->
+            SVerbatimBlock name strings (f meta)
+
+        SBlock name blocks meta ->
+            SBlock name blocks (f meta)
+
+        SError str ->
+            SError str
 
 
 make : String -> Int -> String -> SBlock
@@ -87,7 +103,7 @@ map exprParser sblock =
             in
             Block name (List.map mapper blocks) meta
 
-        SSystem str ->
+        SError str ->
             BError str
 
 
