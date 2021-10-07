@@ -31,7 +31,7 @@ reduce2 lineType state =
 
 finalize : State -> State
 finalize state =
-    { state | stack = [] } |> debug3 "finalize"
+    { state | committed = reverseContents state.currentBlock :: state.committed |> List.reverse } |> debug3 "finalize"
 
 
 recoverFromError : State -> State
@@ -122,7 +122,18 @@ processLine language state =
 
 createBlock : State -> State
 createBlock state =
-    state |> debug1 "addNewBlock"
+    (case state.currentLineData.lineType of
+        OrdinaryLine ->
+            { state
+                | currentBlock =
+                    SParagraph [ state.currentLineData.content ]
+                        { begin = state.index, end = state.index, id = String.fromInt state.blockCount, indent = state.currentLineData.indent }
+            }
+
+        _ ->
+            state
+    )
+        |> debug1 "createBlock "
 
 
 commitBlock : State -> State
@@ -132,7 +143,14 @@ commitBlock state =
 
 addLineToCurrentBlock : State -> State
 addLineToCurrentBlock state =
-    state |> debug1 "addLineToCurrentBlock"
+    (case state.currentBlock of
+        SParagraph lines meta ->
+            { state | currentBlock = SParagraph (state.currentLineData.content :: lines) { meta | end = state.index } }
+
+        _ ->
+            state
+    )
+        |> debug1 "addLineToCurrentBlock"
 
 
 {-|
@@ -185,7 +203,7 @@ classify language inVerbatimBlock str =
             else
                 provisionalLineType
     in
-    { indent = leadingSpaces, lineType = lineType_, content = nibble str }
+    { indent = leadingSpaces, lineType = lineType_, content = str }
 
 
 getLineTypeParser : Lang -> String -> Block.Line.LineType

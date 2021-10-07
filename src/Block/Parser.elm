@@ -17,7 +17,7 @@ import Markup.Tokenizer exposing (Lang)
 {-| -}
 runParser : Lang -> Int -> List String -> State
 runParser language generation input =
-    loop (Block.State.init generation input) (nextStep language)
+    loop (Block.State.init generation input |> debug3 "INITIAL STATE") (nextStep language)
 
 
 {-|
@@ -32,7 +32,7 @@ runParser language generation input =
 -}
 nextStep : Lang -> State -> Step State State
 nextStep lang state =
-    if state.index > state.lastIndex then
+    if state.index >= state.lastIndex then
         finalizeOrRecoverFromError state
 
     else
@@ -51,7 +51,13 @@ getLine language state =
             List.Extra.getAt state.index state.input |> Maybe.withDefault ""
     in
     { state
-        | currentLineData = Block.Library.classify language state.inVerbatimBlock (List.Extra.getAt state.index state.input |> Maybe.withDefault "")
+        | currentLineData =
+            Block.Library.classify language
+                state.inVerbatimBlock
+                (List.Extra.getAt state.index state.input
+                    |> Maybe.withDefault "??"
+                )
+                |> debug2 ("LINE DATA " ++ String.fromInt state.index)
         , index = state.index + 1
     }
 
