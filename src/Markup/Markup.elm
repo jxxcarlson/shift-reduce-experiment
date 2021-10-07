@@ -17,7 +17,7 @@ import Markup.Tokenizer as Tokenizer exposing (Lang(..))
 
 parseExpr : Lang -> String -> List AST.Expr
 parseExpr lang str =
-    run lang str |> .committed
+    run lang str |> .committed |> Debug.log "PARSE EXPR"
 
 
 

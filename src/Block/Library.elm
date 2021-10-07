@@ -11,12 +11,14 @@ import Block.L1.Line
 import Block.Line exposing (BlockOption(..), LineData, LineType(..))
 import Block.Markdown.Line
 import Block.MiniLaTeX.Line
-import Block.State exposing (State)
-import Markup.Block exposing (SBlock(..))
+import Block.State exposing (Accumulator, State)
+import Markup.ASTTools
+import Markup.Block exposing (Block(..), SBlock(..))
 import Markup.Debugger exposing (debug1, debug2, debug3)
 import Markup.ParserTools
 import Markup.Tokenizer exposing (Lang(..))
 import Parser.Advanced
+import Render.MathMacro
 
 
 finalize : State -> State
@@ -208,7 +210,7 @@ commitBlock state =
         Just block ->
             case List.head state.stack of
                 Nothing ->
-                    { state | committed = reverseContents block :: state.committed, currentBlock = Nothing } |> debug1 "commitBlock (1)"
+                    { state | committed = reverseContents block :: state.committed, currentBlock = Nothing, accumulator = updateAccumulator block state.accumulator |> Debug.log "NEW ACCUMULATOR" } |> debug1 "commitBlock (1)"
 
                 Just stackTop ->
                     case compare (levelOfBlock block) (levelOfBlock stackTop) of
@@ -220,6 +222,28 @@ commitBlock state =
 
                         LT ->
                             { state | committed = block :: stackTop :: state.committed, stack = List.drop 1 state.stack, currentBlock = Nothing } |> debug1 "commitBlock (3)"
+
+
+
+--type SBlock2
+--    = SParagraph (List String) Meta
+--    | SVerbatimBlock String (List String) Meta
+--    | SBlock String (List SBlock) Meta
+--    | SError String
+
+
+updateAccumulator : SBlock -> Accumulator -> Accumulator
+updateAccumulator sblock1 accumulator =
+    case sblock1 of
+        SVerbatimBlock name contentList _ ->
+            if name == "mathmacro" then
+                { accumulator | macroDict = Render.MathMacro.makeMacroDict (String.join "\n" (List.map String.trimLeft contentList) |> Debug.log "CONTENT") }
+
+            else
+                accumulator
+
+        _ ->
+            accumulator
 
 
 shiftBlock : SBlock -> State -> State

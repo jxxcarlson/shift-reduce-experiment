@@ -4,11 +4,11 @@ import Dict exposing (Dict)
 import Element exposing (Element, alignLeft, alignRight, centerX, column, el, newTabLink, paddingEach, paragraph, px, spacing)
 import Element.Background as Background
 import Element.Font as Font
-import Markup.AST exposing (ExprM(..))
 import Markup.ASTTools as ASTTools
-import Markup.Block exposing (ExprM)
+import Markup.Block exposing (ExprM(..))
 import Markup.Debugger exposing (debug1)
 import Maybe.Extra
+import Render.AST2
 import Render.Math
 import Render.MathMacro
 import Utility
@@ -25,16 +25,16 @@ type alias Accumulator =
 render : Int -> Settings -> Accumulator -> ExprM -> Element msg
 render generation settings accumulator text =
     case text of
-        Text string meta ->
+        TextM string meta ->
             Element.el [] (Element.text string)
 
         ExprM name textList meta ->
             Element.el [] (renderMarked name generation settings accumulator textList)
 
-        Verbatim name str meta ->
+        VerbatimM name str meta ->
             renderVerbatim name generation settings accumulator str
 
-        Arg _ _ ->
+        ArgM _ _ ->
             Element.none
 
 
@@ -52,7 +52,7 @@ renderVerbatim name generation settings accumulator str =
             notImplemented name
 
         Just f ->
-            f generation settings accumulator (debug1 "XXVerbatim" str)
+            f generation settings accumulator str
 
 
 renderMarked name generation settings accumulator textList =
@@ -93,6 +93,7 @@ verbatimDict =
     Dict.fromList
         [ ( "$", \g s a str -> math g s a str )
         , ( "`", \g s a str -> code g s a str )
+        , ( "math", \g s a str -> math g s a str )
         ]
 
 
@@ -226,7 +227,11 @@ code g s a str =
 
 
 math g s a str =
-    mathElement g s a str
+    mathElement g s a (dropFirstAndLastCharacter str)
+
+
+dropFirstAndLastCharacter str =
+    String.slice 1 (String.length str - 1) str
 
 
 codeStyle =
@@ -267,7 +272,7 @@ tocLink : List ExprM -> Element msg
 tocLink textList =
     let
         t =
-            Markup.AST.stringValueOfList textList
+            Render.AST2.stringValueOfList textList
     in
     Element.link [] { url = internalLink t, label = Element.text t }
 
@@ -310,7 +315,7 @@ makeSlug str =
 
 makeId : List ExprM -> Element.Attribute msg
 makeId textList =
-    Utility.elementAttribute "id" (Markup.AST.stringValueOfList textList |> makeSlug)
+    Utility.elementAttribute "id" (Render.AST2.stringValueOfList textList |> makeSlug)
 
 
 heading1 g s a textList =

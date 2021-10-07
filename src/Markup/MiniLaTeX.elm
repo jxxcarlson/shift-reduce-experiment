@@ -12,10 +12,10 @@ reduceFinal : State -> State
 reduceFinal state =
     case state.stack of
         (Right (AST.Expr name args loc)) :: [] ->
-            { state | committed = AST.Expr name (List.reverse args) loc :: state.committed, stack = [] } |> debug1 "FINAL RULE 1"
+            { state | committed = AST.Expr (transformMacroNames name) (List.reverse args) loc :: state.committed, stack = [] } |> debug1 "FINAL RULE 1"
 
         (Left (FunctionName name loc)) :: [] ->
-            { state | committed = AST.Expr name [] loc :: state.committed, stack = [] } |> debug1 "FINAL RULE 2"
+            { state | committed = AST.Expr (transformMacroNames name) [] loc :: state.committed, stack = [] } |> debug1 "FINAL RULE 2"
 
         _ ->
             state |> debug1 "FINAL RULE 2"
@@ -34,22 +34,41 @@ reduce state =
             reduceAux (AST.Text str loc) [] state |> debug1 "RULE 1"
 
         (Left (Token.Symbol "}" loc4)) :: (Left (Token.Text arg loc3)) :: (Left (Token.Symbol "{" _)) :: (Left (Token.FunctionName name loc1)) :: rest ->
-            { state | stack = Right (AST.Expr name [ AST.Text arg loc3 ] { begin = loc1.begin, end = loc4.end }) :: rest } |> debug1 "RULE 2"
+            { state | stack = Right (AST.Expr (transformMacroNames name) [ AST.Text arg loc3 ] { begin = loc1.begin, end = loc4.end }) :: rest } |> debug1 "RULE 2"
 
         (Left (Token.Symbol "}" loc4)) :: (Left (Token.Text arg loc3)) :: (Left (Token.Symbol "{" _)) :: (Right (AST.Expr name args loc1)) :: rest ->
-            { state | stack = Right (AST.Expr name (AST.Text arg loc3 :: args) { begin = loc1.begin, end = loc4.end }) :: rest } |> debug1 "RULE 3"
+            { state | stack = Right (AST.Expr (transformMacroNames name) (AST.Text arg loc3 :: args) { begin = loc1.begin, end = loc4.end }) :: rest } |> debug1 "RULE 3"
 
         (Left (Token.Text str loc2)) :: (Right (AST.Expr name args loc1)) :: rest ->
-            { state | committed = AST.Text str loc2 :: AST.Expr name args loc1 :: state.committed, stack = rest } |> debug1 "RULE 4"
+            { state | committed = AST.Text str loc2 :: AST.Expr (transformMacroNames name) args loc1 :: state.committed, stack = rest } |> debug1 "RULE 4"
 
         (Left (Token.Symbol "}" loc4)) :: (Right (AST.Expr exprName args loc3)) :: (Left (Token.Symbol "{" _)) :: (Left (Token.FunctionName fName loc1)) :: rest ->
-            { state | committed = AST.Expr fName [ AST.Expr exprName args loc3 ] { begin = loc1.begin, end = loc4.end } :: state.committed, stack = rest } |> debug1 "RULE 5"
+            { state | committed = AST.Expr fName [ AST.Expr (transformMacroNames exprName) args loc3 ] { begin = loc1.begin, end = loc4.end } :: state.committed, stack = rest } |> debug1 "RULE 5"
 
         (Left (Token.Verbatim label content loc)) :: [] ->
             reduceAux (AST.Verbatim label content loc) [] state |> debug1 "RULE 6"
 
         _ ->
             state
+
+
+transformMacroNames : String -> String
+transformMacroNames str =
+    case str of
+        "section" ->
+            "heading2"
+
+        "subsection" ->
+            "heading3"
+
+        "susubsection" ->
+            "heading4"
+
+        "subheading" ->
+            "heading5"
+
+        _ ->
+            str
 
 
 reduceAux : Expr -> List (Either Token Expr) -> State -> State
