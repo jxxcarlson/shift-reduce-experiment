@@ -1,32 +1,13 @@
-module Block.Library exposing (classify, finalize, processLine, recoverFromError, reduce)
+module Block.Library exposing (classify, finalize, processLine, recoverFromError)
 
 import Block.L1.Line
-import Block.Line exposing (BlockOption(..), LineData, LineType(..), countLeadingSpaces, emptyLineParser, ordinaryLineParser)
+import Block.Line exposing (LineData, LineType(..))
 import Block.Markdown.Line
 import Block.MiniLaTeX.Line
 import Block.State exposing (State)
-import Markup.Block exposing (Meta, SBlock(..))
-import Markup.Debugger exposing (debug1, debug2, debug3)
-import Markup.ParserTools as ParserTools
+import Markup.Block exposing (SBlock(..))
+import Markup.Debugger exposing (debug1, debug3)
 import Markup.Tokenizer exposing (Lang(..))
-
-
-{-| Top-level functions:
-
-        - reduce
-        - processLine
-        - finalize
-        - recoverFromError
-
--}
-reduce : State -> State
-reduce state =
-    { state | stack = [] }
-
-
-reduce2 : LineType -> State -> State
-reduce2 lineType state =
-    { state | stack = [] }
 
 
 finalize : State -> State
@@ -51,24 +32,17 @@ recoverFromError state =
 -}
 processLine : Lang -> State -> State
 processLine language state =
-    let
-        inVerbatimBlock =
-            isInVerbatimBlock state.previousLineData state
-
-        adjustedLineType =
-            adjustLineType state.currentLineData inVerbatimBlock
-    in
     case state.currentLineData.lineType of
-        BeginBlock option str ->
+        BeginBlock _ _ ->
             createBlock state
 
-        BeginVerbatimBlock str ->
+        BeginVerbatimBlock _ ->
             createBlock state
 
-        EndBlock str ->
+        EndBlock _ ->
             commitBlock state
 
-        EndVerbatimBlock str ->
+        EndVerbatimBlock _ ->
             commitBlock state
 
         OrdinaryLine ->
@@ -116,7 +90,7 @@ processLine language state =
                     LT ->
                         commitBlock state
 
-        Problem str ->
+        Problem _ ->
             state
 
 
@@ -181,30 +155,6 @@ addLineToCurrentBlock state =
         |> debug1 "addLineToCurrentBlock"
 
 
-{-|
-
-    Put new block on stack.
-
--}
-shift : SBlock -> State -> State
-shift block state =
-    let
-        newMeta =
-            { begin = state.index
-            , end = state.index
-            , indent = state.indent
-            , id = String.fromInt state.generation ++ "." ++ String.fromInt state.blockCount
-            }
-
-        newBlock =
-            replaceMeta newMeta block
-    in
-    { state
-        | stack = newBlock :: state.stack
-        , blockCount = state.blockCount + 1
-    }
-
-
 
 -- HELPERS
 
@@ -217,9 +167,6 @@ classify language inVerbatimBlock str =
 
         leadingSpaces =
             Block.Line.countLeadingSpaces str
-
-        nibble str_ =
-            String.dropLeft (String.length (ParserTools.nibble str_) + 1) str_
 
         provisionalLineType =
             lineType (String.dropLeft leadingSpaces str)
@@ -247,40 +194,6 @@ getLineTypeParser language =
             Block.MiniLaTeX.Line.lineType
 
 
-adjustLineType lineType inVerbatimBlock =
-    case lineType.lineType of
-        BeginVerbatimBlock _ ->
-            lineType.lineType
-
-        BlankLine ->
-            if inVerbatimBlock then
-                BlankLine
-
-            else
-                BlankLine
-
-        _ ->
-            if inVerbatimBlock then
-                VerbatimLine
-
-            else
-                lineType.lineType
-
-
-isInVerbatimBlock lineType state =
-    case lineType.lineType of
-        BeginVerbatimBlock _ ->
-            True
-
-        _ ->
-            -- TODO: check this out.  Is it OK?? Previously: < level state.indent
-            if level lineType.indent < level state.verbatimBlockInitialIndent then
-                False
-
-            else
-                state.inVerbatimBlock
-
-
 quantumOfIndentation =
     3
 
@@ -288,86 +201,6 @@ quantumOfIndentation =
 level : Int -> Int
 level indentation =
     indentation // quantumOfIndentation
-
-
-blockLevel : SBlock -> Int
-blockLevel block =
-    case block of
-        SParagraph _ meta ->
-            level meta.indent
-
-        SVerbatimBlock _ _ meta ->
-            level meta.indent
-
-        SBlock _ _ meta ->
-            level meta.indent
-
-        SSystem _ ->
-            0
-
-
-blockLevelOfStackTop : List SBlock -> Int
-blockLevelOfStackTop stack =
-    case List.head stack of
-        Nothing ->
-            0
-
-        Just blockM ->
-            blockLevel blockM
-
-
-type SBlockType
-    = P
-    | V
-    | B
-    | S
-
-
-typeOfBlock : SBlock -> SBlockType
-typeOfBlock b =
-    case b of
-        SParagraph _ _ ->
-            P
-
-        SVerbatimBlock _ _ _ ->
-            V
-
-        SBlock _ _ _ ->
-            B
-
-        SSystem _ ->
-            S
-
-
-blockLabel : SBlock -> String
-blockLabel block =
-    case block of
-        SParagraph _ _ ->
-            "(no label)"
-
-        SBlock s _ _ ->
-            s
-
-        SVerbatimBlock s _ _ ->
-            s
-
-        SSystem s ->
-            s
-
-
-blockLabelAtBottomOfStack : List SBlock -> String
-blockLabelAtBottomOfStack stack =
-    case List.head (List.reverse stack) of
-        Nothing ->
-            "(no label)"
-
-        Just block ->
-            blockLabel block
-
-
-reverseStack : State -> State
-reverseStack state =
-    { state | stack = List.reverse state.stack }
 
 
 reverseContents : SBlock -> SBlock
@@ -381,22 +214,6 @@ reverseContents block =
 
         SBlock name blocks meta ->
             SBlock name (List.map reverseContents blocks) meta
-
-        SSystem s ->
-            SSystem s
-
-
-replaceMeta : Meta -> SBlock -> SBlock
-replaceMeta meta block =
-    case block of
-        SParagraph strings _ ->
-            SParagraph strings meta
-
-        SVerbatimBlock name strings _ ->
-            SVerbatimBlock name strings meta
-
-        SBlock name blocks _ ->
-            SBlock name blocks meta
 
         SSystem s ->
             SSystem s

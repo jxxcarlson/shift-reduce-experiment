@@ -1,4 +1,4 @@
-module Markup exposing (parse, parseBlock, parseToBlock, run)
+module Markup exposing (parseToBlock, run)
 
 import Either
 import Markup.AST as AST

@@ -1,17 +1,7 @@
 module Markup.SourceMap exposing (find, getFragment)
 
-import Markup.Block as Block exposing (Block(..), ExprM(..), Meta)
+import Markup.Block exposing (Block(..), ExprM(..))
 import Markup.Meta as Meta exposing (ExpressionMeta)
-
-
-getFragment1 : String -> List String -> List Block -> Maybe String
-getFragment1 id sourceText blocks =
-    case find id blocks of
-        Nothing ->
-            Nothing
-
-        Just expressionMeta ->
-            Just (Meta.stringAtLoc expressionMeta.loc sourceText)
 
 
 getFragment : String -> List String -> List Block -> Maybe { fragment : String, meta : ExpressionMeta }
@@ -32,7 +22,7 @@ find id blocks =
 findInBlock : String -> Block -> List ExpressionMeta
 findInBlock id block =
     case block of
-        Paragraph list meta ->
+        Paragraph list _ ->
             List.map (findInExprM id) list |> List.concat
 
         VerbatimBlock _ _ exprMeta _ ->

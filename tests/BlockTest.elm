@@ -2,9 +2,8 @@ module BlockTest exposing (suiteBlock)
 
 import Expect
 import Markup
-import Markup.Block as Block exposing (Block(..), ExprM(..))
-import Markup.Meta as Meta
-import Markup.Tokenizer as Tokenizer exposing (Lang(..))
+import Markup.Block exposing (Block(..), ExprM(..))
+import Markup.Tokenizer exposing (Lang(..))
 import Test exposing (..)
 
 

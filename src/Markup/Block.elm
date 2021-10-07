@@ -8,10 +8,9 @@ module Markup.Block exposing (..)
 --, test
 --)
 
-import Markup.AST as AST exposing (Expr(..))
+import Markup.AST exposing (Expr(..))
 import Markup.Debugger exposing (..)
 import Markup.Meta as Meta exposing (ExpressionMeta)
-import Markup.Token as Token
 
 
 type ExprM

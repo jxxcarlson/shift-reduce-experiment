@@ -61,9 +61,6 @@ stringAtLoc loc inputLines =
         selectedLines =
             List.filter (\( i, _ ) -> i >= loc.begin.row && i <= loc.end.row) (List.indexedMap (\i s -> ( i, s )) inputLines)
 
-        n =
-            List.length selectedLines
-
         take k str =
             -- TODO: better implementation
             String.slice 0 (k + 1) str

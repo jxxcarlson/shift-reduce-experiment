@@ -1,7 +1,6 @@
 module Block.L1.Line exposing (lineType)
 
 import Block.Line as Line
-import Markup.ParserTools as ParserTools
 import Parser exposing ((|.), (|=), Parser)
 
 

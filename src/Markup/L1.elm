@@ -20,10 +20,10 @@ reduce state =
         (Left (Token.Verbatim name str loc)) :: [] ->
             reduceAux (AST.Verbatim name str loc) [] state
 
-        (Left (Symbol "]" loc3)) :: (Left (Token.Text str loc2)) :: (Left (Symbol "[" loc1)) :: rest ->
+        (Left (Symbol "]" loc3)) :: (Left (Token.Text str _)) :: (Left (Symbol "[" loc1)) :: rest ->
             reduceAux (makeGExpr { begin = loc1.begin, end = loc3.end } str) rest state
 
-        (Left (Symbol "]" loc4)) :: (Right expr) :: (Left (Token.Text name loc2)) :: (Left (Symbol "[" loc1)) :: rest ->
+        (Left (Symbol "]" loc4)) :: (Right expr) :: (Left (Token.Text name _)) :: (Left (Symbol "[" loc1)) :: rest ->
             reduceAux (makeGExpr2 { begin = loc1.begin, end = loc4.end } name expr) rest state
 
         _ ->

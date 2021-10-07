@@ -3,7 +3,6 @@ module ParserTests exposing (suiteL1, suiteMarkdown, suiteMiniLaTeX)
 import Expect
 import Markup exposing (run)
 import Markup.AST exposing (Expr(..))
-import Markup.Token as Token
 import Markup.Tokenizer exposing (Lang(..))
 import Test exposing (..)
 
@@ -14,7 +13,7 @@ loc i j =
 
 suiteMarkdown : Test
 suiteMarkdown =
-     describe "parsing Markdown"
+    describe "parsing Markdown"
         [ test "(1) foo" <|
             \_ ->
                 run Markdown "foo"

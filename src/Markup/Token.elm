@@ -1,7 +1,6 @@
 module Markup.Token exposing
     ( Loc
     , Token(..)
-    , content
     , dummyLoc
     , length
     , startPositionOf
@@ -41,25 +40,6 @@ startPositionOf token =
 
         MarkedText _ _ loc ->
             loc.begin
-
-
-content : Token -> String
-content token =
-    case token of
-        Text str _ ->
-            str
-
-        Verbatim _ str _ ->
-            str
-
-        Symbol str _ ->
-            str
-
-        FunctionName str _ ->
-            str
-
-        MarkedText _ str _ ->
-            str
 
 
 length : Token -> Int

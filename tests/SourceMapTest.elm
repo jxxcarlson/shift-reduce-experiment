@@ -2,11 +2,9 @@ module SourceMapTest exposing (suiteSourceMap)
 
 import Expect
 import Markup
-import Markup.Block as Block exposing (Block(..), ExprM(..))
 import Markup.Debugger exposing (..)
-import Markup.Meta as Meta
 import Markup.SourceMap as SourceMap
-import Markup.Tokenizer as Tokenizer exposing (Lang(..))
+import Markup.Tokenizer exposing (Lang(..))
 import Test exposing (..)
 
 
@@ -28,14 +26,6 @@ blocks =
 
 source =
     [ "fee\n", "\n", "foo\n", "bar\n", "baz\n", "abc\n" ]
-
-
-b1 =
-    Paragraph [ TextM "foo\n" { id = "1.1.0", loc = { begin = { col = 0, row = 0 }, end = { col = 3, row = 0 } } } ] { begin = 0, end = 1, id = "1.1", indent = 0 }
-
-
-b2 =
-    Paragraph [ TextM "foo\nbar\nbaz\nabc\n" { id = "1.2.0", loc = { begin = { col = 0, row = 0 }, end = { col = 3, row = 3 } } } ] { begin = 0, end = 4, id = "1.2", indent = 0 }
 
 
 suiteSourceMap : Test

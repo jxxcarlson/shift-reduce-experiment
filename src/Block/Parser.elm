@@ -1,12 +1,9 @@
 module Block.Parser exposing (run)
 
 import Block.Library
-import Block.Line
 import Block.State exposing (State)
-import Dict exposing (Dict)
 import List.Extra
-import Markup.Block
-import Markup.Debugger exposing (debug1, debug2, debug3)
+import Markup.Debugger exposing (debug3)
 import Markup.Tokenizer exposing (Lang)
 
 
@@ -50,10 +47,6 @@ postProcess state =
 
 getLine : Lang -> State -> State
 getLine language state =
-    let
-        line =
-            List.Extra.getAt state.index state.input |> Maybe.withDefault ""
-    in
     { state
         | currentLineData =
             Block.Library.classify language

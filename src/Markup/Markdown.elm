@@ -70,14 +70,14 @@ recoverFromError state =
     -- push an error message onto state.committed, then exit as usual: apply function reduce
     -- to the state and reverse state.committed.
     case state.stack of
-        (Left (Token.Text loc loc2)) :: (Left (Symbol "[" loc1)) :: _ ->
+        (Left (Token.Text _ _)) :: (Left (Symbol "[" loc1)) :: _ ->
             Loop
                 { state
                     | stack = Left (Symbol "]" loc1) :: state.stack
                     , committed = AST.Text "I corrected an unmatched '[' in the following expression: " Token.dummyLoc :: state.committed
                 }
 
-        (Left (Symbol "[" loc3)) :: (Left (Token.Text _ loc2)) :: (Left (Symbol "[" loc1)) :: _ ->
+        (Left (Symbol "[" _)) :: (Left (Token.Text _ _)) :: (Left (Symbol "[" loc1)) :: _ ->
             Loop
                 { state
                     | stack = Left (Symbol "]" loc1) :: state.stack

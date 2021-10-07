@@ -26,10 +26,6 @@ metaDataTest begin end content =
     { accept = input == str, input = input, output = str, meta = meta |> Debug.log "META" }
 
 
-loc i j =
-    { begin = i, end = j }
-
-
 suiteMeta : Test
 suiteMeta =
     describe

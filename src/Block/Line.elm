@@ -1,6 +1,6 @@
 module Block.Line exposing (BlockOption(..), LineData, LineType(..), countLeadingSpaces, emptyLineParser, ordinaryLineParser)
 
-import Parser exposing ((|.), (|=), Parser)
+import Parser exposing ((|.), Parser)
 
 
 type LineType

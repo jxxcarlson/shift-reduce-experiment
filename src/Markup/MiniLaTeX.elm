@@ -33,16 +33,16 @@ reduce state =
         (Left (Token.Text str loc)) :: [] ->
             reduceAux (AST.Text str loc) [] state |> debug1 "RULE 1"
 
-        (Left (Token.Symbol "}" loc4)) :: (Left (Token.Text arg loc3)) :: (Left (Token.Symbol "{" loc2)) :: (Left (Token.FunctionName name loc1)) :: rest ->
+        (Left (Token.Symbol "}" loc4)) :: (Left (Token.Text arg loc3)) :: (Left (Token.Symbol "{" _)) :: (Left (Token.FunctionName name loc1)) :: rest ->
             { state | stack = Right (AST.Expr name [ AST.Text arg loc3 ] { begin = loc1.begin, end = loc4.end }) :: rest } |> debug1 "RULE 2"
 
-        (Left (Token.Symbol "}" loc4)) :: (Left (Token.Text arg loc3)) :: (Left (Token.Symbol "{" loc2)) :: (Right (AST.Expr name args loc1)) :: rest ->
+        (Left (Token.Symbol "}" loc4)) :: (Left (Token.Text arg loc3)) :: (Left (Token.Symbol "{" _)) :: (Right (AST.Expr name args loc1)) :: rest ->
             { state | stack = Right (AST.Expr name (AST.Text arg loc3 :: args) { begin = loc1.begin, end = loc4.end }) :: rest } |> debug1 "RULE 3"
 
         (Left (Token.Text str loc2)) :: (Right (AST.Expr name args loc1)) :: rest ->
             { state | committed = AST.Text str loc2 :: AST.Expr name args loc1 :: state.committed, stack = rest } |> debug1 "RULE 4"
 
-        (Left (Token.Symbol "}" loc4)) :: (Right (AST.Expr exprName args loc3)) :: (Left (Token.Symbol "{" loc2)) :: (Left (Token.FunctionName fName loc1)) :: rest ->
+        (Left (Token.Symbol "}" loc4)) :: (Right (AST.Expr exprName args loc3)) :: (Left (Token.Symbol "{" _)) :: (Left (Token.FunctionName fName loc1)) :: rest ->
             { state | committed = AST.Expr fName [ AST.Expr exprName args loc3 ] { begin = loc1.begin, end = loc4.end } :: state.committed, stack = rest } |> debug1 "RULE 5"
 
         (Left (Token.Verbatim label content loc)) :: [] ->

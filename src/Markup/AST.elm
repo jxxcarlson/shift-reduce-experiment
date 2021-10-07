@@ -1,6 +1,5 @@
 module Markup.AST exposing (Expr(..))
 
-import List.Extra
 import Markup.Token as Token
 
 

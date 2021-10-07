@@ -3,7 +3,6 @@ module Block.State exposing (..)
 import Block.Line
 import Dict exposing (Dict)
 import Markup.Block exposing (SBlock)
-import Markup.Tokenizer exposing (Lang)
 
 
 
