@@ -1,8 +1,8 @@
 module SourceMapTest exposing (suiteSourceMap)
 
 import Expect
-import Markup
 import Markup.Debugger exposing (..)
+import Markup.Markup as Markup
 import Markup.SourceMap as SourceMap
 import Markup.Tokenizer exposing (Lang(..))
 import Test exposing (..)

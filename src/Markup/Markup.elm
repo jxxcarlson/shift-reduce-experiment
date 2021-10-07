@@ -1,4 +1,4 @@
-module Markup exposing (parse2, parseToBlock, run)
+module Markup.Markup exposing (parseExpr, parseToBlock, run)
 
 import Block.Parser
 import Block.State
@@ -15,17 +15,8 @@ import Markup.Token as Token exposing (Token)
 import Markup.Tokenizer as Tokenizer exposing (Lang(..))
 
 
-parse2 : Lang -> Int -> List String -> { ast : List Block, accumulator : Block.State.Accumulator }
-parse2 lang generation lines =
-    let
-        state =
-            Block.Parser.run lang generation lines
-    in
-    { ast = List.map (Block.map (parse lang)) state.committed, accumulator = state.accumulator }
-
-
-parse : Lang -> String -> List AST.Expr
-parse lang str =
+parseExpr : Lang -> String -> List AST.Expr
+parseExpr lang str =
     run lang str |> .committed
 
 
@@ -39,14 +30,9 @@ parse lang str =
 -}
 
 
-parseBlock : Lang -> SBlock -> Block
-parseBlock lang sblock =
-    Block.map (parse lang) sblock
-
-
 parseToBlock : Lang -> String -> Int -> String -> Block
 parseToBlock lang id firstLine str =
-    parseBlock lang (Block.make id firstLine str)
+    Block.make id firstLine str |> Block.map (parseExpr lang)
 
 
 {-|

@@ -4,7 +4,7 @@ import Block.Parser
 import Block.State
 import Dict
 import Expect
-import Markup
+import Markup.API as API
 import Markup.Block exposing (Block(..), ExprM(..))
 import Markup.Tokenizer exposing (Lang(..))
 import Test exposing (..)
@@ -12,7 +12,7 @@ import Test exposing (..)
 
 parseMiniLaTeX : String -> { ast : List Block, accumulator : Block.State.Accumulator }
 parseMiniLaTeX str =
-    Markup.parse2 MiniLaTeX 0 (String.lines str)
+    API.parse MiniLaTeX 0 (String.lines str)
 
 
 suiteAPITestMiniLaTeX : Test
