@@ -31,7 +31,7 @@ type SBlock
     = SParagraph (List String) Meta
     | SVerbatimBlock String (List String) Meta
     | SBlock String (List SBlock) Meta
-    | SError String
+    | SSystem String
 
 
 type alias Meta =
@@ -88,7 +88,7 @@ map exprParser sblock =
             in
             Block name (List.map mapper blocks) meta
 
-        SError str ->
+        SSystem str ->
             BError str
 
 

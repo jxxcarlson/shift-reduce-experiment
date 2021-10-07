@@ -1,12 +1,12 @@
 module Block.Library exposing (finalize, processLine, recoverFromError, reduce)
 
-import Block.Handle as Handle
 import Block.L1.Line
 import Block.Line exposing (BlockOption(..), LineData, LineType(..), countLeadingSpaces, emptyLineParser, ordinaryLineParser)
 import Block.Markdown.Line
 import Block.MiniLaTeX.Line
 import Block.State exposing (State)
 import Markup.Block exposing (Meta, SBlock(..))
+import Markup.Debugger exposing (debug1, debug2, debug3)
 import Markup.ParserTools as ParserTools
 import Markup.Tokenizer exposing (Lang(..))
 
@@ -31,12 +31,12 @@ reduce2 lineType state =
 
 finalize : State -> State
 finalize state =
-    { state | stack = [] }
+    { state | stack = [] } |> debug3 "finalize"
 
 
 recoverFromError : State -> State
 recoverFromError state =
-    { state | stack = [] }
+    { state | stack = [] } |> debug3 "recoverFromError"
 
 
 {-|
@@ -49,58 +49,106 @@ recoverFromError state =
     returns a new State value.
 
 -}
-processLine : Lang -> String -> State -> State
-processLine language line state =
+processLine : Lang -> State -> State
+processLine language state =
     let
         lineData =
-            classify language state.inVerbatimBlock line
+            classify language state.inVerbatimBlock state.currentLine |> debug2 ("LineData, index = " ++ String.fromInt state.index)
 
         inVerbatimBlock =
             isInVerbatimBlock lineData state
 
         adjustedLineType =
             adjustLineType lineData inVerbatimBlock
-
-        indent =
-            lineData.indent
     in
-    case adjustedLineType of
-        BeginBlock AcceptFirstLine s ->
-            Handle.beginBlock1 lineData indent state s
+    case lineData.lineType of
+        BeginBlock option str ->
+            createBlock state
 
-        BeginBlock RejectFirstLine s ->
-            Handle.beginBlock2 indent state s
+        BeginVerbatimBlock str ->
+            createBlock state
 
-        BeginVerbatimBlock s ->
-            Handle.beginVerbatimBlock indent state s
+        EndBlock str ->
+            commitBlock state
+
+        EndVerbatimBlock str ->
+            commitBlock state
 
         OrdinaryLine ->
-            state |> Handle.ordinaryLine indent line |> (\s -> { s | lineNumber = s.lineNumber + 1 })
+            if state.currentLineData.lineType == BlankLine then
+                createBlock state
+
+            else
+                case compare (level lineData.indent) (level state.indent) of
+                    EQ ->
+                        addLineToCurrentBlock state
+
+                    GT ->
+                        createBlock state
+
+                    LT ->
+                        commitBlock state
 
         VerbatimLine ->
-            state |> Handle.verbatimLine indent line
+            if state.currentLineData.lineType == VerbatimLine then
+                addLineToCurrentBlock state
+
+            else
+                case compare (level lineData.indent) (level state.indent) of
+                    EQ ->
+                        addLineToCurrentBlock state
+
+                    GT ->
+                        addLineToCurrentBlock state
+
+                    LT ->
+                        commitBlock state
 
         BlankLine ->
-            Handle.blankLine indent state
+            if state.currentLineData.lineType == BlankLine then
+                state
 
-        EndBlock s ->
-            Handle.endBlock indent state s
+            else
+                case compare (level lineData.indent) (level state.indent) of
+                    EQ ->
+                        addLineToCurrentBlock state
 
-        EndVerbatimBlock s ->
-            -- TODO: finish up
-            reduce2 (EndVerbatimBlock s) state
+                    GT ->
+                        createBlock state
 
-        Problem s ->
-            -- TODO: finish up
+                    LT ->
+                        commitBlock state
+
+        Problem str ->
             state
 
 
+createBlock : State -> State
+createBlock state =
+    state |> debug1 "addNewBlock"
+
+
+commitBlock : State -> State
+commitBlock state =
+    state |> debug1 "commitBlock"
+
+
+addLineToCurrentBlock : State -> State
+addLineToCurrentBlock state =
+    state |> debug1 "addLineToCurrentBlock"
+
+
+{-|
+
+    Put new block on stack.
+
+-}
 shift : SBlock -> State -> State
 shift block state =
     let
         newMeta =
-            { begin = state.lineNumber
-            , end = state.lineNumber
+            { begin = state.index
+            , end = state.index
             , indent = state.indent
             , id = String.fromInt state.generation ++ "." ++ String.fromInt state.blockCount
             }
@@ -110,7 +158,6 @@ shift block state =
     in
     { state
         | stack = newBlock :: state.stack
-        , lineNumber = state.lineNumber + 1
         , blockCount = state.blockCount + 1
     }
 
@@ -212,7 +259,7 @@ blockLevel block =
         SBlock _ _ meta ->
             level meta.indent
 
-        SError _ ->
+        SSystem _ ->
             0
 
 
@@ -230,7 +277,7 @@ type SBlockType
     = P
     | V
     | B
-    | E
+    | S
 
 
 typeOfBlock : SBlock -> SBlockType
@@ -245,8 +292,8 @@ typeOfBlock b =
         SBlock _ _ _ ->
             B
 
-        SError _ ->
-            E
+        SSystem _ ->
+            S
 
 
 blockLabel : SBlock -> String
@@ -261,7 +308,7 @@ blockLabel block =
         SVerbatimBlock s _ _ ->
             s
 
-        SError s ->
+        SSystem s ->
             s
 
 
@@ -292,8 +339,8 @@ reverseContents block =
         SBlock name blocks meta ->
             SBlock name (List.map reverseContents blocks) meta
 
-        SError s ->
-            SError s
+        SSystem s ->
+            SSystem s
 
 
 replaceMeta : Meta -> SBlock -> SBlock
@@ -308,5 +355,5 @@ replaceMeta meta block =
         SBlock name blocks _ ->
             SBlock name blocks meta
 
-        SError s ->
-            SError s
+        SSystem s ->
+            SSystem s

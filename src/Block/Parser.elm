@@ -1,8 +1,12 @@
-module Block.Parser exposing (..)
+module Block.Parser exposing (runParser)
 
 import Block.Library
+import Block.Line
 import Block.State exposing (State)
 import Dict exposing (Dict)
+import List.Extra
+import Markup.Block
+import Markup.Debugger exposing (debug1, debug2, debug3)
 import Markup.Tokenizer exposing (Lang)
 
 
@@ -13,7 +17,7 @@ import Markup.Tokenizer exposing (Lang)
 {-| -}
 runParser : Lang -> Int -> List String -> State
 runParser language generation input =
-    loop (initialState generation input) (nextStep language)
+    loop (Block.State.init generation input) (nextStep language)
 
 
 {-|
@@ -28,12 +32,23 @@ runParser language generation input =
 -}
 nextStep : Lang -> State -> Step State State
 nextStep lang state =
-    case List.head state.input of
-        Nothing ->
-            state |> Block.Library.reduce |> finalizeOrRecoverFromError
+    if state.index > state.lastIndex then
+        finalizeOrRecoverFromError state
 
-        Just line ->
-            Loop (Block.Library.processLine lang line state)
+    else
+        Loop (state |> getLine |> Block.Library.processLine lang)
+
+
+getLine : State -> State
+getLine state =
+    let
+        line =
+            List.Extra.getAt state.index state.input |> Maybe.withDefault ""
+    in
+    { state
+        | currentLine = List.Extra.getAt state.index state.input |> Maybe.withDefault ""
+        , index = state.index + 1
+    }
 
 
 finalizeOrRecoverFromError : State -> Step State State
@@ -43,30 +58,6 @@ finalizeOrRecoverFromError state =
 
     else
         Loop (Block.Library.recoverFromError state)
-
-
-
--- INTIALIZERS
-
-
-initialState : Int -> List String -> State
-initialState generation input =
-    { input = input
-    , output = []
-    , indent = 0
-    , verbatimBlockInitialIndent = 0
-    , lineNumber = 0
-    , generation = generation
-    , blockCount = 0
-    , counter = 0
-    , inVerbatimBlock = False
-    , accumulator = initialAccumulator
-    , stack = []
-    }
-
-
-initialAccumulator =
-    { dict = Dict.empty }
 
 
 
