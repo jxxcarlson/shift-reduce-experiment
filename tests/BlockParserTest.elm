@@ -52,6 +52,10 @@ suiteMiniLaTeXBlockParser =
             \_ ->
                 run MiniLaTeX "\\begin{foo}\n   a\n   b\n\\end{foo}"
                     |> Expect.equal [ SBlock "foo" [ SParagraph [ "   a", "   b" ] { begin = 1, end = 2, id = "1", indent = 3 } ] { begin = 0, end = 3, id = "0", indent = 0 } ]
+        , test "(2) Nested environments" <|
+            \_ ->
+                run MiniLaTeX "\\begin{foo}\n   xyz\n   \\begin{bar}\n      abc\n   \\end{bar}\\end{foo}"
+                    |> Expect.equal [ SBlock "foo" [ SParagraph [ "   xyz" ] { begin = 1, end = 1, id = "1", indent = 3 } ] { begin = 0, end = 1, id = "0", indent = 0 }, SBlock "bar" [ SParagraph [ "      abc" ] { begin = 3, end = 3, id = "3", indent = 6 } ] { begin = 2, end = 3, id = "1", indent = 3 } ]
         ]
 
 
