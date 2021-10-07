@@ -1,7 +1,7 @@
 module Block.Library exposing (classify, finalize, processLine, recoverFromError)
 
 import Block.L1.Line
-import Block.Line exposing (LineData, LineType(..))
+import Block.Line exposing (BlockOption(..), LineData, LineType(..))
 import Block.Markdown.Line
 import Block.MiniLaTeX.Line
 import Block.State exposing (State)
@@ -12,7 +12,12 @@ import Markup.Tokenizer exposing (Lang(..))
 
 finalize : State -> State
 finalize state =
-    { state | committed = reverseContents state.currentBlock :: state.committed |> List.reverse } |> debug3 "finalize"
+    case state.currentBlock of
+        Nothing ->
+            { state | committed = state.committed |> List.reverse } |> debug3 "finalize"
+
+        Just block ->
+            { state | committed = reverseContents block :: state.committed |> List.reverse } |> debug3 "finalize"
 
 
 recoverFromError : State -> State
@@ -58,7 +63,7 @@ processLine language state =
                         createBlock state
 
                     LT ->
-                        commitBlock state
+                        state |> commitBlock |> createBlock
 
         VerbatimLine ->
             if state.previousLineData.lineType == VerbatimLine then
@@ -118,8 +123,20 @@ createBlockPhase2 state =
         OrdinaryLine ->
             { state
                 | currentBlock =
-                    SParagraph [ state.currentLineData.content ]
-                        { begin = state.index, end = state.index, id = String.fromInt state.blockCount, indent = state.currentLineData.indent }
+                    Just <|
+                        SParagraph [ state.currentLineData.content ]
+                            { begin = state.index, end = state.index, id = String.fromInt state.blockCount, indent = state.currentLineData.indent }
+                , blockCount = state.blockCount + 1
+            }
+
+        BeginBlock RejectFirstLine mark ->
+            { state
+                | currentBlock =
+                    Just <|
+                        SBlock mark
+                            []
+                            { begin = state.index, end = state.index, id = String.fromInt state.blockCount, indent = state.currentLineData.indent }
+                , currentLineData = incrementLevel state.currentLineData -- do this because a block expects subsequent lines to be indented
                 , blockCount = state.blockCount + 1
             }
 
@@ -131,23 +148,35 @@ createBlockPhase2 state =
 
 commitBlock : State -> State
 commitBlock state =
-    if state.currentBlock == SSystem "initialBlock" then
-        state
+    case state.currentBlock of
+        Nothing ->
+            state
 
-    else
-        { state | committed = reverseContents state.currentBlock :: state.committed } |> debug1 "commitBlock"
+        Just block ->
+            { state | committed = reverseContents block :: state.committed, currentBlock = Nothing } |> debug1 "commitBlock"
 
 
 shiftBlock : State -> State
 shiftBlock state =
-    { state | stack = state.currentBlock :: state.stack } |> debug1 "shiftBlock"
+    case state.currentBlock of
+        Nothing ->
+            state
+
+        Just block ->
+            { state | stack = block :: state.stack } |> debug1 "shiftBlock"
 
 
 addLineToCurrentBlock : State -> State
 addLineToCurrentBlock state =
     (case state.currentBlock of
-        SParagraph lines meta ->
-            { state | currentBlock = SParagraph (state.currentLineData.content :: lines) { meta | end = state.index } }
+        Nothing ->
+            state
+
+        Just (SParagraph lines meta) ->
+            { state | currentBlock = Just <| SParagraph (state.currentLineData.content :: lines) { meta | end = state.index } }
+
+        Just (SBlock mark blocks meta) ->
+            { state | currentBlock = Just <| SBlock mark (addLineToBlocks state.index state.currentLineData blocks) { meta | end = state.index } }
 
         _ ->
             state
@@ -157,6 +186,17 @@ addLineToCurrentBlock state =
 
 
 -- HELPERS
+
+
+addLineToBlocks : Int -> LineData -> List SBlock -> List SBlock
+addLineToBlocks index lineData blocks =
+    case blocks of
+        (SParagraph lines meta) :: rest ->
+            SParagraph (lineData.content :: lines) { meta | end = index } :: rest
+
+        rest ->
+            -- TODO: the id field is questionable
+            SParagraph [ lineData.content ] { begin = index, end = index, id = String.fromInt index, indent = lineData.indent } :: rest
 
 
 classify : Lang -> Bool -> String -> LineData
@@ -217,3 +257,8 @@ reverseContents block =
 
         SSystem s ->
             SSystem s
+
+
+incrementLevel : LineData -> LineData
+incrementLevel lineData =
+    { lineData | indent = lineData.indent + quantumOfIndentation }
