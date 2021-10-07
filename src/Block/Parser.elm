@@ -3,7 +3,7 @@ module Block.Parser exposing (run)
 import Block.Library
 import Block.State exposing (State)
 import List.Extra
-import Markup.Debugger exposing (debug3)
+import Markup.Debugger exposing (debug1, debug2, debug3)
 import Markup.Tokenizer exposing (Lang)
 
 
@@ -54,8 +54,7 @@ getLine language state =
                 (List.Extra.getAt state.index state.input
                     |> Maybe.withDefault "??"
                 )
-
-        -- |> debug2 ("LINE DATA " ++ String.fromInt state.index)
+                |> debug2 ("LINE DATA " ++ String.fromInt state.index)
     }
 
 
