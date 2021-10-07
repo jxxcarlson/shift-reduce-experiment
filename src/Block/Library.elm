@@ -7,7 +7,9 @@ import Block.MiniLaTeX.Line
 import Block.State exposing (State)
 import Markup.Block exposing (SBlock(..))
 import Markup.Debugger exposing (debug1, debug2, debug3)
+import Markup.ParserTools
 import Markup.Tokenizer exposing (Lang(..))
+import Parser.Advanced
 
 
 finalize : State -> State
@@ -135,6 +137,17 @@ createBlockPhase2 state =
                     Just <|
                         SBlock mark
                             []
+                            { begin = state.index, end = state.index, id = String.fromInt state.blockCount, indent = state.currentLineData.indent }
+                , currentLineData = incrementLevel state.currentLineData -- do this because a block expects subsequent lines to be indented
+                , blockCount = state.blockCount + 1
+            }
+
+        BeginBlock AcceptFirstLine kind ->
+            { state
+                | currentBlock =
+                    Just <|
+                        SBlock kind
+                            [ SParagraph [ deleteSpaceDelimitedPrefix state.currentLineData.content ] { begin = state.index, end = state.index, id = String.fromInt state.blockCount, indent = state.currentLineData.indent } ]
                             { begin = state.index, end = state.index, id = String.fromInt state.blockCount, indent = state.currentLineData.indent }
                 , currentLineData = incrementLevel state.currentLineData -- do this because a block expects subsequent lines to be indented
                 , blockCount = state.blockCount + 1
@@ -281,3 +294,18 @@ reverseContents block =
 incrementLevel : LineData -> LineData
 incrementLevel lineData =
     { lineData | indent = lineData.indent + quantumOfIndentation }
+
+
+nibble : String -> String
+nibble str =
+    case Parser.Advanced.run (Markup.ParserTools.text (\c_ -> c_ /= ' ') (\c_ -> c_ /= ' ')) str of
+        Ok stringData ->
+            stringData.content
+
+        Err _ ->
+            ""
+
+
+deleteSpaceDelimitedPrefix : String -> String
+deleteSpaceDelimitedPrefix str =
+    String.replace (nibble str ++ " ") "" str

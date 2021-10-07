@@ -43,3 +43,31 @@ suiteL1BlockParser =
                 run L1 "|| code\n   a[i] = 0\n      b[i] = 1\n\nabc"
                     |> Expect.equal [ SVerbatimBlock "code" [ "   a[i] = 0", "      b[i] = 1" ] { begin = 0, end = 2, id = "0", indent = 0 }, SParagraph [ "abc" ] { begin = 4, end = 4, id = "1", indent = 0 } ]
         ]
+
+
+suiteMiniLaTeXBlockParser : Test
+suiteMiniLaTeXBlockParser =
+    describe "recovering a substring of the source text from metadata"
+        [ test "(1) " <|
+            \_ ->
+                run MiniLaTeX "\\begin{foo}\n   a\n   b\n\\end{foo}"
+                    |> Expect.equal [ SBlock "foo" [ SParagraph [ "   a", "   b" ] { begin = 1, end = 2, id = "1", indent = 3 } ] { begin = 0, end = 3, id = "0", indent = 0 } ]
+        ]
+
+
+suiteMarkdownBlockParser : Test
+suiteMarkdownBlockParser =
+    describe "recovering a substring of the source text from metadata"
+        [ test "(1) " <|
+            \_ ->
+                run Markdown "# Intro to Chemistry"
+                    |> Expect.equal [ SBlock "foo" [ SParagraph [ "   a", "   b" ] { begin = 1, end = 2, id = "1", indent = 3 } ] { begin = 0, end = 3, id = "0", indent = 0 } ]
+        , test "(2) " <|
+            \_ ->
+                run Markdown "- foo bar"
+                    |> Expect.equal [ SBlock "item" [ SParagraph [ "foo bar" ] { begin = 0, end = 0, id = "0", indent = 0 } ] { begin = 0, end = 0, id = "0", indent = 0 } ]
+        , test "(3) " <|
+            \_ ->
+                run Markdown "> foo bar\n   abc"
+                    |> Expect.equal [ SBlock "quotation" [ SParagraph [ "foo bar", "   abc" ] { begin = 0, end = 1, id = "0", indent = 0 } ] { begin = 0, end = 1, id = "0", indent = 0 } ]
+        ]
