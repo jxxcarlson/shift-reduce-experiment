@@ -2,3 +2,5 @@
 scripts:
 
    cloc: cloc --by-file src
+   cloc-block : cloc --by-file src/Block
+   cloc-markup : cloc --by-file src/Markup

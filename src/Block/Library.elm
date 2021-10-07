@@ -76,7 +76,7 @@ processLine language state =
                 createBlock state
 
             else
-                case compare (level state.currentLineData.indent) (level state.indent) of
+                case compare (level state.currentLineData.indent) (level state.previousLineData.indent) of
                     EQ ->
                         addLineToCurrentBlock state
 
@@ -91,7 +91,7 @@ processLine language state =
                 addLineToCurrentBlock state
 
             else
-                case compare (level state.currentLineData.indent) (level state.indent) of
+                case compare (level state.currentLineData.indent) (level state.previousLineData.indent) of
                     EQ ->
                         addLineToCurrentBlock state
 
@@ -106,7 +106,7 @@ processLine language state =
                 state
 
             else
-                case compare (level state.currentLineData.indent) (level state.indent) of
+                case compare (level state.currentLineData.indent) (level state.previousLineData.indent) of
                     EQ ->
                         addLineToCurrentBlock state
 
@@ -122,12 +122,31 @@ processLine language state =
 
 createBlock : State -> State
 createBlock state =
+    state |> createBlockPhase1 |> createBlockPhase2
+
+
+createBlockPhase1 : State -> State
+createBlockPhase1 state =
+    case compare (level state.currentLineData.indent) (level state.previousLineData.indent) of
+        EQ ->
+            commitBlock state
+
+        GT ->
+            shiftBlock state
+
+        LT ->
+            commitBlock state
+
+
+createBlockPhase2 : State -> State
+createBlockPhase2 state =
     (case state.currentLineData.lineType of
         OrdinaryLine ->
             { state
                 | currentBlock =
                     SParagraph [ state.currentLineData.content ]
                         { begin = state.index, end = state.index, id = String.fromInt state.blockCount, indent = state.currentLineData.indent }
+                , blockCount = state.blockCount + 1
             }
 
         _ ->
@@ -138,7 +157,16 @@ createBlock state =
 
 commitBlock : State -> State
 commitBlock state =
-    state |> debug1 "commitBlock"
+    if state.currentBlock == SSystem "initialBlock" then
+        state
+
+    else
+        { state | committed = reverseContents state.currentBlock :: state.committed } |> debug1 "commitBlock"
+
+
+shiftBlock : State -> State
+shiftBlock state =
+    { state | stack = state.currentBlock :: state.stack } |> debug1 "shiftBlock"
 
 
 addLineToCurrentBlock : State -> State

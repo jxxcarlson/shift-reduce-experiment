@@ -1,4 +1,4 @@
-module Block.Parser exposing (runParser)
+module Block.Parser exposing (run)
 
 import Block.Library
 import Block.Line
@@ -15,8 +15,8 @@ import Markup.Tokenizer exposing (Lang)
 
 
 {-| -}
-runParser : Lang -> Int -> List String -> State
-runParser language generation input =
+run : Lang -> Int -> List String -> State
+run language generation input =
     loop (Block.State.init generation input |> debug3 "INITIAL STATE") (nextStep language)
 
 
@@ -41,7 +41,11 @@ nextStep lang state =
 
 postProcess : State -> State
 postProcess state =
-    { state | previousLineData = state.currentLineData }
+    { state | previousLineData = state.currentLineData, index = state.index + 1 }
+
+
+
+-- |> debug3 ("postProcess " ++ String.fromInt state.index)
 
 
 getLine : Lang -> State -> State
@@ -57,8 +61,8 @@ getLine language state =
                 (List.Extra.getAt state.index state.input
                     |> Maybe.withDefault "??"
                 )
-                |> debug2 ("LINE DATA " ++ String.fromInt state.index)
-        , index = state.index + 1
+
+        -- |> debug2 ("LINE DATA " ++ String.fromInt state.index)
     }
 
 
