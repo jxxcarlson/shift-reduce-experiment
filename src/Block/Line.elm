@@ -18,7 +18,8 @@ type LineType
 is incorporated into the body of the block, e.g. TODO add example
 -}
 type BlockOption
-    = AcceptFirstLine
+    = AcceptNibbledFirstLine
+    | AcceptFirstLine
     | RejectFirstLine
 
 

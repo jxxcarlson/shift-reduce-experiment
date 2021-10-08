@@ -1,6 +1,6 @@
-module Render.AST2 exposing (getName, stringValueOfList, textToString)
+module Render.AST2 exposing (getName, stringValueOfBlockList, stringValueOfList, textToString)
 
-import Markup.Block exposing (ExprM(..))
+import Markup.Block exposing (Block(..), ExprM(..))
 import Markup.Token as Token
 
 
@@ -12,6 +12,27 @@ getName text =
 
         _ ->
             Nothing
+
+
+stringValueOfBlockList : List Block -> String
+stringValueOfBlockList blocks =
+    List.map stringValueOfBlock blocks |> String.join "\n"
+
+
+stringValueOfBlock : Block -> String
+stringValueOfBlock block =
+    case block of
+        Paragraph exprMList _ ->
+            stringValueOfList exprMList
+
+        VerbatimBlock _ strings _ _ ->
+            String.join "\n" strings
+
+        Block _ blocks _ ->
+            List.map stringValueOfBlock blocks |> String.join "\n"
+
+        BError str ->
+            str
 
 
 stringValueOfList : List ExprM -> String

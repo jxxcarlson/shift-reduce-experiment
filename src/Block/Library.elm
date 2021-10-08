@@ -175,6 +175,17 @@ createBlockPhase2 state =
             { state
                 | currentBlock =
                     Just <|
+                        SBlock (nibble state.currentLineData.content |> transformHeading)
+                            [ SParagraph [ deleteSpaceDelimitedPrefix state.currentLineData.content ] { begin = state.index, end = state.index, id = String.fromInt state.blockCount, indent = state.currentLineData.indent } ]
+                            { begin = state.index, end = state.index, id = String.fromInt state.blockCount, indent = state.currentLineData.indent }
+                , currentLineData = incrementLevel state.currentLineData -- do this because a block expects subsequent lines to be indented
+                , blockCount = state.blockCount + 1
+            }
+
+        BeginBlock AcceptNibbledFirstLine kind ->
+            { state
+                | currentBlock =
+                    Just <|
                         SBlock kind
                             [ SParagraph [ deleteSpaceDelimitedPrefix state.currentLineData.content ] { begin = state.index, end = state.index, id = String.fromInt state.blockCount, indent = state.currentLineData.indent } ]
                             { begin = state.index, end = state.index, id = String.fromInt state.blockCount, indent = state.currentLineData.indent }
@@ -399,3 +410,25 @@ nibble str =
 deleteSpaceDelimitedPrefix : String -> String
 deleteSpaceDelimitedPrefix str =
     String.replace (nibble str ++ " ") "" str
+
+
+transformHeading : String -> String
+transformHeading str =
+    case str of
+        "#" ->
+            "title"
+
+        "##" ->
+            "heading2"
+
+        "###" ->
+            "heading3"
+
+        "####" ->
+            "heading4"
+
+        "#####" ->
+            "heading5"
+
+        _ ->
+            str

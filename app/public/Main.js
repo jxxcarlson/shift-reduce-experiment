@@ -15552,10 +15552,20 @@ var $author$project$Block$Markdown$Line$beginCodeBlockParser = A2(
 		$elm$parser$Parser$succeed($elm$core$String$slice),
 		$elm$parser$Parser$symbol('```')));
 var $author$project$Block$Line$AcceptFirstLine = {$: 'AcceptFirstLine'};
+var $author$project$Block$Markdown$Line$beginHeadingParser = A2(
+	$elm$parser$Parser$map,
+	function (_v0) {
+		return A2($author$project$Block$Line$BeginBlock, $author$project$Block$Line$AcceptFirstLine, 'heading');
+	},
+	A2(
+		$elm$parser$Parser$ignorer,
+		$elm$parser$Parser$succeed($elm$core$String$slice),
+		$elm$parser$Parser$symbol('#')));
+var $author$project$Block$Line$AcceptNibbledFirstLine = {$: 'AcceptNibbledFirstLine'};
 var $author$project$Block$Markdown$Line$beginItemParser = A2(
 	$elm$parser$Parser$map,
 	function (_v0) {
-		return A2($author$project$Block$Line$BeginBlock, $author$project$Block$Line$AcceptFirstLine, 'item');
+		return A2($author$project$Block$Line$BeginBlock, $author$project$Block$Line$AcceptNibbledFirstLine, 'item');
 	},
 	A2(
 		$elm$parser$Parser$ignorer,
@@ -15573,7 +15583,7 @@ var $author$project$Block$Markdown$Line$beginMathBlockParser = A2(
 var $author$project$Block$Markdown$Line$beginQuotationBlockParser = A2(
 	$elm$parser$Parser$map,
 	function (_v0) {
-		return A2($author$project$Block$Line$BeginBlock, $author$project$Block$Line$AcceptFirstLine, 'quotation');
+		return A2($author$project$Block$Line$BeginBlock, $author$project$Block$Line$AcceptNibbledFirstLine, 'quotation');
 	},
 	A2(
 		$elm$parser$Parser$ignorer,
@@ -15585,6 +15595,7 @@ var $author$project$Block$Markdown$Line$lineTypeParser = $elm$parser$Parser$oneO
 			$author$project$Block$Markdown$Line$beginCodeBlockParser,
 			$author$project$Block$Markdown$Line$beginMathBlockParser,
 			$author$project$Block$Markdown$Line$beginItemParser,
+			$author$project$Block$Markdown$Line$beginHeadingParser,
 			$author$project$Block$Markdown$Line$beginQuotationBlockParser,
 			$author$project$Block$Line$ordinaryLineParser(_List_Nil),
 			$author$project$Block$Line$emptyLineParser
@@ -16621,6 +16632,22 @@ var $author$project$Block$Library$incrementLevel = function (lineData) {
 		lineData,
 		{indent: lineData.indent + $author$project$Block$Library$quantumOfIndentation});
 };
+var $author$project$Block$Library$transformHeading = function (str) {
+	switch (str) {
+		case '#':
+			return 'title';
+		case '##':
+			return 'heading2';
+		case '###':
+			return 'heading3';
+		case '####':
+			return 'heading4';
+		case '#####':
+			return 'heading5';
+		default:
+			return str;
+	}
+};
 var $author$project$Block$Library$createBlockPhase2 = function (state) {
 	return A2(
 		$author$project$Markup$Debugger$debug1,
@@ -16646,60 +16673,96 @@ var $author$project$Block$Library$createBlockPhase2 = function (state) {
 									}))
 						});
 				case 'BeginBlock':
-					if (_v0.a.$ === 'RejectFirstLine') {
-						var _v1 = _v0.a;
-						var mark = _v0.b;
-						return _Utils_update(
-							state,
-							{
-								blockCount: state.blockCount + 1,
-								currentBlock: $elm$core$Maybe$Just(
-									A3(
-										$author$project$Markup$Block$SBlock,
-										mark,
-										_List_Nil,
-										{
-											begin: state.index,
-											end: state.index,
-											id: $elm$core$String$fromInt(state.blockCount),
-											indent: state.currentLineData.indent
-										})),
-								currentLineData: $author$project$Block$Library$incrementLevel(state.currentLineData)
-							});
-					} else {
-						var _v2 = _v0.a;
-						var kind = _v0.b;
-						return _Utils_update(
-							state,
-							{
-								blockCount: state.blockCount + 1,
-								currentBlock: $elm$core$Maybe$Just(
-									A3(
-										$author$project$Markup$Block$SBlock,
-										kind,
-										_List_fromArray(
-											[
-												A2(
-												$author$project$Markup$Block$SParagraph,
-												_List_fromArray(
-													[
-														$author$project$Block$Library$deleteSpaceDelimitedPrefix(state.currentLineData.content)
-													]),
-												{
-													begin: state.index,
-													end: state.index,
-													id: $elm$core$String$fromInt(state.blockCount),
-													indent: state.currentLineData.indent
-												})
-											]),
-										{
-											begin: state.index,
-											end: state.index,
-											id: $elm$core$String$fromInt(state.blockCount),
-											indent: state.currentLineData.indent
-										})),
-								currentLineData: $author$project$Block$Library$incrementLevel(state.currentLineData)
-							});
+					switch (_v0.a.$) {
+						case 'RejectFirstLine':
+							var _v1 = _v0.a;
+							var mark = _v0.b;
+							return _Utils_update(
+								state,
+								{
+									blockCount: state.blockCount + 1,
+									currentBlock: $elm$core$Maybe$Just(
+										A3(
+											$author$project$Markup$Block$SBlock,
+											mark,
+											_List_Nil,
+											{
+												begin: state.index,
+												end: state.index,
+												id: $elm$core$String$fromInt(state.blockCount),
+												indent: state.currentLineData.indent
+											})),
+									currentLineData: $author$project$Block$Library$incrementLevel(state.currentLineData)
+								});
+						case 'AcceptFirstLine':
+							var _v2 = _v0.a;
+							var kind = _v0.b;
+							return _Utils_update(
+								state,
+								{
+									blockCount: state.blockCount + 1,
+									currentBlock: $elm$core$Maybe$Just(
+										A3(
+											$author$project$Markup$Block$SBlock,
+											$author$project$Block$Library$transformHeading(
+												$author$project$Block$Library$nibble(state.currentLineData.content)),
+											_List_fromArray(
+												[
+													A2(
+													$author$project$Markup$Block$SParagraph,
+													_List_fromArray(
+														[
+															$author$project$Block$Library$deleteSpaceDelimitedPrefix(state.currentLineData.content)
+														]),
+													{
+														begin: state.index,
+														end: state.index,
+														id: $elm$core$String$fromInt(state.blockCount),
+														indent: state.currentLineData.indent
+													})
+												]),
+											{
+												begin: state.index,
+												end: state.index,
+												id: $elm$core$String$fromInt(state.blockCount),
+												indent: state.currentLineData.indent
+											})),
+									currentLineData: $author$project$Block$Library$incrementLevel(state.currentLineData)
+								});
+						default:
+							var _v3 = _v0.a;
+							var kind = _v0.b;
+							return _Utils_update(
+								state,
+								{
+									blockCount: state.blockCount + 1,
+									currentBlock: $elm$core$Maybe$Just(
+										A3(
+											$author$project$Markup$Block$SBlock,
+											kind,
+											_List_fromArray(
+												[
+													A2(
+													$author$project$Markup$Block$SParagraph,
+													_List_fromArray(
+														[
+															$author$project$Block$Library$deleteSpaceDelimitedPrefix(state.currentLineData.content)
+														]),
+													{
+														begin: state.index,
+														end: state.index,
+														id: $elm$core$String$fromInt(state.blockCount),
+														indent: state.currentLineData.indent
+													})
+												]),
+											{
+												begin: state.index,
+												end: state.index,
+												id: $elm$core$String$fromInt(state.blockCount),
+												indent: state.currentLineData.indent
+											})),
+									currentLineData: $author$project$Block$Library$incrementLevel(state.currentLineData)
+								});
 					}
 				case 'BeginVerbatimBlock':
 					var mark = _v0.a;
@@ -16833,6 +16896,8 @@ var $author$project$Markup$API$parse = F3(
 				state.committed)
 		};
 	});
+var $mdgriffith$elm_ui$Internal$Flag$fontWeight = $mdgriffith$elm_ui$Internal$Flag$flag(13);
+var $mdgriffith$elm_ui$Element$Font$bold = A2($mdgriffith$elm_ui$Internal$Model$Class, $mdgriffith$elm_ui$Internal$Flag$fontWeight, $mdgriffith$elm_ui$Internal$Style$classes.bold);
 var $mdgriffith$elm_ui$Internal$Model$Paragraph = {$: 'Paragraph'};
 var $mdgriffith$elm_ui$Element$paragraph = F2(
 	function (attrs, children) {
@@ -16865,8 +16930,7 @@ var $author$project$Render$Block$error = function (str) {
 				$mdgriffith$elm_ui$Element$text(str)
 			]));
 };
-var $mdgriffith$elm_ui$Internal$Flag$fontWeight = $mdgriffith$elm_ui$Internal$Flag$flag(13);
-var $mdgriffith$elm_ui$Element$Font$bold = A2($mdgriffith$elm_ui$Internal$Model$Class, $mdgriffith$elm_ui$Internal$Flag$fontWeight, $mdgriffith$elm_ui$Internal$Style$classes.bold);
+var $mdgriffith$elm_ui$Element$Font$italic = $mdgriffith$elm_ui$Internal$Model$htmlClass($mdgriffith$elm_ui$Internal$Style$classes.italic);
 var $author$project$Render$Block$itemSymbol = A2(
 	$mdgriffith$elm_ui$Element$el,
 	_List_fromArray(
@@ -16877,8 +16941,79 @@ var $author$project$Render$Block$itemSymbol = A2(
 			$mdgriffith$elm_ui$Element$Font$size(18)
 		]),
 	$mdgriffith$elm_ui$Element$text('•'));
+var $author$project$Utility$elementAttribute = F2(
+	function (key, value) {
+		return $mdgriffith$elm_ui$Element$htmlAttribute(
+			A2($elm$html$Html$Attributes$attribute, key, value));
+	});
+var $author$project$Render$Block$makeSlug = function (str) {
+	return A3(
+		$elm$core$String$replace,
+		' ',
+		'-',
+		$elm$core$String$toLower(str));
+};
+var $author$project$Render$AST2$stringValue = function (text) {
+	switch (text.$) {
+		case 'TextM':
+			var str = text.a;
+			return str;
+		case 'ExprM':
+			var textList = text.b;
+			return A2(
+				$elm$core$String$join,
+				' ',
+				A2($elm$core$List$map, $author$project$Render$AST2$stringValue, textList));
+		case 'ArgM':
+			var textList = text.a;
+			return A2(
+				$elm$core$String$join,
+				' ',
+				A2($elm$core$List$map, $author$project$Render$AST2$stringValue, textList));
+		default:
+			var str = text.b;
+			return str;
+	}
+};
+var $author$project$Render$AST2$stringValueOfList = function (textList) {
+	return A2(
+		$elm$core$String$join,
+		' ',
+		A2($elm$core$List$map, $author$project$Render$AST2$stringValue, textList));
+};
+var $author$project$Render$AST2$stringValueOfBlock = function (block) {
+	switch (block.$) {
+		case 'Paragraph':
+			var exprMList = block.a;
+			return $author$project$Render$AST2$stringValueOfList(exprMList);
+		case 'VerbatimBlock':
+			var strings = block.b;
+			return A2($elm$core$String$join, '\n', strings);
+		case 'Block':
+			var blocks = block.b;
+			return A2(
+				$elm$core$String$join,
+				'\n',
+				A2($elm$core$List$map, $author$project$Render$AST2$stringValueOfBlock, blocks));
+		default:
+			var str = block.a;
+			return str;
+	}
+};
+var $author$project$Render$AST2$stringValueOfBlockList = function (blocks) {
+	return A2(
+		$elm$core$String$join,
+		'\n',
+		A2($elm$core$List$map, $author$project$Render$AST2$stringValueOfBlock, blocks));
+};
+var $author$project$Render$Block$makeId = function (blockList) {
+	return A2(
+		$author$project$Utility$elementAttribute,
+		'id',
+		$author$project$Render$Block$makeSlug(
+			$author$project$Render$AST2$stringValueOfBlockList(blockList)));
+};
 var $mdgriffith$elm_ui$Element$none = $mdgriffith$elm_ui$Internal$Model$Empty;
-var $mdgriffith$elm_ui$Element$Font$italic = $mdgriffith$elm_ui$Internal$Model$htmlClass($mdgriffith$elm_ui$Internal$Style$classes.italic);
 var $author$project$Render$Text$linkColor = A3($mdgriffith$elm_ui$Element$rgb, 0, 0, 0.8);
 var $elm$html$Html$Attributes$href = function (url) {
 	return A2(
@@ -17197,45 +17332,12 @@ var $author$project$Render$Text$link = F4(
 	function (g, s, a, textList) {
 		return A5($author$project$Render$Text$macro2, $author$project$Render$Text$link_, g, s, a, textList);
 	});
-var $author$project$Utility$elementAttribute = F2(
-	function (key, value) {
-		return $mdgriffith$elm_ui$Element$htmlAttribute(
-			A2($elm$html$Html$Attributes$attribute, key, value));
-	});
 var $author$project$Render$Text$makeSlug = function (str) {
 	return A3(
 		$elm$core$String$replace,
 		' ',
 		'-',
 		$elm$core$String$toLower(str));
-};
-var $author$project$Render$AST2$stringValue = function (text) {
-	switch (text.$) {
-		case 'TextM':
-			var str = text.a;
-			return str;
-		case 'ExprM':
-			var textList = text.b;
-			return A2(
-				$elm$core$String$join,
-				' ',
-				A2($elm$core$List$map, $author$project$Render$AST2$stringValue, textList));
-		case 'ArgM':
-			var textList = text.a;
-			return A2(
-				$elm$core$String$join,
-				' ',
-				A2($elm$core$List$map, $author$project$Render$AST2$stringValue, textList));
-		default:
-			var str = text.b;
-			return str;
-	}
-};
-var $author$project$Render$AST2$stringValueOfList = function (textList) {
-	return A2(
-		$elm$core$String$join,
-		' ',
-		A2($elm$core$List$map, $author$project$Render$AST2$stringValue, textList));
 };
 var $author$project$Render$Text$makeId = function (textList) {
 	return A2(
@@ -18007,6 +18109,64 @@ var $author$project$Render$Block$verbatimBlockDict = $elm$core$Dict$fromList(
 					return $mdgriffith$elm_ui$Element$none;
 				}))
 		]));
+var $author$project$Render$Block$heading1 = F4(
+	function (g, s, a, blocks) {
+		return A5(
+			$author$project$Render$Block$simpleElement,
+			_List_fromArray(
+				[
+					$mdgriffith$elm_ui$Element$Font$size(30),
+					$author$project$Render$Block$makeId(blocks)
+				]),
+			g,
+			s,
+			a,
+			blocks);
+	});
+var $author$project$Render$Block$heading2 = F4(
+	function (g, s, a, textList) {
+		return A5(
+			$author$project$Render$Block$simpleElement,
+			_List_fromArray(
+				[
+					$mdgriffith$elm_ui$Element$Font$size(22),
+					$author$project$Render$Block$makeId(textList)
+				]),
+			g,
+			s,
+			a,
+			textList);
+	});
+var $author$project$Render$Block$heading3 = F4(
+	function (g, s, a, textList) {
+		return A5(
+			$author$project$Render$Block$simpleElement,
+			_List_fromArray(
+				[
+					$mdgriffith$elm_ui$Element$Font$size(18),
+					$author$project$Render$Block$makeId(textList)
+				]),
+			g,
+			s,
+			a,
+			textList);
+	});
+var $author$project$Render$Block$heading4 = F4(
+	function (g, s, a, textList) {
+		return A5(
+			$author$project$Render$Block$simpleElement,
+			_List_fromArray(
+				[
+					$mdgriffith$elm_ui$Element$Font$size(14),
+					$mdgriffith$elm_ui$Element$Font$italic,
+					$mdgriffith$elm_ui$Element$Font$bold,
+					$author$project$Render$Block$makeId(textList)
+				]),
+			g,
+			s,
+			a,
+			textList);
+	});
 var $author$project$Render$Block$item = F4(
 	function (generation, settings, accumulator, blocks) {
 		return A2(
@@ -18112,6 +18272,16 @@ var $author$project$Render$Block$renderBlock = F4(
 				return $author$project$Render$Block$error(desc);
 		}
 	});
+var $author$project$Render$Block$simpleElement = F5(
+	function (formatList, g, s, a, blocks) {
+		return A2(
+			$mdgriffith$elm_ui$Element$paragraph,
+			formatList,
+			A2(
+				$elm$core$List$map,
+				A3($author$project$Render$Block$renderBlock, g, s, a),
+				A2($author$project$Markup$Debugger$debug3, 'XX, block in quotation', blocks)));
+	});
 function $author$project$Render$Block$cyclic$blockDict() {
 	return $elm$core$Dict$fromList(
 		_List_fromArray(
@@ -18127,6 +18297,36 @@ function $author$project$Render$Block$cyclic$blockDict() {
 				F4(
 					function (g, s, a, blocks) {
 						return A4($author$project$Render$Block$item, g, s, a, blocks);
+					})),
+				_Utils_Tuple2(
+				'title',
+				F4(
+					function (g, s, a, blocks) {
+						return A4($author$project$Render$Block$heading1, g, s, a, blocks);
+					})),
+				_Utils_Tuple2(
+				'heading1',
+				F4(
+					function (g, s, a, blocks) {
+						return A4($author$project$Render$Block$heading1, g, s, a, blocks);
+					})),
+				_Utils_Tuple2(
+				'heading2',
+				F4(
+					function (g, s, a, blocks) {
+						return A4($author$project$Render$Block$heading2, g, s, a, blocks);
+					})),
+				_Utils_Tuple2(
+				'heading3',
+				F4(
+					function (g, s, a, blocks) {
+						return A4($author$project$Render$Block$heading3, g, s, a, blocks);
+					})),
+				_Utils_Tuple2(
+				'heading4',
+				F4(
+					function (g, s, a, blocks) {
+						return A4($author$project$Render$Block$heading4, g, s, a, blocks);
 					}))
 			]));
 }
@@ -18136,7 +18336,7 @@ try {
 		return $author$project$Render$Block$blockDict;
 	};
 } catch ($) {
-	throw 'Some top-level definitions from `Render.Block` are causing infinite recursion:\n\n  ┌─────┐\n  │    blockDict\n  │     ↓\n  │    item\n  │     ↓\n  │    quotationBlock\n  │     ↓\n  │    renderBlock\n  └─────┘\n\nThese errors are very tricky, so read https://elm-lang.org/0.19.1/bad-recursion to learn how to fix it!';}
+	throw 'Some top-level definitions from `Render.Block` are causing infinite recursion:\n\n  ┌─────┐\n  │    blockDict\n  │     ↓\n  │    heading1\n  │     ↓\n  │    heading2\n  │     ↓\n  │    heading3\n  │     ↓\n  │    heading4\n  │     ↓\n  │    item\n  │     ↓\n  │    quotationBlock\n  │     ↓\n  │    renderBlock\n  │     ↓\n  │    simpleElement\n  └─────┘\n\nThese errors are very tricky, so read https://elm-lang.org/0.19.1/bad-recursion to learn how to fix it!';}
 var $author$project$Render$Block$render = F4(
 	function (generation, settings, accumulator, blocks) {
 		return A2(

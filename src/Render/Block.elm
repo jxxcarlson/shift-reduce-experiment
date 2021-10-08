@@ -7,9 +7,11 @@ import Element.Background as Background
 import Element.Font as Font
 import Markup.Block exposing (Block(..))
 import Markup.Debugger exposing (debug3)
+import Render.AST2
 import Render.Math
 import Render.MathMacro
 import Render.Text
+import Utility
 
 
 type alias Settings =
@@ -73,7 +75,45 @@ blockDict =
     Dict.fromList
         [ ( "quotation", \g s a blocks -> quotationBlock g s a blocks )
         , ( "item", \g s a blocks -> item g s a blocks )
+        , ( "heading1", \g s a blocks -> heading1 g s a blocks )
+        , ( "heading2", \g s a blocks -> heading2 g s a blocks )
+        , ( "heading3", \g s a blocks -> heading3 g s a blocks )
+        , ( "heading4", \g s a blocks -> heading4 g s a blocks )
         ]
+
+
+heading1 : Int -> Settings -> Block.State.Accumulator -> List Block -> Element msg
+heading1 g s a blocks =
+    simpleElement [ Font.size 30, makeId blocks ] g s a blocks
+
+
+heading2 : Int -> Settings -> Block.State.Accumulator -> List Block -> Element msg
+heading2 g s a textList =
+    simpleElement [ Font.size 22, makeId textList ] g s a textList
+
+
+heading3 : Int -> Settings -> Block.State.Accumulator -> List Block -> Element msg
+heading3 g s a textList =
+    simpleElement [ Font.size 18, makeId textList ] g s a textList
+
+
+heading4 : Int -> Settings -> Block.State.Accumulator -> List Block -> Element msg
+heading4 g s a textList =
+    simpleElement [ Font.size 14, Font.italic, Font.bold, makeId textList ] g s a textList
+
+
+simpleElement formatList g s a blocks =
+    Element.paragraph formatList (List.map (renderBlock g s a) (debug3 "XX, block in quotation" blocks))
+
+
+makeId : List Block -> Element.Attribute msg
+makeId blockList =
+    Utility.elementAttribute "id" (Render.AST2.stringValueOfBlockList blockList |> makeSlug)
+
+
+makeSlug : String -> String
+makeSlug str =
+    str |> String.toLower |> String.replace " " "-"
 
 
 codeBlock : Int -> Settings -> Block.State.Accumulator -> List String -> Element msg
