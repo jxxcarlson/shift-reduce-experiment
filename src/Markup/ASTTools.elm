@@ -1,4 +1,4 @@
-module Markup.ASTTools exposing (filter, filterBlockByName, filterStrictBlock, getHeadings, getText, getTitle, listExprMToString)
+module Markup.ASTTools exposing (FilterType(..), filter, filterBlockByName, filterStrictBlock, getHeadings, getText, getTitle, listExprMToString)
 
 import Markup.AST
 import Markup.Block exposing (Block(..), ExprM(..))
@@ -63,12 +63,12 @@ getTitle blocks =
 
 getHeadings : List Block -> List ExprM
 getHeadings blocks =
-    filter "heading" blocks
+    filter Contains "heading" blocks
 
 
-filter : String -> List Block -> List ExprM
-filter key blocks =
-    List.map (filter_ key) blocks |> List.concat
+filter : FilterType -> String -> List Block -> List ExprM
+filter filterType key blocks =
+    List.map (filter_ filterType key) blocks |> List.concat
 
 
 filterStrict : String -> List Block -> List ExprM
@@ -86,14 +86,42 @@ filterStrictNot key blocks =
     List.map (filterStrictNot_ key) blocks |> List.concat
 
 
-filter_ : String -> Block -> List ExprM
-filter_ key block =
+filter_ : FilterType -> String -> Block -> List ExprM
+filter_ filterType key block =
     case block of
         Paragraph textList _ ->
-            List.filter (\t -> Maybe.map (String.contains key) (getName t) == Just True) textList
+            case filterType of
+                Equality ->
+                    List.filter (\t -> Maybe.map (\x -> x == key) (getName t) == Just True) textList
 
-        Block _ blocks _ ->
-            List.map (filter_ key) blocks |> List.concat
+                Contains ->
+                    List.filter (\t -> Maybe.map (String.contains key) (getName t) == Just True) textList
+
+        Block name blocks _ ->
+            case filterType of
+                Equality ->
+                    if key == name then
+                        List.map extractContents blocks |> List.concat
+
+                    else
+                        []
+
+                Contains ->
+                    if String.contains key name then
+                        List.map extractContents blocks |> List.concat
+
+                    else
+                        []
+
+        _ ->
+            []
+
+
+extractContents : Block -> List ExprM
+extractContents block =
+    case block of
+        Paragraph contents _ ->
+            contents
 
         _ ->
             []
