@@ -75,6 +75,7 @@ blockDict =
     Dict.fromList
         [ ( "quotation", \g s a blocks -> quotationBlock g s a blocks )
         , ( "item", \g s a blocks -> item g s a blocks )
+        , ( "title", \g s a blocks -> Element.none )
         , ( "heading1", \g s a blocks -> heading1 g s a blocks )
         , ( "heading2", \g s a blocks -> heading2 g s a blocks )
         , ( "heading3", \g s a blocks -> heading3 g s a blocks )

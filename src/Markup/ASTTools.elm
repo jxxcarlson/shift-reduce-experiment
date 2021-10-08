@@ -1,4 +1,4 @@
-module Markup.ASTTools exposing (filter, getHeadings, getText, getTitle, listExprMToString)
+module Markup.ASTTools exposing (filter, filterBlockByName, filterStrictBlock, getHeadings, getText, getTitle, listExprMToString)
 
 import Markup.AST
 import Markup.Block exposing (Block(..), ExprM(..))
@@ -50,7 +50,15 @@ exprMToString text =
 
 getTitle : List Block -> Maybe String
 getTitle blocks =
-    filterStrict "title" blocks |> List.head |> Maybe.map (exprMToString >> String.trim)
+    let
+        result =
+            filterStrictBlock Equality "title" blocks
+    in
+    if result == "" then
+        Nothing
+
+    else
+        Just result
 
 
 getHeadings : List Block -> List ExprM
@@ -66,6 +74,11 @@ filter key blocks =
 filterStrict : String -> List Block -> List ExprM
 filterStrict key blocks =
     List.map (filterStrict_ key) blocks |> List.concat
+
+
+filterStrictBlock : FilterType -> String -> List Block -> String
+filterStrictBlock filterType key blocks =
+    List.map (filterStrictBlock_ filterType key) blocks |> String.join ""
 
 
 filterStrictNot : String -> List Block -> List ExprM
@@ -84,6 +97,72 @@ filter_ key block =
 
         _ ->
             []
+
+
+type FilterType
+    = Equality
+    | Contains
+
+
+filterStrictBlock_ : FilterType -> String -> Block -> String
+filterStrictBlock_ filterType key block =
+    case block of
+        Paragraph textList _ ->
+            case filterType of
+                Equality ->
+                    List.filter (\t -> Just key == getName t) textList |> Debug.log "(1)" |> listExprMToString
+
+                Contains ->
+                    List.filter (\t -> Maybe.map2 String.contains (Just key) (getName t) == Just True) textList |> Debug.log "(1)" |> listExprMToString
+
+        Block name blocks _ ->
+            case filterType of
+                Equality ->
+                    if key == name then
+                        List.map stringContentOfNamedBlock blocks |> String.join ""
+
+                    else
+                        ""
+
+                Contains ->
+                    if String.contains key name then
+                        List.map stringContentOfNamedBlock blocks |> String.join ""
+
+                    else
+                        ""
+
+        _ ->
+            ""
+
+
+filterBlockByName : String -> Block -> String
+filterBlockByName key block =
+    case block of
+        Block name blocks _ ->
+            if key == name then
+                List.map stringContentOfNamedBlock blocks |> String.join ""
+
+            else
+                ""
+
+        _ ->
+            ""
+
+
+stringContentOfNamedBlock : Block -> String
+stringContentOfNamedBlock block =
+    case block of
+        Paragraph exprMList _ ->
+            listExprMToString exprMList
+
+        VerbatimBlock _ strings _ _ ->
+            String.join "\n" strings
+
+        Block _ blocks _ ->
+            List.map stringContentOfNamedBlock blocks |> String.join "\n"
+
+        BError str ->
+            str
 
 
 filterStrict_ : String -> Block -> List ExprM

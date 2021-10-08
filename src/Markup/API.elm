@@ -12,6 +12,11 @@ import Render.Block
 import Render.Text
 
 
+p : Lang -> String -> List Block
+p lang str =
+    parse lang 0 (String.lines str) |> .ast
+
+
 parse : Lang -> Int -> List String -> { ast : List Block, accumulator : Block.State.Accumulator }
 parse lang generation lines =
     let
@@ -58,7 +63,7 @@ renderFancy language count source =
 
 tableOfContents : Int -> Settings -> Block.State.Accumulator -> List Block -> List (Element msg)
 tableOfContents generation settings accumulator blocks =
-    blocks |> ASTTools.getHeadings |> Render.Text.viewTOC generation settings accumulator
+    blocks |> ASTTools.getHeadings |> Debug.log "HEADINGS" |> Render.Text.viewTOC generation settings accumulator
 
 
 {-| -}
