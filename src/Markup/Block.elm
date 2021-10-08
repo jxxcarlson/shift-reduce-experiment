@@ -42,6 +42,22 @@ type alias Meta =
     }
 
 
+exprMToExpr : ExprM -> Expr
+exprMToExpr exprM =
+    case exprM of
+        TextM str _ ->
+            Text str { begin = 0, end = 0 }
+
+        VerbatimM str1 str2 _ ->
+            Verbatim str1 str2 { begin = 0, end = 0 }
+
+        ArgM exprMList _ ->
+            Arg (List.map exprMToExpr exprMList) { begin = 0, end = 0 }
+
+        ExprM str exprMList _ ->
+            Expr str (List.map exprMToExpr exprMList) { begin = 0, end = 0 }
+
+
 mapMeta : (Meta -> Meta) -> SBlock -> SBlock
 mapMeta f block =
     case block of

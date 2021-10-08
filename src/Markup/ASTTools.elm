@@ -1,6 +1,6 @@
 module Markup.ASTTools exposing (FilterType(..), filter, filterBlockByName, filterStrictBlock, getHeadings, getText, getTitle, listExprMToString)
 
-import Markup.AST
+import Markup.AST exposing (Expr(..))
 import Markup.Block exposing (Block(..), ExprM(..))
 
 
@@ -97,18 +97,18 @@ filter_ filterType key block =
                 Contains ->
                     List.filter (\t -> Maybe.map (String.contains key) (getName t) == Just True) textList
 
-        Block name blocks _ ->
+        Block name blocks meta ->
             case filterType of
                 Equality ->
                     if key == name then
-                        List.map extractContents blocks |> List.concat
+                        [ ExprM name (List.map extractContents blocks |> List.concat) { id = "??", loc = { begin = { row = 0, col = 0 }, end = { row = 0, col = 0 } } } ]
 
                     else
                         []
 
                 Contains ->
                     if String.contains key name then
-                        List.map extractContents blocks |> List.concat
+                        [ ExprM name (List.map extractContents blocks |> List.concat) { id = "??", loc = { begin = { row = 0, col = 0 }, end = { row = 0, col = 0 } } } ]
 
                     else
                         []

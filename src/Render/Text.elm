@@ -285,10 +285,10 @@ viewTOCItem : Int -> Settings -> Accumulator -> ExprM -> Element msg
 viewTOCItem generation settings accumulator block =
     case block of
         ExprM "heading2" textList _ ->
-            el (tocStyle 2) (tocLink textList)
+            el (tocStyle 2) (tocLink (Debug.log "HEADING2" textList))
 
         ExprM "heading3" textList _ ->
-            el (tocStyle 3) (tocLink textList)
+            el (tocStyle 3) (tocLink (Debug.log "HEADING3" textList))
 
         ExprM "heading4" textList _ ->
             el (tocStyle 4) (tocLink textList)
