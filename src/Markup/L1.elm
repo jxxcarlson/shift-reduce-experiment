@@ -1,4 +1,4 @@
-module Markup.L1 exposing (recoverFromError, reduce, reduceFinal)
+module Markup.L1 exposing (makeLoc, recoverFromError, reduce, reduceFinal)
 
 import Either exposing (Either(..))
 import Markup.AST as AST exposing (Expr(..))
@@ -21,22 +21,37 @@ reduce state =
             reduceAux (AST.Verbatim name str loc) [] state
 
         (Left (Symbol "]" loc3)) :: (Left (Token.Text str _)) :: (Left (Symbol "[" loc1)) :: rest ->
-            reduceAux (makeGExpr { begin = loc1.begin, end = loc3.end } str) rest state
+            reduceAux (makeExpr1 (makeLoc loc1 loc3) str) rest state
 
         (Left (Symbol "]" loc4)) :: (Right expr) :: (Left (Token.Text name _)) :: (Left (Symbol "[" loc1)) :: rest ->
-            reduceAux (makeGExpr2 { begin = loc1.begin, end = loc4.end } name expr) rest state
+            reduceAux (makeExpr2 (makeLoc loc1 loc4) (transform name) (Debug.log "REDUCE EXXPR" expr)) rest state
 
         _ ->
             state
 
 
+makeLoc : Token.Loc -> Token.Loc -> Token.Loc
+makeLoc loc1 loc2 =
+    { begin = loc1.begin, end = loc2.end }
+
+
 reduceAux : Expr -> List (Either Token Expr) -> State -> State
 reduceAux expr rest state =
     if rest == [] then
-        { state | stack = [], committed = expr :: state.committed }
+        { state | stack = [], committed = transformExpr expr :: state.committed }
 
     else
         { state | stack = Right expr :: rest }
+
+
+transformExpr : Expr -> Expr
+transformExpr expr =
+    case expr of
+        Expr name exprList loc ->
+            Expr (transform name) (Debug.log "EXXPR (T)" exprList) loc
+
+        _ ->
+            expr
 
 
 recoverFromError : State -> Step State State
@@ -84,13 +99,44 @@ recoverFromError state =
                 )
 
 
-makeGExpr2 : Token.Loc -> String -> Expr -> Expr
-makeGExpr2 loc name expr =
-    Expr (String.trim name) [ expr ] loc
+transform : String -> String
+transform str =
+    let
+        _ =
+            Debug.log "TRANSFORM (IN)" str
+    in
+    (case str of
+        "i" ->
+            "italic"
+
+        "b" ->
+            "strong"
+
+        "h1" ->
+            "heading1"
+
+        "h2" ->
+            "heading2"
+
+        "h3" ->
+            "heading3"
+
+        "h4" ->
+            "heading4"
+
+        _ ->
+            str
+    )
+        |> Debug.log "TRANSFORM (OUT)"
 
 
-makeGExpr : Token.Loc -> String -> Expr
-makeGExpr loc str =
+makeExpr2 : Token.Loc -> String -> Expr -> Expr
+makeExpr2 loc name expr =
+    Expr (String.trim (transform name)) [ expr ] loc
+
+
+makeExpr1 : Token.Loc -> String -> Expr
+makeExpr1 loc str =
     let
         words =
             String.words str
@@ -99,7 +145,8 @@ makeGExpr loc str =
             List.head words |> Maybe.withDefault "empty"
     in
     -- TODO: not a good solution for loc
-    Expr prefix (List.map (AST.Text >> (\t -> t loc)) (List.drop 1 words)) loc
+    -- Expr prefix (List.map (AST.Text >> (\t -> t loc)) (List.drop 1 words)) loc
+    Expr prefix [ AST.Text (List.drop 1 words |> String.join " ") loc ] loc
 
 
 stackBottom : List (Either Token Expr) -> Maybe (Either Token Expr)

@@ -81,23 +81,23 @@ suiteL1 =
         , test "(2) foo [i ABC]" <|
             \_ ->
                 run L1 "foo [i ABC]"
-                    |> Expect.equal { committed = [ Text "foo " (loc 0 3), Expr "i" [ Text "ABC" (loc 4 10) ] (loc 4 10) ], count = 5, end = 11, scanPointer = 11, sourceText = "foo [i ABC]", stack = [] }
+                    |> Expect.equal { committed = [ Text "foo " { begin = 0, end = 3 }, Expr "italic" [ Text "ABC" { begin = 4, end = 10 } ] { begin = 4, end = 10 } ], count = 5, end = 11, scanPointer = 11, sourceText = "foo [i ABC]", stack = [] }
         , test "(3) [i [j ABC]]" <|
             \_ ->
                 run L1 "foo [i [j ABC]]"
-                    |> Expect.equal { committed = [ Text "foo " (loc 0 3), Expr "i" [ Expr "j" [ Text "ABC" (loc 7 13) ] (loc 7 13) ] (loc 4 14) ], count = 8, end = 15, scanPointer = 15, sourceText = "foo [i [j ABC]]", stack = [] }
+                    |> Expect.equal { committed = [ Text "foo " { begin = 0, end = 3 }, Expr "italic" [ Expr "j" [ Text "ABC" { begin = 7, end = 13 } ] { begin = 7, end = 13 } ] { begin = 4, end = 14 } ], count = 8, end = 15, scanPointer = 15, sourceText = "foo [i [j ABC]]", stack = [] }
         , test "(4) [i ABC] [j DEF]" <|
             \_ ->
                 run L1 "foo [i ABC] [j DEF]"
-                    |> Expect.equal { committed = [ Text "foo " (loc 0 3), Expr "i" [ Text "ABC" (loc 4 10) ] (loc 4 10), Text " " (loc 11 11), Expr "j" [ Text "DEF" (loc 12 18) ] (loc 12 18) ], count = 9, end = 19, scanPointer = 19, sourceText = "foo [i ABC] [j DEF]", stack = [] }
+                    |> Expect.equal { committed = [ Text "foo " { begin = 0, end = 3 }, Expr "italic" [ Text "ABC" { begin = 4, end = 10 } ] { begin = 4, end = 10 }, Text " " { begin = 11, end = 11 }, Expr "j" [ Text "DEF" { begin = 12, end = 18 } ] { begin = 12, end = 18 } ], count = 9, end = 19, scanPointer = 19, sourceText = "foo [i ABC] [j DEF]", stack = [] }
         , test "(5) [i foo (ERROR: missing right bracket)" <|
             \_ ->
                 run L1 "[i foo"
-                    |> Expect.equal { committed = [ Text "I corrected an unmatched '[' in the following expression: " (loc 0 0), Expr "i" [ Text "foo" (loc 0 5) ] (loc 0 5) ], count = 4, end = 6, scanPointer = 6, sourceText = "[i foo", stack = [] }
+                    |> Expect.equal { committed = [ Text "I corrected an unmatched '[' in the following expression: " { begin = 0, end = 0 }, Expr "italic" [ Text "foo" { begin = 0, end = 5 } ] { begin = 0, end = 5 } ], count = 4, end = 6, scanPointer = 6, sourceText = "[i foo", stack = [] }
         , test "(6) foo [i bar] [j UUU (ERROR: missing right bracket)" <|
             \_ ->
                 run L1 "foo [i bar] [j UUU"
-                    |> Expect.equal { committed = [ Text "foo " (loc 0 3), Expr "i" [ Text "bar" (loc 4 10) ] (loc 4 10), Text " " (loc 11 11), Text "I corrected an unmatched '[' in the following expression: " (loc 0 0), Expr "j" [ Text "UUU" (loc 12 17) ] (loc 12 17) ], count = 9, end = 18, scanPointer = 18, sourceText = "foo [i bar] [j UUU", stack = [] }
+                    |> Expect.equal { committed = [ Text "foo " { begin = 0, end = 3 }, Expr "italic" [ Text "bar" { begin = 4, end = 10 } ] { begin = 4, end = 10 }, Text " " { begin = 11, end = 11 }, Text "I corrected an unmatched '[' in the following expression: " { begin = 0, end = 0 }, Expr "j" [ Text "UUU" { begin = 12, end = 17 } ] { begin = 12, end = 17 } ], count = 9, end = 18, scanPointer = 18, sourceText = "foo [i bar] [j UUU", stack = [] }
         , test "(7) foo [i bar [j UUU] (ERROR: missing right bracket)" <|
             \_ ->
                 run L1 "foo [i bar [j UUU]"

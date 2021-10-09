@@ -86,8 +86,15 @@ init str =
 -}
 nextState : Lang -> State -> Step State State
 nextState lang state_ =
+    let
+        _ =
+            debug1 ("STACK (" ++ String.fromInt state_.count ++ ")") state_.stack
+
+        _ =
+            debug3 ("COMMITTED (" ++ String.fromInt state_.count ++ ")") state_.committed
+    in
     { state_ | count = state_.count + 1 }
-        |> debug2 ("STATE (" ++ String.fromInt (state_.count + 1) ++ ")")
+        -- |> debug2 ("STATE (" ++ String.fromInt (state_.count + 1) ++ ")")
         |> reduce lang
         |> nextState_ lang
 
@@ -177,7 +184,7 @@ reduce : Lang -> State -> State
 reduce lang state =
     case lang of
         L1 ->
-            L1.reduce state
+            L1.reduce state |> Debug.log "REDUCE (F)"
 
         MiniLaTeX ->
             MiniLaTeX.reduce state
