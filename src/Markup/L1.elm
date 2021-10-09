@@ -3,6 +3,7 @@ module Markup.L1 exposing (makeLoc, recoverFromError, reduce, reduceFinal)
 import Either exposing (Either(..))
 import Markup.AST as AST exposing (Expr(..))
 import Markup.Common exposing (Step(..))
+import Markup.Stack
 import Markup.State exposing (State)
 import Markup.Token as Token exposing (Token(..))
 
@@ -14,20 +15,24 @@ reduceFinal =
 reduce : State -> State
 reduce state =
     case state.stack of
+        -- One term pattern:
         (Left (Token.Text str loc)) :: [] ->
             reduceAux (AST.Text str loc) [] state
 
+        -- One term pattern:
         (Left (Token.Verbatim name str loc)) :: [] ->
             reduceAux (AST.Verbatim name str loc) [] state
 
+        -- Three term pattern:
         (Left (Symbol "]" loc3)) :: (Left (Token.Text str _)) :: (Left (Symbol "[" loc1)) :: rest ->
             reduceAux (makeExpr1 (makeLoc loc1 loc3) str) rest state
 
+        -- Four term pattern:
         (Left (Symbol "]" loc4)) :: (Right expr) :: (Left (Token.Text name _)) :: (Left (Symbol "[" loc1)) :: rest ->
             reduceAux (makeExpr2 (makeLoc loc1 loc4) (transform name) (Debug.log "REDUCE EXXPR" expr)) rest state
 
         _ ->
-            state
+            { state | stack = Markup.Stack.reduce1 state.stack }
 
 
 makeLoc : Token.Loc -> Token.Loc -> Token.Loc

@@ -10,6 +10,7 @@ import Markup.Debugger exposing (..)
 import Markup.L1 as L1
 import Markup.Markdown as Markdown
 import Markup.MiniLaTeX as MiniLaTeX
+import Markup.Simplify as Simplify
 import Markup.State exposing (State)
 import Markup.Token as Token exposing (Token)
 import Markup.Tokenizer as Tokenizer exposing (Lang(..))
@@ -88,10 +89,10 @@ nextState : Lang -> State -> Step State State
 nextState lang state_ =
     let
         _ =
-            debug1 ("STACK (" ++ String.fromInt state_.count ++ ")") state_.stack
+            debug1 ("STACK (" ++ String.fromInt state_.count ++ ")") (state_.stack |> Simplify.stack)
 
         _ =
-            debug3 ("COMMITTED (" ++ String.fromInt state_.count ++ ")") state_.committed
+            debug3 ("COMMITTED (" ++ String.fromInt state_.count ++ ")") (state_.committed |> Simplify.expressions)
     in
     { state_ | count = state_.count + 1 }
         -- |> debug2 ("STATE (" ++ String.fromInt (state_.count + 1) ++ ")")

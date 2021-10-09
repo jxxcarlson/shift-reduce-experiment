@@ -2,6 +2,7 @@ module Markup.Token exposing
     ( Loc
     , Token(..)
     , dummyLoc
+    , isSymbol
     , length
     , startPositionOf
     )
@@ -13,6 +14,16 @@ type Token
     | Symbol String Loc
     | FunctionName String Loc
     | MarkedText String String Loc
+
+
+isSymbol : Token -> Bool
+isSymbol token =
+    case token of
+        Symbol _ _ ->
+            True
+
+        _ ->
+            False
 
 
 type alias Loc =
