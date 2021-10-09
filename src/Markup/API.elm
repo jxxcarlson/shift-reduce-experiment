@@ -7,14 +7,15 @@ import Element.Font as Font
 import Markup.ASTTools as ASTTools
 import Markup.Block as Block exposing (Block, SBlock)
 import Markup.Markup as Markup
+import Markup.Simplify as Simplify
 import Markup.Tokenizer exposing (Lang(..))
 import Render.Block
 import Render.Text
 
 
-p : Lang -> String -> List Block
+p : Lang -> String -> List Simplify.BlockS
 p lang str =
-    parse lang 0 (String.lines str) |> .ast
+    parse lang 0 (String.lines str) |> .ast |> Simplify.blocks
 
 
 parse : Lang -> Int -> List String -> { ast : List Block, accumulator : Block.State.Accumulator }

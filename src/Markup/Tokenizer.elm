@@ -47,10 +47,22 @@ markdownLanguageChars =
 tokenParser lang start =
     case lang of
         L1 ->
-            Parser.oneOf [ textParser lang start, mathParser start, codeParser start, symbolParser start '[', symbolParser start ']' ]
+            Parser.oneOf
+                [ textParser lang start
+                , mathParser start
+                , codeParser start
+                , l1FunctionNameParser start
+                , symbolParser start ']'
+                ]
 
         MiniLaTeX ->
-            Parser.oneOf [ textParser lang start, mathParser start, macroParser start, symbolParser start '{', symbolParser start '}' ]
+            Parser.oneOf
+                [ textParser lang start
+                , mathParser start
+                , macroParser start
+                , symbolParser start '{'
+                , symbolParser start '}'
+                ]
 
         Markdown ->
             Parser.oneOf
@@ -108,3 +120,9 @@ symbolParser : Int -> Char -> Parser Context Problem Token
 symbolParser start sym =
     ParserTools.text (\c -> c == sym) (\_ -> False)
         |> Parser.map (\data -> Symbol data.content { begin = start, end = start + data.end - data.begin - 1 })
+
+
+l1FunctionNameParser : Int -> Parser Context Problem Token
+l1FunctionNameParser start =
+    ParserTools.textWithEndSymbol " " (\c -> c == '[') (\c -> c /= ' ')
+        |> Parser.map (\data -> FunctionName data.content { begin = start, end = start + data.end - data.begin - 1 })

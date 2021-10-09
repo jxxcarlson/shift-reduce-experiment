@@ -3,6 +3,7 @@ module Markup.L1 exposing (makeLoc, recoverFromError, reduce, reduceFinal)
 import Either exposing (Either(..))
 import Markup.AST as AST exposing (Expr(..))
 import Markup.Common exposing (Step(..))
+import Markup.Debugger exposing (debug1, debug3)
 import Markup.Stack
 import Markup.State exposing (State)
 import Markup.Token as Token exposing (Token(..))
@@ -17,22 +18,64 @@ reduce state =
     case state.stack of
         -- One term pattern:
         (Left (Token.Text str loc)) :: [] ->
+            let
+                _ =
+                    debug3 "Pattern" "One term (1: USED)"
+            in
             reduceAux (AST.Text str loc) [] state
 
-        -- One term pattern:
-        (Left (Token.Verbatim name str loc)) :: [] ->
-            reduceAux (AST.Verbatim name str loc) [] state
+        -- One term pattern (X?):
+        --(Left (Token.Verbatim name str loc)) :: [] ->
+        --    let
+        --        _ =
+        --            debug3 "Pattern" "One term (2)"
+        --    in
+        --    reduceAux (AST.Verbatim name str loc) [] state
+        -- Three term pattern:
+        (Left (Symbol "]" loc3)) :: (Left (Token.Text str loc2)) :: (Left (FunctionName fragment loc1)) :: rest ->
+            let
+                _ =
+                    debug3 "Pattern" "Three term (1: USED)"
+            in
+            reduceAux (Expr (normalizeFragment fragment) [ AST.Text str loc2 ] (makeLoc loc1 loc2)) rest state
 
         -- Three term pattern:
-        (Left (Symbol "]" loc3)) :: (Left (Token.Text str _)) :: (Left (Symbol "[" loc1)) :: rest ->
-            reduceAux (makeExpr1 (makeLoc loc1 loc3) str) rest state
+        --(Left (Symbol "]" loc3)) :: (Left (Token.Text str _)) :: (Left (Symbol "[" loc1)) :: rest ->
+        --    let
+        --        _ =
+        --            debug3 "Pattern" "Three term (2)"
+        --    in
+        --    reduceAux (makeExpr1 (makeLoc loc1 loc3) str) rest state
+        (Left (Symbol "]" loc3)) :: (Right expr) :: (Left (FunctionName fragment loc1)) :: rest ->
+            let
+                _ =
+                    debug3 "Pattern" "Three term (3: USED)"
 
+                --  [ Left (SymbolST "]"), Right (ExprS "j " [ TextS "ABC" ]), Left (FunctionNameST "[i ") ]
+            in
+            reduceAux (Expr (normalizeFragment fragment) [ expr ] (makeLoc loc1 loc3)) rest state
+
+        -- Four term pattern (X?):
+        --(Left (Symbol "]" loc4)) :: (Right expr) :: (Left (Token.Text name _)) :: (Left (Symbol "[" loc1)) :: rest ->
+        --    let
+        --        _ =
+        --            debug3 "Pattern" "Four term (X?)"
+        --    in
+        --    reduceAux (makeExpr2 (makeLoc loc1 loc4) (transform name) (Debug.log "REDUCE EXXPR" expr)) rest state
         -- Four term pattern:
-        (Left (Symbol "]" loc4)) :: (Right expr) :: (Left (Token.Text name _)) :: (Left (Symbol "[" loc1)) :: rest ->
-            reduceAux (makeExpr2 (makeLoc loc1 loc4) (transform name) (Debug.log "REDUCE EXXPR" expr)) rest state
-
+        --(Left (Symbol "]" loc4)) :: (Right (Expr name [ AST.Text str loc3 ] loc3b)) :: (Left (Token.Text " " loc2)) :: (Left (FunctionName fragment loc1)) :: rest ->
+        --    let
+        --        _ =
+        --            debug3 "Pattern" "Four term (Y?)"
+        --    in
+        --    reduceAux (Expr (normalizeFragment fragment) [ AST.Text str loc2 ] (makeLoc loc1 loc2)) rest state
         _ ->
             { state | stack = Markup.Stack.reduce1 state.stack }
+
+
+normalizeFragment : String -> String
+normalizeFragment str =
+    str |> String.dropLeft 1 |> String.trimRight
 
 
 makeLoc : Token.Loc -> Token.Loc -> Token.Loc

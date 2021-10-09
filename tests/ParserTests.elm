@@ -1,10 +1,17 @@
 module ParserTests exposing (suiteL1, suiteMarkdown, suiteMiniLaTeX)
 
 import Expect
+import Markup.API as API
 import Markup.AST exposing (Expr(..))
 import Markup.Markup exposing (run)
+import Markup.Simplify as Simplify exposing (BlockS(..), ExprS(..))
 import Markup.Tokenizer exposing (Lang(..))
 import Test exposing (..)
+
+
+p : Lang -> String -> List Simplify.BlockS
+p lang str =
+    API.parse lang 0 (String.lines str) |> .ast |> Simplify.blocks
 
 
 loc i j =
@@ -80,27 +87,26 @@ suiteL1 =
                     |> Expect.equal { committed = [ Text "foo" (loc 0 2) ], count = 2, end = 3, scanPointer = 3, sourceText = "foo", stack = [] }
         , test "(2) foo [i ABC]" <|
             \_ ->
-                run L1 "foo [i ABC]"
-                    |> Expect.equal { committed = [ Text "foo " { begin = 0, end = 3 }, Expr "italic" [ Text "ABC" { begin = 4, end = 10 } ] { begin = 4, end = 10 } ], count = 5, end = 11, scanPointer = 11, sourceText = "foo [i ABC]", stack = [] }
-        , test "(3) [i [j ABC]]" <|
+                p L1 "foo [i ABC]"
+                    |> Expect.equal [ ParagraphS [ TextS "foo ", ExprS "italic" [ TextS "ABC" ], TextS "\n" ] ]
+        , test "(3) foo [i [j ABC]] (composition)" <|
             \_ ->
-                run L1 "foo [i [j ABC]]"
-                    |> Expect.equal { committed = [ Text "foo " { begin = 0, end = 3 }, Expr "italic" [ Expr "j" [ Text "ABC" { begin = 7, end = 13 } ] { begin = 7, end = 13 } ] { begin = 4, end = 14 } ], count = 8, end = 15, scanPointer = 15, sourceText = "foo [i [j ABC]]", stack = [] }
+                p L1 "foo [i [j ABC]]"
+                    |> Expect.equal [ ParagraphS [ TextS "foo ", ExprS "italic" [ ExprS "j" [ TextS "ABC" ] ], TextS "\n" ] ]
         , test "(4) [i ABC] [j DEF]" <|
             \_ ->
-                run L1 "foo [i ABC] [j DEF]"
-                    |> Expect.equal { committed = [ Text "foo " { begin = 0, end = 3 }, Expr "italic" [ Text "ABC" { begin = 4, end = 10 } ] { begin = 4, end = 10 }, Text " " { begin = 11, end = 11 }, Expr "j" [ Text "DEF" { begin = 12, end = 18 } ] { begin = 12, end = 18 } ], count = 9, end = 19, scanPointer = 19, sourceText = "foo [i ABC] [j DEF]", stack = [] }
+                p L1 "[i ABC] [j DEF]"
+                    |> Expect.equal [ ParagraphS [ ExprS "italic" [ TextS "ABC" ], TextS " ", ExprS "j" [ TextS "DEF" ], TextS "\n" ] ]
         , test "(5) [i foo (ERROR: missing right bracket)" <|
             \_ ->
-                run L1 "[i foo"
-                    |> Expect.equal { committed = [ Text "I corrected an unmatched '[' in the following expression: " { begin = 0, end = 0 }, Expr "italic" [ Text "foo" { begin = 0, end = 5 } ] { begin = 0, end = 5 } ], count = 4, end = 6, scanPointer = 6, sourceText = "[i foo", stack = [] }
+                p L1 "[i foo"
+                    |> Expect.equal [ ParagraphS [ TextS "Error! I added a bracket after this: [i foo\n", ExprS "italic" [ TextS "foo\n" ] ] ]
         , test "(6) foo [i bar] [j UUU (ERROR: missing right bracket)" <|
             \_ ->
-                run L1 "foo [i bar] [j UUU"
-                    |> Expect.equal { committed = [ Text "foo " { begin = 0, end = 3 }, Expr "italic" [ Text "bar" { begin = 4, end = 10 } ] { begin = 4, end = 10 }, Text " " { begin = 11, end = 11 }, Text "I corrected an unmatched '[' in the following expression: " { begin = 0, end = 0 }, Expr "j" [ Text "UUU" { begin = 12, end = 17 } ] { begin = 12, end = 17 } ], count = 9, end = 18, scanPointer = 18, sourceText = "foo [i bar] [j UUU", stack = [] }
+                p L1 "foo [i bar] [j UUU"
+                    |> Expect.equal [ ParagraphS [ TextS "foo ", ExprS "italic" [ TextS "bar" ], TextS " ", TextS "Error! I added a bracket after this: [j UUU\n", ExprS "j" [ TextS "UUU\n" ] ] ]
         , test "(7) foo [i bar [j UUU] (ERROR: missing right bracket)" <|
             \_ ->
-                run L1 "foo [i bar [j UUU]"
-                    |> .committed
-                    |> Expect.equal [ Text "foo " (loc 0 3), Text "Error! I added a bracket after this: [i bar [j UUU]" (loc 0 0), Expr "i bar" [ Expr "j" [ Text "UUU" (loc 11 17) ] (loc 11 17) ] (loc 4 19) ]
+                p L1 "foo [i bar [j UUU]"
+                    |> Expect.equal [ ParagraphS [ TextS "foo ", TextS "Error! I added a bracket after this: [i bar [j UUU]\n" ] ]
         ]

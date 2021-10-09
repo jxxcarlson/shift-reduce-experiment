@@ -1,4 +1,4 @@
-module Markup.Simplify exposing (blocks, expressions, stack)
+module Markup.Simplify exposing (BlockS(..), ExprS(..), TokenS(..), blocks, expressions, stack)
 
 import Either exposing (Either)
 import Markup.AST exposing (Expr(..))

@@ -3,12 +3,20 @@ module Markup.Debugger exposing (debug1, debug2, debug3)
 import Console
 
 
-debug =
+debugMagenta =
+    True
+
+
+debugCyan =
+    False
+
+
+debugYellow =
     True
 
 
 debug1 label =
-    if debug then
+    if debugMagenta then
         Debug.log (Console.black (Console.bgMagenta (" " ++ label ++ " ")))
 
     else
@@ -16,7 +24,7 @@ debug1 label =
 
 
 debug2 label =
-    if debug then
+    if debugCyan then
         Debug.log (Console.black (Console.bgCyan (" " ++ label ++ " ")))
 
     else
@@ -24,7 +32,7 @@ debug2 label =
 
 
 debug3 label =
-    if debug then
+    if debugYellow then
         Debug.log (Console.black (Console.bgYellow (" " ++ label ++ " ")))
 
     else

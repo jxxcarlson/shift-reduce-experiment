@@ -47,7 +47,7 @@ parseToBlock lang id firstLine str =
 -}
 run : Lang -> String -> State
 run lang input =
-    loop (init input) (nextState lang) |> debug3 "FINAL STATE"
+    loop (init input) (nextState lang) |> debug2 "FINAL STATE"
 
 
 init : String -> State
@@ -92,7 +92,7 @@ nextState lang state_ =
             debug1 ("STACK (" ++ String.fromInt state_.count ++ ")") (state_.stack |> Simplify.stack)
 
         _ =
-            debug3 ("COMMITTED (" ++ String.fromInt state_.count ++ ")") (state_.committed |> Simplify.expressions)
+            debug2 ("COMMITTED (" ++ String.fromInt state_.count ++ ")") (state_.committed |> Simplify.expressions)
     in
     { state_ | count = state_.count + 1 }
         -- |> debug2 ("STATE (" ++ String.fromInt (state_.count + 1) ++ ")")
