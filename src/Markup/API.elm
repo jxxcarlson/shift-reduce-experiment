@@ -64,7 +64,7 @@ renderFancy language count source =
 
 tableOfContents : Int -> Settings -> Block.State.Accumulator -> List Block -> List (Element msg)
 tableOfContents generation settings accumulator blocks =
-    blocks |> ASTTools.getHeadings |> Debug.log "HEADINGS" |> Render.Text.viewTOC generation settings accumulator
+    blocks |> ASTTools.getHeadings |> Render.Text.viewTOC generation settings accumulator
 
 
 {-| -}

@@ -25,10 +25,10 @@ finalize : State -> State
 finalize state =
     case state.currentBlock of
         Nothing ->
-            { state | committed = state.committed |> List.reverse } |> debug3 "finalize"
+            { state | committed = state.committed |> List.reverse } |> debug2 "finalize"
 
         Just block ->
-            { state | committed = reverseContents block :: state.committed |> List.reverse } |> debug3 "finalize"
+            { state | committed = reverseContents block :: state.committed |> List.reverse } |> debug2 "finalize"
 
 
 recoverFromError : State -> State
@@ -112,7 +112,7 @@ processLine language state =
 
 reduce : State -> State
 reduce state =
-    (case state.stack of
+    case state.stack of
         block1 :: ((SBlock name blocks meta) as block2) :: rest ->
             if levelOfBlock block1 > levelOfBlock block2 then
                 reduce { state | stack = SBlock name (block1 :: blocks) meta :: rest }
@@ -126,8 +126,6 @@ reduce state =
 
         _ ->
             state
-    )
-        |> debug3 "REDUCE"
 
 
 createBlock : State -> State
@@ -209,7 +207,7 @@ createBlockPhase2 state =
         _ ->
             state
     )
-        |> debug1 "createBlock "
+        |> debug2 "createBlock "
 
 
 commitBlock : State -> State
@@ -221,12 +219,12 @@ commitBlock state =
         Just block ->
             case List.head state.stack of
                 Nothing ->
-                    { state | committed = reverseContents block :: state.committed, currentBlock = Nothing, accumulator = updateAccumulator block state.accumulator |> Debug.log "NEW ACCUMULATOR" } |> debug1 "commitBlock (1)"
+                    { state | committed = reverseContents block :: state.committed, currentBlock = Nothing, accumulator = updateAccumulator block state.accumulator } |> debug2 "commitBlock (1)"
 
                 Just stackTop ->
                     case compare (levelOfBlock block) (levelOfBlock stackTop) of
                         GT ->
-                            shiftBlock block state |> debug1 "commitBlock (2)"
+                            shiftBlock block state |> debug2 "commitBlock (2)"
 
                         EQ ->
                             { state | committed = block :: stackTop :: state.committed, stack = List.drop 1 state.stack, currentBlock = Nothing } |> debug1 "commitBlock (3)"
@@ -235,20 +233,12 @@ commitBlock state =
                             { state | committed = block :: stackTop :: state.committed, stack = List.drop 1 state.stack, currentBlock = Nothing } |> debug1 "commitBlock (3)"
 
 
-
---type SBlock2
---    = SParagraph (List String) Meta
---    | SVerbatimBlock String (List String) Meta
---    | SBlock String (List SBlock) Meta
---    | SError String
-
-
 updateAccumulator : SBlock -> Accumulator -> Accumulator
 updateAccumulator sblock1 accumulator =
     case sblock1 of
         SVerbatimBlock name contentList _ ->
             if name == "mathmacro" then
-                { accumulator | macroDict = Render.MathMacro.makeMacroDict (String.join "\n" (List.map String.trimLeft contentList) |> Debug.log "CONTENT") }
+                { accumulator | macroDict = Render.MathMacro.makeMacroDict (String.join "\n" (List.map String.trimLeft contentList)) }
 
             else
                 accumulator
@@ -259,7 +249,7 @@ updateAccumulator sblock1 accumulator =
 
 shiftBlock : SBlock -> State -> State
 shiftBlock block state =
-    { state | stack = block :: state.stack, currentBlock = Nothing } |> debug1 "shiftBlock"
+    { state | stack = block :: state.stack, currentBlock = Nothing } |> debug2 "shiftBlock"
 
 
 shiftCurrentBlock : State -> State
@@ -269,7 +259,7 @@ shiftCurrentBlock state =
             state
 
         Just block ->
-            shiftBlock block state |> debug1 "shiftCURRENTBlock"
+            shiftBlock block state |> debug2 "shiftCURRENTBlock"
 
 
 addLineToCurrentBlock : State -> State
@@ -290,7 +280,7 @@ addLineToCurrentBlock state =
         _ ->
             state
     )
-        |> debug1 "addLineToCurrentBlock"
+        |> debug2 "addLineToCurrentBlock"
 
 
 
@@ -315,10 +305,10 @@ classify language inVerbatimBlock verbatimBlockInitialIndent str =
             getLineTypeParser language
 
         leadingSpaces =
-            Block.Line.countLeadingSpaces str |> debug3 "LEADING SPACES"
+            Block.Line.countLeadingSpaces str
 
         provisionalLineType =
-            lineType (String.dropLeft leadingSpaces str) |> debug1 "provisionalLineType"
+            lineType (String.dropLeft leadingSpaces str) |> debug2 "provisionalLineType"
 
         lineType_ =
             (-- if inVerbatimBlock && provisionalLineType == Block..BlankLine then
@@ -328,7 +318,7 @@ classify language inVerbatimBlock verbatimBlockInitialIndent str =
              else
                 provisionalLineType
             )
-                |> debug1 "FINAL LINE TYPE"
+                |> debug2 "FINAL LINE TYPE"
     in
     { indent = leadingSpaces, lineType = lineType_, content = str }
 

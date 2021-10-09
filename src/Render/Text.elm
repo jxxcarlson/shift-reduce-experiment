@@ -107,14 +107,10 @@ args textList =
 
 macro2 : (String -> String -> Element msg) -> Int -> Settings -> Accumulator -> List ExprM -> Element msg
 macro2 element g s a textList =
-    let
-        _ =
-            Debug.log "TEXT LIST" textList
-    in
     case args textList of
         -- TODO: temporary fix: parse is producing the args in reverse order
         arg1 :: arg2 :: rest ->
-            element (Debug.log "ARG1" arg1) (Debug.log "ARG2" arg2)
+            element arg1 arg2
 
         _ ->
             el [ Font.color errorColor ] (Element.text "Invalid arguments")
@@ -127,8 +123,8 @@ link g s a textList =
 link_ : String -> String -> Element msg
 link_ url label =
     newTabLink []
-        { url = url |> Debug.log "URL"
-        , label = el [ Font.color linkColor, Font.italic ] (Element.text <| Debug.log "LABEL" label)
+        { url = url
+        , label = el [ Font.color linkColor, Font.italic ] (Element.text label)
         }
 
 
@@ -285,10 +281,10 @@ viewTOCItem : Int -> Settings -> Accumulator -> ExprM -> Element msg
 viewTOCItem generation settings accumulator block =
     case block of
         ExprM "heading2" textList _ ->
-            el (tocStyle 2) (tocLink (Debug.log "HEADING2" textList))
+            el (tocStyle 2) (tocLink textList)
 
         ExprM "heading3" textList _ ->
-            el (tocStyle 3) (tocLink (Debug.log "HEADING3" textList))
+            el (tocStyle 3) (tocLink textList)
 
         ExprM "heading4" textList _ ->
             el (tocStyle 4) (tocLink textList)

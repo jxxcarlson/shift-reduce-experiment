@@ -3,14 +3,30 @@ module Markup.L1 exposing (makeLoc, recoverFromError, reduce, reduceFinal)
 import Either exposing (Either(..))
 import Markup.AST as AST exposing (Expr(..))
 import Markup.Common exposing (Step(..))
-import Markup.Debugger exposing (debug1, debug3)
-import Markup.Stack
+import Markup.Debugger exposing (debug1, debug3, debug4)
+import Markup.Simplify as Simplify
+import Markup.Stack as Stack exposing (Stack)
 import Markup.State exposing (State)
 import Markup.Token as Token exposing (Token(..))
 
 
-reduceFinal =
-    identity
+reduceFinal state =
+    let
+        _ =
+            debug4 "reduceFinal, STACK (IN)" (state.stack |> Simplify.stack)
+    in
+    case state.stack of
+        [] ->
+            state
+
+        (Left (Token.Text str loc)) :: rest ->
+            reduceFinal { state | committed = AST.Text str loc :: state.committed, stack = rest }
+
+        (Right expr) :: rest ->
+            reduceFinal { state | committed = expr :: state.committed, stack = rest }
+
+        _ ->
+            state
 
 
 reduce : State -> State
@@ -70,7 +86,55 @@ reduce state =
         --    in
         --    reduceAux (Expr (normalizeFragment fragment) [ AST.Text str loc2 ] (makeLoc loc1 loc2)) rest state
         _ ->
-            { state | stack = Markup.Stack.reduce1 state.stack }
+            { state | stack = reduce1 state.stack }
+
+
+reduce1 : Stack -> Stack
+reduce1 stack =
+    case stack of
+        (Left (Token.Symbol "]" loc1)) :: rest ->
+            case List.reverse stack of
+                (Left (Token.FunctionName name loc3)) :: rest2 ->
+                    let
+                        _ =
+                            rest2 |> Simplify.stack |> debug3 "reduce1, rest2"
+
+                        interior_ =
+                            rest2 |> List.take (List.length rest2 - 1) |> debug3 "reduce1, interior"
+                    in
+                    if not (Stack.stackHasSymbol interior_) then
+                        let
+                            interior =
+                                List.reverse interior_ |> debug3 "reduce1, interior (2)"
+
+                            _ =
+                                Stack.toExprList interior |> Maybe.map Simplify.expressions |> debug3 "reduce1, interior (3)"
+
+                            _ =
+                                Right (AST.Expr name (List.map Either.toList interior |> List.concat) loc3) :: [] |> Simplify.stack |> debug3 "reduce1, STACK"
+                        in
+                        case Stack.toExprList interior of
+                            Nothing ->
+                                stack
+
+                            Just exprList ->
+                                let
+                                    _ =
+                                        -- Left (Token.Symbol "]" loc1) :: Right (AST.Expr name exprList loc3) :: Left (Token.FunctionName name loc3) :: [] |> Simplify.stack |> debug3 "reduce1, STACK, OUT"
+                                        Right (AST.Expr name exprList loc3) :: [] |> Simplify.stack |> debug3 "reduce1, STACK, OUT"
+                                in
+                                Right (AST.Expr name exprList loc3) :: []
+
+                    else
+                        -- TODO: no recursion! BAD!!
+                        reduce1 (Left (Token.Symbol "]" loc1) :: reduce1 interior_ ++ [ Left (Token.FunctionName name loc3) ])
+
+                -- TODO: loc3 is totally bogus
+                _ ->
+                    stack
+
+        _ ->
+            stack
 
 
 normalizeFragment : String -> String
@@ -96,7 +160,7 @@ transformExpr : Expr -> Expr
 transformExpr expr =
     case expr of
         Expr name exprList loc ->
-            Expr (transform name) (Debug.log "EXXPR (T)" exprList) loc
+            Expr (transform name) exprList loc
 
         _ ->
             expr
@@ -149,11 +213,7 @@ recoverFromError state =
 
 transform : String -> String
 transform str =
-    let
-        _ =
-            Debug.log "TRANSFORM (IN)" str
-    in
-    (case str of
+    case str of
         "i" ->
             "italic"
 
@@ -174,8 +234,6 @@ transform str =
 
         _ ->
             str
-    )
-        |> Debug.log "TRANSFORM (OUT)"
 
 
 makeExpr2 : Token.Loc -> String -> Expr -> Expr

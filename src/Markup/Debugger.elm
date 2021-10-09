@@ -1,4 +1,4 @@
-module Markup.Debugger exposing (debug1, debug2, debug3)
+module Markup.Debugger exposing (debug1, debug2, debug3, debug4)
 
 import Console
 
@@ -12,6 +12,10 @@ debugCyan =
 
 
 debugYellow =
+    True
+
+
+debugBlue =
     True
 
 
@@ -34,6 +38,14 @@ debug2 label =
 debug3 label =
     if debugYellow then
         Debug.log (Console.black (Console.bgYellow (" " ++ label ++ " ")))
+
+    else
+        identity
+
+
+debug4 label =
+    if debugBlue then
+        Debug.log (Console.white (Console.bgBlue (" " ++ label ++ " ")))
 
     else
         identity

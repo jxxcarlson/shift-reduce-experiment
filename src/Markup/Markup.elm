@@ -18,7 +18,7 @@ import Markup.Tokenizer as Tokenizer exposing (Lang(..))
 
 parseExpr : Lang -> String -> List AST.Expr
 parseExpr lang str =
-    run lang str |> .committed |> Debug.log "PARSE EXPR"
+    run lang str |> .committed
 
 
 
@@ -92,7 +92,7 @@ nextState lang state_ =
             debug1 ("STACK (" ++ String.fromInt state_.count ++ ")") (state_.stack |> Simplify.stack)
 
         _ =
-            debug2 ("COMMITTED (" ++ String.fromInt state_.count ++ ")") (state_.committed |> Simplify.expressions)
+            debug4 ("COMMITTED (" ++ String.fromInt state_.count ++ ")") (state_.committed |> Simplify.expressions)
     in
     { state_ | count = state_.count + 1 }
         -- |> debug2 ("STATE (" ++ String.fromInt (state_.count + 1) ++ ")")
@@ -185,7 +185,7 @@ reduce : Lang -> State -> State
 reduce lang state =
     case lang of
         L1 ->
-            L1.reduce state |> Debug.log "REDUCE (F)"
+            L1.reduce state
 
         MiniLaTeX ->
             MiniLaTeX.reduce state

@@ -138,10 +138,10 @@ filterStrictBlock_ filterType key block =
         Paragraph textList _ ->
             case filterType of
                 Equality ->
-                    List.filter (\t -> Just key == getName t) textList |> Debug.log "(1)" |> listExprMToString
+                    List.filter (\t -> Just key == getName t) textList |> listExprMToString
 
                 Contains ->
-                    List.filter (\t -> Maybe.map2 String.contains (Just key) (getName t) == Just True) textList |> Debug.log "(1)" |> listExprMToString
+                    List.filter (\t -> Maybe.map2 String.contains (Just key) (getName t) == Just True) textList |> listExprMToString
 
         Block name blocks _ ->
             case filterType of
