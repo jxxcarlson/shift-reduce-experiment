@@ -12,22 +12,7 @@ import Markup.Token as Token exposing (Token(..))
 
 
 reduceFinal state =
-    let
-        _ =
-            debug4 "reduceFinal, STACK (IN)" (state.stack |> Simplify.stack)
-    in
-    case state.stack of
-        [] ->
-            state
-
-        (Left (Token.Text str loc)) :: rest ->
-            reduceFinal { state | committed = AST.Text str loc :: state.committed, stack = rest }
-
-        (Right expr) :: rest ->
-            reduceFinal { state | committed = expr :: state.committed, stack = rest }
-
-        _ ->
-            state
+    state
 
 
 reduce : State -> State
@@ -41,13 +26,6 @@ reduce state =
             in
             reduceAux (AST.Text str loc) [] state
 
-        -- One term pattern (X?):
-        --(Left (Token.Verbatim name str loc)) :: [] ->
-        --    let
-        --        _ =
-        --            debug3 "Pattern" "One term (2)"
-        --    in
-        --    reduceAux (AST.Verbatim name str loc) [] state
         -- Three term pattern:
         (Left (Symbol "]" loc3)) :: (Left (Token.Text str loc2)) :: (Left (FunctionName fragment loc1)) :: rest ->
             let
@@ -57,12 +35,6 @@ reduce state =
             reduceAux (Expr (normalizeFragment fragment) [ AST.Text str loc2 ] (makeLoc loc1 loc2)) rest state
 
         -- Three term pattern:
-        --(Left (Symbol "]" loc3)) :: (Left (Token.Text str _)) :: (Left (Symbol "[" loc1)) :: rest ->
-        --    let
-        --        _ =
-        --            debug3 "Pattern" "Three term (2)"
-        --    in
-        --    reduceAux (makeExpr1 (makeLoc loc1 loc3) str) rest state
         (Left (Symbol "]" loc3)) :: (Right expr) :: (Left (FunctionName fragment loc1)) :: rest ->
             let
                 _ =
@@ -72,20 +44,6 @@ reduce state =
             in
             reduceAux (Expr (normalizeFragment fragment) [ expr ] (makeLoc loc1 loc3)) rest state
 
-        -- Four term pattern (X?):
-        --(Left (Symbol "]" loc4)) :: (Right expr) :: (Left (Token.Text name _)) :: (Left (Symbol "[" loc1)) :: rest ->
-        --    let
-        --        _ =
-        --            debug3 "Pattern" "Four term (X?)"
-        --    in
-        --    reduceAux (makeExpr2 (makeLoc loc1 loc4) (transform name) (Debug.log "REDUCE EXXPR" expr)) rest state
-        -- Four term pattern:
-        --(Left (Symbol "]" loc4)) :: (Right (Expr name [ AST.Text str loc3 ] loc3b)) :: (Left (Token.Text " " loc2)) :: (Left (FunctionName fragment loc1)) :: rest ->
-        --    let
-        --        _ =
-        --            debug3 "Pattern" "Four term (Y?)"
-        --    in
-        --    reduceAux (Expr (normalizeFragment fragment) [ AST.Text str loc2 ] (makeLoc loc1 loc2)) rest state
         _ ->
             { state | stack = reduce2 state.stack }
 
@@ -111,7 +69,11 @@ reduce2 stack =
                 ( Just stackItem, Just exprList ) ->
                     case stackItem of
                         Left (Token.FunctionName name loc) ->
-                            Right (Expr name exprList loc) :: List.drop (n + 1) rest |> debug4 "REDUCE 1b (ACTION)"
+                            let
+                                _ =
+                                    Right (Expr (normalizeFragment name) (List.reverse exprList) loc) :: List.drop (n + 1) rest |> Simplify.stack |> debug4 "REDUCE 2"
+                            in
+                            Right (Expr (normalizeFragment name) (List.reverse exprList) loc) :: List.drop (n + 1) rest
 
                         _ ->
                             stack
