@@ -1,4 +1,14 @@
-module Markup.Meta exposing (..)
+module Markup.Meta exposing
+    ( BlockData
+    , ExpressionMeta
+    , Loc
+    , Position
+    , dummy
+    , getBlockData
+    , getBlockData1
+    , make
+    , stringAtLoc
+    )
 
 import List.Extra
 import Markup.Token as Token
@@ -8,6 +18,10 @@ type alias ExpressionMeta =
     { id : String
     , loc : { begin : { row : Int, col : Int }, end : { row : Int, col : Int } }
     }
+
+
+dummy =
+    { id = "dummy", loc = { begin = { row = 0, col = 0 }, end = { row = 0, col = 0 } } }
 
 
 type alias BlockData =

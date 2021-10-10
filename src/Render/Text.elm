@@ -1,10 +1,11 @@
-module Render.Text exposing (args, render, viewTOC)
+module Render.Text exposing (render, viewTOC)
 
 import Dict exposing (Dict)
 import Element exposing (Element, alignLeft, alignRight, centerX, column, el, newTabLink, px, spacing)
 import Element.Font as Font
 import Markup.ASTTools as ASTTools
 import Markup.Block exposing (ExprM(..))
+import Markup.Debugger exposing (debug1)
 import Maybe.Extra
 import Render.AST2
 import Render.Math
@@ -91,17 +92,9 @@ verbatimDict =
         ]
 
 
-args : List ExprM -> List String
-args textList =
-    List.map ASTTools.getText textList
-        |> Maybe.Extra.values
-        |> List.map String.trim
-        |> List.filter (\s -> s /= "")
-
-
 macro2 : (String -> String -> Element msg) -> Int -> Settings -> Accumulator -> List ExprM -> Element msg
 macro2 element g s a textList =
-    case args textList of
+    case ASTTools.exprListToStringList textList of
         -- TODO: temporary fix: parse is producing the args in reverse order
         arg1 :: arg2 :: _ ->
             element arg1 arg2
@@ -110,15 +103,20 @@ macro2 element g s a textList =
             el [ Font.color errorColor ] (Element.text "Invalid arguments")
 
 
-link g s a textList =
-    macro2 link_ g s a textList
+link g s a exprList =
+    case exprList of
+        (TextM label _) :: (TextM url _) :: rest ->
+            link_ url label
+
+        _ ->
+            el [ Font.color errorColor ] (Element.text "bad data for link")
 
 
 link_ : String -> String -> Element msg
 link_ url label =
     newTabLink []
-        { url = url
-        , label = el [ Font.color linkColor, Font.italic ] (Element.text label)
+        { url = url |> Debug.log "XXX, URL"
+        , label = el [ Font.color linkColor, Font.italic ] (Element.text (label |> Debug.log "XXX, LABEL"))
         }
 
 
@@ -141,7 +139,7 @@ href_ url label =
 image generation settings accumuator body =
     let
         arguments =
-            args body
+            ASTTools.exprListToStringList body
 
         url =
             List.head arguments |> Maybe.withDefault "no-image"

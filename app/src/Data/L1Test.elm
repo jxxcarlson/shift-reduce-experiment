@@ -7,19 +7,13 @@ text =
 
 L1 is a markup language with a syntax [i somewhat] like Lisp,
 but with square brackets instead of parentheses.
-It is similar to and linguistically a descendant of
-CaYaTeX, work of this author and Nicholas Yang,
-but with more robust error-handling abilities.
 
-Yes, a [b [red very]] bold move indeed! [i (Note that macros are composing properly].
+Yes, a [b [red very]] bold move indeed! [i (Note that macros are composing properly)].
 
+Links are written as `[link New York Times https://nytimes.com]` and are rendered like this:
 
-[h2 Puzzle!]
+[link New York Times https://nytimes.com]
 
-[link NYT https://nytimes.com]
-
-
-[link https://nytimes.com `New York Times` ]
 
 [h1 blocks]
 

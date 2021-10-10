@@ -3,6 +3,7 @@ module Markup.L1 exposing (makeLoc, recoverFromError, reduce, reduceFinal)
 import Either exposing (Either(..))
 import List.Extra
 import Markup.AST as AST exposing (Expr(..))
+import Markup.ASTTools as ASTTools
 import Markup.Common exposing (Step(..))
 import Markup.Stack as Stack exposing (Stack)
 import Markup.State exposing (State)
@@ -68,7 +69,7 @@ reduce2 stack =
 
 normalizeFragment : String -> String
 normalizeFragment str =
-    str |> String.dropLeft 1 |> String.trimRight
+    str |> String.dropLeft 1 |> String.trimRight |> transform
 
 
 makeLoc : Token.Loc -> Token.Loc -> Token.Loc
@@ -79,17 +80,17 @@ makeLoc loc1 loc2 =
 reduceAux : Expr -> List (Either Token Expr) -> State -> State
 reduceAux expr rest state =
     if rest == [] then
-        { state | stack = [], committed = transformExpr expr :: state.committed }
+        { state | stack = [], committed = normalizeExpr expr :: state.committed }
 
     else
-        { state | stack = Right expr :: rest }
+        { state | stack = Right (normalizeExpr expr) :: rest }
 
 
-transformExpr : Expr -> Expr
-transformExpr expr =
+normalizeExpr : Expr -> Expr
+normalizeExpr expr =
     case expr of
-        Expr name exprList loc ->
-            Expr (transform name) exprList loc
+        Expr "link" exprList loc ->
+            Expr "link" (AST.args2M exprList) loc
 
         _ ->
             expr

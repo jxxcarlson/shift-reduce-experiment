@@ -1,6 +1,57 @@
-module Markup.ASTTools exposing (FilterType(..), filter, filterBlockByName, filterStrictBlock, getHeadings, getText, getTitle, listExprMToString)
+module Markup.ASTTools exposing
+    ( FilterType(..)
+    , args2
+    , args2M
+    , exprListToStringList
+    , filter
+    , filterBlockByName
+    , filterStrictBlock
+    , getHeadings
+    , getText
+    , getTitle
+    , listExprMToString
+    )
 
 import Markup.Block exposing (Block(..), ExprM(..))
+import Markup.Meta as Meta
+import Maybe.Extra
+
+
+{-| [Text "a b c d"] -> [Text "a b c", Text "d"]
+-}
+args2M : List ExprM -> List ExprM
+args2M exprList =
+    let
+        args =
+            args2 exprList
+    in
+    [ TextM args.first Meta.dummy, TextM args.last Meta.dummy ]
+
+
+args2 : List ExprM -> { first : String, last : String }
+args2 exprList =
+    let
+        args =
+            exprListToStringList exprList |> String.join " " |> String.words
+
+        n =
+            List.length args
+
+        first =
+            List.take (n - 1) args |> String.join " "
+
+        last =
+            List.drop (n - 1) args |> String.join " "
+    in
+    { first = first, last = last }
+
+
+exprListToStringList : List ExprM -> List String
+exprListToStringList exprList =
+    List.map getText exprList
+        |> Maybe.Extra.values
+        |> List.map String.trim
+        |> List.filter (\s -> s /= "")
 
 
 getText : ExprM -> Maybe String
