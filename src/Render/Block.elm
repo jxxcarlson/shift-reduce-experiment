@@ -106,10 +106,6 @@ heading4 g s a textList =
 
 indent : Int -> Settings -> Block.State.Accumulator -> List Block -> Element msg
 indent g s a textList =
-    let
-        _ =
-            Debug.log "XXX, length of text list" (List.length textList)
-    in
     Element.column [ spacing 18, Font.size 14, makeId textList, paddingEach { left = 18, right = 0, top = 0, bottom = 0 } ]
         (List.map (renderBlock g s a) textList)
 
