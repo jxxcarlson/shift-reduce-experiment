@@ -1,9 +1,9 @@
-module Markup.Stack exposing (Stack, stackHasSymbol, toExprList)
+module Markup.Stack exposing (Stack, isFunctionName, stackHasSymbol, toExprList)
 
 import Either exposing (Either(..))
 import List.Extra
 import Markup.AST as AST exposing (Expr)
-import Markup.Token as Token exposing (Token)
+import Markup.Token as Token exposing (Token(..))
 import Maybe.Extra
 
 
@@ -13,6 +13,16 @@ type alias StackItem =
 
 type alias Stack =
     List StackItem
+
+
+isFunctionName : StackItem -> Bool
+isFunctionName stackItem =
+    case stackItem of
+        Left (FunctionName _ _) ->
+            True
+
+        _ ->
+            False
 
 
 toExprList : Stack -> Maybe (List Expr)

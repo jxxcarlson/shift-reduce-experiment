@@ -1,6 +1,7 @@
 module Markup.L1 exposing (makeLoc, recoverFromError, reduce, reduceFinal)
 
 import Either exposing (Either(..))
+import List.Extra
 import Markup.AST as AST exposing (Expr(..))
 import Markup.Common exposing (Step(..))
 import Markup.Debugger exposing (debug1, debug3, debug4)
@@ -86,52 +87,34 @@ reduce state =
         --    in
         --    reduceAux (Expr (normalizeFragment fragment) [ AST.Text str loc2 ] (makeLoc loc1 loc2)) rest state
         _ ->
-            { state | stack = reduce1 state.stack }
+            { state | stack = reduce2 state.stack }
 
 
-reduce1 : Stack -> Stack
-reduce1 stack =
+reduce2 : Stack -> Stack
+reduce2 stack =
     case stack of
         (Left (Token.Symbol "]" loc1)) :: rest ->
-            case List.reverse stack of
-                (Left (Token.FunctionName name loc3)) :: rest2 ->
-                    let
-                        _ =
-                            rest2 |> Simplify.stack |> debug3 "reduce1, rest2"
+            let
+                interior =
+                    List.Extra.takeWhile (\item -> not (Stack.isFunctionName item)) rest
 
-                        interior_ =
-                            rest2 |> List.take (List.length rest2 - 1) |> debug3 "reduce1, interior"
-                    in
-                    if not (Stack.stackHasSymbol interior_) then
-                        let
-                            interior =
-                                List.reverse interior_ |> debug3 "reduce1, interior (2)"
-
-                            _ =
-                                Stack.toExprList interior |> Maybe.map Simplify.expressions |> debug3 "reduce1, interior (3)"
-
-                            _ =
-                                Right (AST.Expr name (List.map Either.toList interior |> List.concat) loc3) :: [] |> Simplify.stack |> debug3 "reduce1, STACK"
-                        in
-                        case Stack.toExprList interior of
-                            Nothing ->
-                                stack
-
-                            Just exprList ->
-                                let
-                                    _ =
-                                        -- Left (Token.Symbol "]" loc1) :: Right (AST.Expr name exprList loc3) :: Left (Token.FunctionName name loc3) :: [] |> Simplify.stack |> debug3 "reduce1, STACK, OUT"
-                                        Right (AST.Expr name exprList loc3) :: [] |> Simplify.stack |> debug3 "reduce1, STACK, OUT"
-                                in
-                                Right (AST.Expr name exprList loc3) :: []
-
-                    else
-                        -- TODO: no recursion! BAD!!
-                        reduce1 (Left (Token.Symbol "]" loc1) :: reduce1 interior_ ++ [ Left (Token.FunctionName name loc3) ])
-
-                -- TODO: loc3 is totally bogus
-                _ ->
+                n =
+                    List.length interior
+            in
+            case ( List.Extra.getAt n rest, Stack.toExprList interior ) of
+                ( Nothing, _ ) ->
                     stack
+
+                ( _, Nothing ) ->
+                    stack
+
+                ( Just stackItem, Just exprList ) ->
+                    case stackItem of
+                        Left (Token.FunctionName name loc) ->
+                            Right (Expr name exprList loc) :: List.drop (n + 1) rest |> debug4 "REDUCE 1b (ACTION)"
+
+                        _ ->
+                            stack
 
         _ ->
             stack
