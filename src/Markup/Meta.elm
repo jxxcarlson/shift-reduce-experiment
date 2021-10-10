@@ -42,27 +42,6 @@ type alias Position =
     { row : Int, col : Int }
 
 
-metaDataTest : Int -> Int -> String -> { accept : Bool, input : String, output : String, meta : ExpressionMeta }
-metaDataTest begin end content =
-    let
-        lines =
-            String.lines content |> List.map (\s -> s ++ "\n")
-
-        tokenLoc =
-            { begin = begin, end = end }
-
-        meta =
-            make getBlockData1 0 tokenLoc lines 0 "1.2"
-
-        str =
-            stringAtLoc meta.loc lines
-
-        input =
-            String.slice begin (end + 1) content
-    in
-    { accept = input == str, input = input, output = str, meta = meta }
-
-
 {-|
 
     Given a location = { begin = {row :Int, col: Int}, end = {row: Int, col : Int}

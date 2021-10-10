@@ -80,6 +80,7 @@ blockDict =
         , ( "heading2", \g s a blocks -> heading2 g s a blocks )
         , ( "heading3", \g s a blocks -> heading3 g s a blocks )
         , ( "heading4", \g s a blocks -> heading4 g s a blocks )
+        , ( "indent", \g s a blocks -> indent g s a blocks )
         ]
 
 
@@ -103,6 +104,17 @@ heading4 g s a textList =
     simpleElement [ Font.size 14, Font.italic, Font.bold, makeId textList ] g s a textList
 
 
+indent : Int -> Settings -> Block.State.Accumulator -> List Block -> Element msg
+indent g s a textList =
+    let
+        _ =
+            Debug.log "XXX, length of text list" (List.length textList)
+    in
+    Element.column [ spacing 18, Font.size 14, makeId textList, paddingEach { left = 18, right = 0, top = 0, bottom = 0 } ]
+        (List.map (renderBlock g s a) textList)
+
+
+simpleElement : List (Attribute msg) -> Int -> Settings -> Block.State.Accumulator -> List Block -> Element msg
 simpleElement formatList g s a blocks =
     Element.paragraph formatList (List.map (renderBlock g s a) (debug3 "XX, block in quotation" blocks))
 

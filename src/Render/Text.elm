@@ -5,8 +5,6 @@ import Element exposing (Element, alignLeft, alignRight, centerX, column, el, ne
 import Element.Font as Font
 import Markup.ASTTools as ASTTools
 import Markup.Block exposing (ExprM(..))
-import Markup.Debugger exposing (debug1)
-import Maybe.Extra
 import Render.AST2
 import Render.Math
 import Render.MathMacro
@@ -63,6 +61,7 @@ markupDict : Dict String (Int -> Settings -> Accumulator -> List ExprM -> Elemen
 markupDict =
     Dict.fromList
         [ ( "strong", \g s a textList -> strong g s a textList )
+        , ( "bold", \g s a textList -> strong g s a textList )
         , ( "italic", \g s a textList -> italic g s a textList )
         , ( "red", \g s a textList -> red g s a textList )
         , ( "title", \_ _ _ _ -> Element.none )
@@ -106,7 +105,7 @@ macro2 element g s a textList =
 
 link g s a exprList =
     case exprList of
-        (TextM label _) :: (TextM url _) :: rest ->
+        (TextM label _) :: (TextM url _) :: _ ->
             link_ url label
 
         _ ->
