@@ -3,9 +3,7 @@ module Markup.L1 exposing (makeLoc, recoverFromError, reduce, reduceFinal)
 import Either exposing (Either(..))
 import List.Extra
 import Markup.AST as AST exposing (Expr(..))
-import Markup.ASTTools as ASTTools
 import Markup.Common exposing (Step(..))
-import Markup.Meta as Meta
 import Markup.Stack as Stack exposing (Stack)
 import Markup.State exposing (State)
 import Markup.Token as Token exposing (Token(..))
@@ -22,12 +20,26 @@ reduce state =
         (Left (Token.Text str loc)) :: [] ->
             reduceAux (AST.Text str loc) [] state
 
-        (Left (Token.Verbatim "code" str loc)) :: rest ->
-            reduceAux (AST.Verbatim "code" (String.dropLeft 1 (String.dropRight 1 str)) loc) rest state
+        -- One term pattern to handle verbatim text:
+        (Left (Token.Verbatim name str loc)) :: rest ->
+            if name == "code" then
+                if String.left 2 str == "`!" then
+                    reduceAux (AST.Text (String.dropLeft 2 (String.dropRight 1 str)) loc) rest state
+
+                else
+                    reduceAux (AST.Verbatim name (String.dropLeft 1 (String.dropRight 1 str)) loc) rest state
+
+            else
+                reduceAux (AST.Verbatim name (String.dropLeft 1 (String.dropRight 1 str)) loc) rest state
 
         -- Two term pattern:
         (Left (Token.Text str loc)) :: (Right expr) :: [] ->
             { state | stack = [], committed = AST.Text str loc :: expr :: state.committed }
+
+        -- Three term pattern for "ordinary" text like "[1]"  :
+        (Left (Symbol "]" _)) :: (Left (Token.Text str loc2)) :: (Left (Symbol "[" _)) :: rest ->
+            -- { state | stack = [], committed = AST.Text ("[" ++ str ++ "]") loc2 :: state.committed }
+            reduceAux (AST.Text ("[" ++ str ++ "]") loc2) rest state
 
         -- Three term pattern:
         (Left (Symbol "]" _)) :: (Left (Token.Text str loc2)) :: (Left (FunctionName fragment loc1)) :: rest ->
