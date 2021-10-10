@@ -11,8 +11,11 @@ but with square brackets instead of parentheses.
 Yes, a [b [red very]] bold move indeed! [i (Note that macros are composing properly)].
 
 Links are written as `[link New York Times https://nytimes.com]` and
-are rendered like this: [link New York Times https://nytimes.com]
+are rendered like this: [link New York Times https://nytimes.com].
 
+The simplest way to display an image is via this model: `[image URL]`, e.g. as below
+
+[image https://images.pexels.com/photos/416179/pexels-photo-416179.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500]
 
 [h2 blocks]
 

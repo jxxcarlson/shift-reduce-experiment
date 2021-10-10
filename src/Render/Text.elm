@@ -192,7 +192,7 @@ image generation settings accumuator body =
         displayWidth =
             settings.width
     in
-    column [ spacing 8, Element.width (px displayWidth), placement ]
+    column [ spacing 8, Element.width (px displayWidth), placement, Element.paddingXY 0 18 ]
         [ Element.image [ Element.width width, placement ]
             { src = url, description = description }
         , caption
