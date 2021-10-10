@@ -26,6 +26,14 @@ reduce state =
             in
             reduceAux (AST.Text str loc) [] state
 
+        -- Two term pattern:
+        (Left (Token.Text str loc)) :: (Right expr) :: [] ->
+            let
+                _ =
+                    debug3 "Pattern" "Two term (USED)"
+            in
+            { state | stack = [], committed = AST.Text str loc :: expr :: state.committed }
+
         -- Three term pattern:
         (Left (Symbol "]" loc3)) :: (Left (Token.Text str loc2)) :: (Left (FunctionName fragment loc1)) :: rest ->
             let
