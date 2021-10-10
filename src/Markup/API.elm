@@ -53,7 +53,11 @@ renderFancy language count source =
             E.el [ Font.size 30 ] (E.text titleString)
 
         toc =
-            E.column [ E.paddingXY 0 24, E.spacing 8 ] toc_
+            if List.length toc_ > 1 then
+                E.column [ E.paddingXY 0 24, E.spacing 8 ] toc_
+
+            else
+                E.none
 
         renderedText_ : List (Element msg)
         renderedText_ =
