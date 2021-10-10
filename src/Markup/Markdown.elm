@@ -1,4 +1,4 @@
-module Markup.Markdown exposing (recoverFromError, reduce, reduceFinal)
+module Markup.Markdown exposing (normalizeExpr, recoverFromError, reduce, reduceFinal)
 
 import Either exposing (Either(..))
 import Markup.AST as AST exposing (Expr(..))
@@ -40,13 +40,16 @@ reduce state =
             { state | committed = Expr "italic" [ AST.Text str loc ] loc :: state.committed, stack = [] }
 
         (Left (MarkedText "code" str loc)) :: [] ->
-            { state | committed = Expr "code" [ AST.Text str loc ] loc :: state.committed, stack = [] }
+            { state | committed = AST.Verbatim "code" str loc :: state.committed, stack = [] }
 
         (Left (MarkedText "math" str loc)) :: [] ->
-            { state | committed = Expr "math" [ AST.Text str loc ] loc :: state.committed, stack = [] }
+            { state | committed = AST.Verbatim "math" str loc :: state.committed, stack = [] }
 
         (Left (MarkedText "arg" url loc2)) :: (Left (MarkedText "annotation" label loc1)) :: [] ->
             { state | committed = Expr "link" [ AST.Text label loc1, AST.Text url loc2 ] { begin = loc1.begin, end = loc2.end } :: state.committed, stack = [] }
+
+        (Left (MarkedText "arg" url loc2)) :: (Left (MarkedText "image" label loc1)) :: [] ->
+            { state | committed = normalizeExpr (Expr "image" [ AST.Text label loc1, AST.Text url loc2 ] { begin = loc1.begin, end = loc2.end }) :: state.committed, stack = [] }
 
         _ ->
             state
@@ -55,10 +58,22 @@ reduce state =
 reduceAux : Expr -> List (Either Token Expr) -> State -> State
 reduceAux expr rest state =
     if rest == [] then
-        { state | stack = [], committed = expr :: state.committed }
+        { state | stack = [], committed = normalizeExpr expr :: state.committed }
 
     else
-        { state | stack = Right expr :: rest }
+        { state | stack = Right (normalizeExpr expr) :: rest }
+
+
+normalizeExpr : Expr -> Expr
+normalizeExpr expr =
+    (case expr of
+        Expr "image" exprList loc ->
+            Expr "image" (List.drop 1 exprList) loc
+
+        _ ->
+            expr
+    )
+        |> Debug.log "NORMALIZE"
 
 
 recoverFromError : State -> Step State State

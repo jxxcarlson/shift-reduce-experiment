@@ -147,9 +147,9 @@ noFocus =
 mainColumn : Model -> Element Msg
 mainColumn model =
     column (mainColumnStyle model)
-        [ column [ spacing 8, width (px appWidth_), height (px (appHeight_ model)) ]
-            [ title "L3 Demo App"
-            , column [ spacing 12 ]
+        [ column [ paddingEach { top = 16, bottom = 0, left = 0, right = 0 }, spacing 8, width (px appWidth_), height (px (appHeight_ model)) ]
+            [ -- title "L3 Demo App"
+              column [ spacing 12 ]
                 [ row [ spacing 12 ] [ editor model, rhs model ]
                 ]
             , row [ Font.size 14, Font.color whiteColor ] []
@@ -305,15 +305,15 @@ widePanelWidth_ =
 
 
 panelWidth_ =
-    520
+    560
 
 
 appHeight_ model =
-    model.windowHeight - 300
+    model.windowHeight - 160
 
 
 panelHeight_ model =
-    appHeight_ model - parserDisplayPanelHeight_ - 100
+    appHeight_ model - parserDisplayPanelHeight_ - 60
 
 
 parserDisplayPanelHeight_ =

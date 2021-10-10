@@ -84,6 +84,13 @@ init str =
 -}
 nextState : Lang -> State -> Step State State
 nextState lang state_ =
+    let
+        _ =
+            state_.stack |> debug1 ("STACK (" ++ String.fromInt state_.count ++ ")")
+
+        _ =
+            state_.committed |> debug2 ("COMMITTED (" ++ String.fromInt state_.count ++ ")")
+    in
     { state_ | count = state_.count + 1 }
         -- |> debug2 ("STATE (" ++ String.fromInt (state_.count + 1) ++ ")")
         |> reduce lang

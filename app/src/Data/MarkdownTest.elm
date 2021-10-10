@@ -8,10 +8,12 @@ text =
 
 It was a  *very* bold proposal.
 
-- This is some text. This is some math. This is some math.This is some math.This is some math. This is some math. his is some math. This is some math. This is some math. This is some math.
+- [New York Times](https://nytimes.com)
 
 - This is some text. This is some math. This is some math. This is some math. This is some math. This is some math. This is some math. This is some math. This is some math. This is some math.
 
+
+![Bird](https://images.pexels.com/photos/416179/pexels-photo-416179.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500)
 
 
 ## Math
@@ -38,8 +40,7 @@ This is some code:  `a := 1`.  And so is this
 
 This is a quote:
 
->
-   Regular languages are rather inexpressive, 
+> Regular languages are rather inexpressive,
    but they work great for lexers. On the opposite 
    side of expressivity spectrum are Turing machines. 
    For them, we also have a number of meta-languages 
@@ -51,7 +52,4 @@ This is a quote:
     the head then corresponds to popping from one 
     stack and pushing to another.
 
-
-
-*by James Carlson*
 """

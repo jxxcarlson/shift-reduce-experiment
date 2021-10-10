@@ -219,11 +219,7 @@ code g s a str =
 
 
 math g s a str =
-    mathElement g s a (dropFirstAndLastCharacter str)
-
-
-dropFirstAndLastCharacter str =
-    String.slice 1 (String.length str - 1) str
+    mathElement g s a str
 
 
 codeStyle =

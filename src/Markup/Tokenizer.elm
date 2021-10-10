@@ -72,6 +72,7 @@ tokenParser lang start =
                 , markedTextParser start "math" '$' '$'
                 , markedTextParser start "arg" '(' ')'
                 , markedTextParser start "annotation" '[' ']'
+                , markedTextParser start "image" '!' ']'
                 , textParser lang start
                 ]
 
@@ -101,13 +102,26 @@ macroParser start =
 mathParser : Int -> Parser Context Problem Token
 mathParser start =
     ParserTools.textWithEndSymbol "$" (\c -> c == '$') (\c -> c /= '$')
-        |> Parser.map (\data -> Verbatim "math" data.content { begin = start, end = start + data.end - data.begin - 1 })
+        |> Parser.map (\data -> Verbatim "math" (dropFirstAndLastCharacter data.content) { begin = start, end = start + data.end - data.begin - 1 })
+
+
+dropFirstAndLastCharacter str =
+    String.slice 1 (String.length str - 1) str
 
 
 markedTextParser : Int -> String -> Char -> Char -> Parser Context Problem Token
 markedTextParser start mark begin end =
     ParserTools.text (\c -> c == begin) (\c -> c /= end)
-        |> Parser.map (\data -> MarkedText mark (String.dropLeft 1 data.content) { begin = start, end = start + data.end - data.begin })
+        |> Parser.map (\data -> MarkedText mark (dropLeft mark data.content |> Debug.log "XXX Marked Text") { begin = start, end = start + data.end - data.begin })
+
+
+dropLeft : String -> String -> String
+dropLeft mark str =
+    if mark == "image" then
+        String.dropLeft 2 str
+
+    else
+        String.dropLeft 1 str
 
 
 codeParser : Int -> Parser Context Problem Token
