@@ -135,7 +135,7 @@ transform n args =
     List.map toText_ args
         |> List.head
         |> Maybe.withDefault "XXX"
-        |> (\str -> \list -> str)
+        |> (\str -> \_ -> str)
         |> replaceArgs n
 
 
@@ -199,9 +199,7 @@ type Problem
     | ExpectingMacroReservedWord
     | ExpectingValidMacroArgWord
     | ExpectingLeftBracket
-    | ExpectingInt
     | ExpectingRightBracket
-    | InvalidInt
     | ExpectingStuff
     | ExpectingNewCommand
     | ExpectingBackslash
@@ -218,25 +216,9 @@ parseMany str =
         |> Result.map List.concat
 
 
-check : String -> String
-check str =
-    case parse str of
-        Ok result ->
-            toText result
-
-        Err _ ->
-            "error"
-
-
 
 -- makeEntry_  : String -> String -> List MathExpression -> (String, List String -> String)
 -- MAP PARSE EXPR TO TEXT
-
-
-toText : List MathExpression -> String
-toText list =
-    List.map toText_ list
-        |> String.join ""
 
 
 toText_ : MathExpression -> String
@@ -310,21 +292,6 @@ stuff problem inWord =
         |. ws
         |= getOffset
         |= getSource
-
-
-{-|
-
-    import MXParser
-
-    MXParser.run numberOfArgs "[3]"
-    --> Ok 3
-
--}
-numberOfArgs : MXParser Int
-numberOfArgs =
-    many numberOfArgs_
-        |> map List.head
-        |> map (Maybe.withDefault 0)
 
 
 {-| Parse the macro keyword followed by
@@ -458,14 +425,6 @@ word problem inWord =
         |= getSource
 
 
-numberOfArgs_ : MXParser Int
-numberOfArgs_ =
-    succeed identity
-        |. symbol (Token "[" ExpectingLeftBracket)
-        |= int ExpectingInt InvalidInt
-        |. symbol (Token "]" ExpectingRightBracket)
-
-
 
 -- HELPERS
 
@@ -478,32 +437,6 @@ spaces =
 ws : MXParser ()
 ws =
     chompWhile (\c -> c == ' ' || c == '\n')
-
-
-parseUntil : Problem -> String -> MXParser String
-parseUntil problem marker =
-    getChompedString <| chompUntil (Token marker problem)
-
-
-{-| chomp to end of the marker and return the
-chomped string minus the marker.
--}
-parseToSymbol : Problem -> String -> MXParser String
-parseToSymbol problem marker =
-    (getChompedString <|
-        succeed identity
-            |= chompUntilEndOr marker
-            |. symbol (Token marker problem)
-    )
-        |> map (String.dropRight (String.length marker))
-
-
-parseBetweenSymbols : Problem -> Problem -> String -> String -> MXParser String
-parseBetweenSymbols problem1 problem2 startSymbol endSymbol =
-    succeed identity
-        |. symbol (Token startSymbol problem1)
-        |. spaces
-        |= parseUntil problem2 endSymbol
 
 
 nonEmptyItemList : MXParser a -> MXParser (List a)
@@ -548,32 +481,3 @@ manyHelp p vs =
         , succeed ()
             |> map (\_ -> Done (List.reverse vs))
         ]
-
-
-{-| Apply a parser one or more times and return a tuple of the first result parsed
-and the list of the remaining results.
--}
-some : MXParser a -> MXParser ( a, List a )
-some p =
-    succeed Tuple.pair
-        |= p
-        |. spaces
-        |= many p
-
-
-{-| Parse an expression between two other parser
-
-    import Parser exposing(symbol)
-
-    Parser.run (between (symbol "<<") (symbol ">>") Parser.int) "<<4>>"
-    --> Ok 4
-
--}
-between : MXParser opening -> MXParser closing -> MXParser a -> MXParser a
-between opening closing p =
-    succeed identity
-        |. opening
-        |. spaces
-        |= p
-        |. spaces
-        |. closing

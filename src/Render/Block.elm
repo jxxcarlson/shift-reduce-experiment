@@ -66,7 +66,7 @@ verbatimBlockDict =
         , ( "math", \g s a lines -> mathBlock g s a lines )
         , ( "equation", \g s a lines -> equation g s a lines )
         , ( "align", \g s a lines -> aligned g s a lines )
-        , ( "mathmacro", \g s a lines -> Element.none )
+        , ( "mathmacro", \_ _ _ _ -> Element.none )
         ]
 
 
@@ -75,7 +75,7 @@ blockDict =
     Dict.fromList
         [ ( "quotation", \g s a blocks -> quotationBlock g s a blocks )
         , ( "item", \g s a blocks -> item g s a blocks )
-        , ( "title", \g s a blocks -> Element.none )
+        , ( "title", \_ _ _ _ -> Element.none )
         , ( "heading1", \g s a blocks -> heading1 g s a blocks )
         , ( "heading2", \g s a blocks -> heading2 g s a blocks )
         , ( "heading3", \g s a blocks -> heading3 g s a blocks )
@@ -187,7 +187,3 @@ itemSymbol =
 codeColor =
     -- E.rgb 0.2 0.5 1.0
     rgb 0.4 0 0.8
-
-
-notImplemented str =
-    el [ Font.color (rgb255 40 40 255) ] (text <| "not implemented: " ++ str)

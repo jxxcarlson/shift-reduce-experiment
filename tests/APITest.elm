@@ -1,6 +1,5 @@
 module APITest exposing (..)
 
-import Block.Parser
 import Block.State
 import Dict
 import Expect

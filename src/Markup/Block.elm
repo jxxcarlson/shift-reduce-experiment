@@ -9,7 +9,6 @@ module Markup.Block exposing (..)
 --)
 
 import Markup.AST exposing (Expr(..))
-import Markup.Debugger exposing (..)
 import Markup.Meta as Meta exposing (ExpressionMeta)
 
 

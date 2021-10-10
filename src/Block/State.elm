@@ -1,7 +1,7 @@
 module Block.State exposing (Accumulator, State, init)
 
 import Block.Line
-import Dict exposing (Dict)
+import Dict
 import Markup.Block exposing (SBlock)
 import Render.MathMacro
 

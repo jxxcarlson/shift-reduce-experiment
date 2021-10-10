@@ -1,6 +1,5 @@
 module Markup.ASTTools exposing (FilterType(..), filter, filterBlockByName, filterStrictBlock, getHeadings, getText, getTitle, listExprMToString)
 
-import Markup.AST exposing (Expr(..))
 import Markup.Block exposing (Block(..), ExprM(..))
 
 
@@ -71,19 +70,9 @@ filter filterType key blocks =
     List.map (filter_ filterType key) blocks |> List.concat
 
 
-filterStrict : String -> List Block -> List ExprM
-filterStrict key blocks =
-    List.map (filterStrict_ key) blocks |> List.concat
-
-
 filterStrictBlock : FilterType -> String -> List Block -> String
 filterStrictBlock filterType key blocks =
     List.map (filterStrictBlock_ filterType key) blocks |> String.join ""
-
-
-filterStrictNot : String -> List Block -> List ExprM
-filterStrictNot key blocks =
-    List.map (filterStrictNot_ key) blocks |> List.concat
 
 
 filter_ : FilterType -> String -> Block -> List ExprM
@@ -97,7 +86,7 @@ filter_ filterType key block =
                 Contains ->
                     List.filter (\t -> Maybe.map (String.contains key) (getName t) == Just True) textList
 
-        Block name blocks meta ->
+        Block name blocks _ ->
             case filterType of
                 Equality ->
                     if key == name then
@@ -191,29 +180,3 @@ stringContentOfNamedBlock block =
 
         BError str ->
             str
-
-
-filterStrict_ : String -> Block -> List ExprM
-filterStrict_ key block =
-    case block of
-        Paragraph textList _ ->
-            List.filter (\t -> Just key == getName t) textList
-
-        Block _ blocks _ ->
-            List.map (filterStrict_ key) blocks |> List.concat
-
-        _ ->
-            []
-
-
-filterStrictNot_ : String -> Block -> List ExprM
-filterStrictNot_ key block =
-    case block of
-        Paragraph textList _ ->
-            List.filter (\t -> Just key /= getName t) textList
-
-        Block _ blocks _ ->
-            List.map (filterStrict_ key) blocks |> List.concat
-
-        _ ->
-            []

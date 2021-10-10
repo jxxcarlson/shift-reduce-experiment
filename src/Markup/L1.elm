@@ -4,8 +4,6 @@ import Either exposing (Either(..))
 import List.Extra
 import Markup.AST as AST exposing (Expr(..))
 import Markup.Common exposing (Step(..))
-import Markup.Debugger exposing (debug1, debug3, debug4)
-import Markup.Simplify as Simplify
 import Markup.Stack as Stack exposing (Stack)
 import Markup.State exposing (State)
 import Markup.Token as Token exposing (Token(..))
@@ -20,36 +18,18 @@ reduce state =
     case state.stack of
         -- One term pattern:
         (Left (Token.Text str loc)) :: [] ->
-            let
-                _ =
-                    debug3 "Pattern" "One term (1: USED)"
-            in
             reduceAux (AST.Text str loc) [] state
 
         -- Two term pattern:
         (Left (Token.Text str loc)) :: (Right expr) :: [] ->
-            let
-                _ =
-                    debug3 "Pattern" "Two term (USED)"
-            in
             { state | stack = [], committed = AST.Text str loc :: expr :: state.committed }
 
         -- Three term pattern:
-        (Left (Symbol "]" loc3)) :: (Left (Token.Text str loc2)) :: (Left (FunctionName fragment loc1)) :: rest ->
-            let
-                _ =
-                    debug3 "Pattern" "Three term (1: USED)"
-            in
+        (Left (Symbol "]" _)) :: (Left (Token.Text str loc2)) :: (Left (FunctionName fragment loc1)) :: rest ->
             reduceAux (Expr (normalizeFragment fragment) [ AST.Text str loc2 ] (makeLoc loc1 loc2)) rest state
 
         -- Three term pattern:
         (Left (Symbol "]" loc3)) :: (Right expr) :: (Left (FunctionName fragment loc1)) :: rest ->
-            let
-                _ =
-                    debug3 "Pattern" "Three term (3: USED)"
-
-                --  [ Left (SymbolST "]"), Right (ExprS "j " [ TextS "ABC" ]), Left (FunctionNameST "[i ") ]
-            in
             reduceAux (Expr (normalizeFragment fragment) [ expr ] (makeLoc loc1 loc3)) rest state
 
         _ ->
@@ -77,10 +57,6 @@ reduce2 stack =
                 ( Just stackItem, Just exprList ) ->
                     case stackItem of
                         Left (Token.FunctionName name loc) ->
-                            let
-                                _ =
-                                    Right (Expr (normalizeFragment name) (List.reverse exprList) loc) :: List.drop (n + 1) rest |> Simplify.stack |> debug4 "REDUCE 2"
-                            in
                             Right (Expr (normalizeFragment name) (List.reverse exprList) loc) :: List.drop (n + 1) rest
 
                         _ ->
@@ -187,25 +163,6 @@ transform str =
 
         _ ->
             str
-
-
-makeExpr2 : Token.Loc -> String -> Expr -> Expr
-makeExpr2 loc name expr =
-    Expr (String.trim (transform name)) [ expr ] loc
-
-
-makeExpr1 : Token.Loc -> String -> Expr
-makeExpr1 loc str =
-    let
-        words =
-            String.words str
-
-        prefix =
-            List.head words |> Maybe.withDefault "empty"
-    in
-    -- TODO: not a good solution for loc
-    -- Expr prefix (List.map (AST.Text >> (\t -> t loc)) (List.drop 1 words)) loc
-    Expr prefix [ AST.Text (List.drop 1 words |> String.join " ") loc ] loc
 
 
 stackBottom : List (Either Token Expr) -> Maybe (Either Token Expr)

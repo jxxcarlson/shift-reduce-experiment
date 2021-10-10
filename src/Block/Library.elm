@@ -12,8 +12,7 @@ import Block.Line exposing (BlockOption(..), LineData, LineType(..))
 import Block.Markdown.Line
 import Block.MiniLaTeX.Line
 import Block.State exposing (Accumulator, State)
-import Markup.ASTTools
-import Markup.Block exposing (Block(..), SBlock(..))
+import Markup.Block exposing (SBlock(..))
 import Markup.Debugger exposing (debug1, debug2, debug3)
 import Markup.ParserTools
 import Markup.Tokenizer exposing (Lang(..))
@@ -169,7 +168,7 @@ createBlockPhase2 state =
                 , blockCount = state.blockCount + 1
             }
 
-        BeginBlock AcceptFirstLine kind ->
+        BeginBlock AcceptFirstLine _ ->
             { state
                 | currentBlock =
                     Just <|
@@ -343,16 +342,16 @@ quantumOfIndentation =
 levelOfBlock : SBlock -> Int
 levelOfBlock block =
     case block of
-        SParagraph strings meta ->
+        SParagraph _ meta ->
             level meta.indent
 
-        SVerbatimBlock name strings meta ->
+        SVerbatimBlock _ _ meta ->
             level meta.indent
 
-        SBlock name blocks meta ->
+        SBlock _ _ meta ->
             level meta.indent
 
-        SError str ->
+        SError _ ->
             0
 
 
@@ -380,11 +379,6 @@ reverseContents block =
 incrementLevel : LineData -> LineData
 incrementLevel lineData =
     { lineData | indent = lineData.indent + quantumOfIndentation }
-
-
-setMetaEnd : Int -> Markup.Block.Meta -> Markup.Block.Meta
-setMetaEnd k meta =
-    { meta | end = k }
 
 
 nibble : String -> String

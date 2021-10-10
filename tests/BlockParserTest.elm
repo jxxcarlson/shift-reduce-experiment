@@ -55,35 +55,3 @@ suiteL1BlockParser =
                 run L1 "| foo\n   AAA\n      PQR"
                     |> Expect.equal [ SBlock "foo" [ SParagraph [ "   AAA" ] { begin = 1, end = 1, id = "1", indent = 3 }, SParagraph [ "      PQR" ] { begin = 2, end = 2, id = "1", indent = 6 } ] { begin = 0, end = 1, id = "0", indent = 0 } ]
         ]
-
-
-suiteMiniLaTeXBlockParser : Test
-suiteMiniLaTeXBlockParser =
-    describe "parsing MiniLaTeX blocks"
-        [ test "(1) " <|
-            \_ ->
-                run MiniLaTeX "\\begin{foo}\n   a\n   b\n\\end{foo}"
-                    |> Expect.equal [ SBlock "foo" [ SParagraph [ "   a", "   b" ] { begin = 1, end = 2, id = "1", indent = 3 } ] { begin = 0, end = 3, id = "0", indent = 0 } ]
-        , test "(2) Nested environments" <|
-            \_ ->
-                run MiniLaTeX "\\begin{foo}\n   xyz\n   \\begin{bar}\n      abc\n   \\end{bar}\\end{foo}"
-                    |> Expect.equal [ SBlock "foo" [ SParagraph [ "   xyz" ] { begin = 1, end = 1, id = "1", indent = 3 } ] { begin = 0, end = 1, id = "0", indent = 0 }, SBlock "bar" [ SParagraph [ "      abc" ] { begin = 3, end = 3, id = "3", indent = 6 } ] { begin = 2, end = 3, id = "1", indent = 3 } ]
-        ]
-
-
-suiteMarkdownBlockParser : Test
-suiteMarkdownBlockParser =
-    describe "parsing Markdown blocks"
-        [ test "(1) " <|
-            \_ ->
-                run Markdown "# Intro to Chemistry"
-                    |> Expect.equal [ SBlock "foo" [ SParagraph [ "   a", "   b" ] { begin = 1, end = 2, id = "1", indent = 3 } ] { begin = 0, end = 3, id = "0", indent = 0 } ]
-        , test "(2) " <|
-            \_ ->
-                run Markdown "- foo bar"
-                    |> Expect.equal [ SBlock "item" [ SParagraph [ "foo bar" ] { begin = 0, end = 0, id = "0", indent = 0 } ] { begin = 0, end = 0, id = "0", indent = 0 } ]
-        , test "(3) " <|
-            \_ ->
-                run Markdown "> foo bar\n   abc"
-                    |> Expect.equal [ SBlock "quotation" [ SParagraph [ "foo bar", "   abc" ] { begin = 0, end = 1, id = "0", indent = 0 } ] { begin = 0, end = 1, id = "0", indent = 0 } ]
-        ]

@@ -1,7 +1,6 @@
 module Markup.Stack exposing (Stack, isFunctionName, stackHasSymbol, toExprList)
 
 import Either exposing (Either(..))
-import List.Extra
 import Markup.AST as AST exposing (Expr)
 import Markup.Token as Token exposing (Token(..))
 import Maybe.Extra
@@ -54,20 +53,5 @@ hasSymbol stackItem =
         Left token ->
             Token.isSymbol token
 
-        Right expr ->
-            False
-
-
-isRightExpr : StackItem -> Bool
-isRightExpr stackItem =
-    case stackItem of
-        Left _ ->
-            False
-
         Right _ ->
-            True
-
-
-isRightExprList : Stack -> Bool
-isRightExprList stack =
-    List.all isRightExpr stack
+            False

@@ -3,7 +3,7 @@ module Block.Parser exposing (run)
 import Block.Library
 import Block.State exposing (State)
 import List.Extra
-import Markup.Debugger exposing (debug1, debug2, debug3)
+import Markup.Debugger exposing (debug2, debug3)
 import Markup.Tokenizer exposing (Lang)
 
 

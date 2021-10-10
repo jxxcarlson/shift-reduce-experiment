@@ -1,12 +1,10 @@
 module Render.Text exposing (args, render, viewTOC)
 
 import Dict exposing (Dict)
-import Element exposing (Element, alignLeft, alignRight, centerX, column, el, newTabLink, paddingEach, paragraph, px, spacing)
-import Element.Background as Background
+import Element exposing (Element, alignLeft, alignRight, centerX, column, el, newTabLink, px, spacing)
 import Element.Font as Font
 import Markup.ASTTools as ASTTools
 import Markup.Block exposing (ExprM(..))
-import Markup.Debugger exposing (debug1)
 import Maybe.Extra
 import Render.AST2
 import Render.Math
@@ -25,21 +23,17 @@ type alias Accumulator =
 render : Int -> Settings -> Accumulator -> ExprM -> Element msg
 render generation settings accumulator text =
     case text of
-        TextM string meta ->
+        TextM string _ ->
             Element.el [] (Element.text string)
 
-        ExprM name textList meta ->
+        ExprM name textList _ ->
             Element.el [] (renderMarked name generation settings accumulator textList)
 
-        VerbatimM name str meta ->
+        VerbatimM name str _ ->
             renderVerbatim name generation settings accumulator str
 
         ArgM _ _ ->
             Element.none
-
-
-error str =
-    Element.paragraph [ Background.color (Element.rgb255 250 217 215) ] [ Element.text str ]
 
 
 notImplemented str =
@@ -70,7 +64,7 @@ markupDict =
         [ ( "strong", \g s a textList -> strong g s a textList )
         , ( "italic", \g s a textList -> italic g s a textList )
         , ( "red", \g s a textList -> red g s a textList )
-        , ( "title", \g s a textList -> Element.none )
+        , ( "title", \_ _ _ _ -> Element.none )
         , ( "heading1", \g s a textList -> heading1 g s a textList )
         , ( "heading2", \g s a textList -> heading2 g s a textList )
         , ( "heading3", \g s a textList -> heading3 g s a textList )
@@ -84,7 +78,7 @@ markupDict =
         , ( "term", \g s a textList -> term g s a textList )
         , ( "emph", \g s a textList -> emph g s a textList )
         , ( "eqref", \g s a textList -> eqref g s a textList )
-        , ( "setcounter", \g s a textList -> Element.none )
+        , ( "setcounter", \_ _ _ _ -> Element.none )
         ]
 
 
@@ -109,7 +103,7 @@ macro2 : (String -> String -> Element msg) -> Int -> Settings -> Accumulator -> 
 macro2 element g s a textList =
     case args textList of
         -- TODO: temporary fix: parse is producing the args in reverse order
-        arg1 :: arg2 :: rest ->
+        arg1 :: arg2 :: _ ->
             element arg1 arg2
 
         _ ->
