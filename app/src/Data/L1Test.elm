@@ -10,12 +10,11 @@ but with square brackets instead of parentheses.
 
 Yes, a [b [red very]] bold move indeed! [i (Note that macros are composing properly)].
 
-Links are written as `[link New York Times https://nytimes.com]` and are rendered like this:
+Links are written as `[link New York Times https://nytimes.com]` and
+are rendered like this: [link New York Times https://nytimes.com]
 
-[link New York Times https://nytimes.com]
 
-
-[h1 blocks]
+[h2 blocks]
 
 [h2 code]
 

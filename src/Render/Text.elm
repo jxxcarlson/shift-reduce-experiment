@@ -38,7 +38,7 @@ render generation settings accumulator text =
 
 
 notImplemented str =
-    Element.el [ Font.color (Element.rgb255 40 40 255) ] (Element.text <| "not implemented: " ++ str)
+    Element.el [ Font.color (Element.rgb255 200 40 40) ] (Element.text <| "not implemented: " ++ str)
 
 
 renderVerbatim name generation settings accumulator str =
@@ -88,6 +88,7 @@ verbatimDict =
     Dict.fromList
         [ ( "$", \g s a str -> math g s a str )
         , ( "`", \g s a str -> code g s a str )
+        , ( "code", \g s a str -> code g s a str )
         , ( "math", \g s a str -> math g s a str )
         ]
 

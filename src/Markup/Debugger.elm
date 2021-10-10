@@ -8,7 +8,7 @@ debugMagenta =
 
 
 debugCyan =
-    False
+    True
 
 
 debugYellow =

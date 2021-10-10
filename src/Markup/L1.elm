@@ -5,6 +5,7 @@ import List.Extra
 import Markup.AST as AST exposing (Expr(..))
 import Markup.ASTTools as ASTTools
 import Markup.Common exposing (Step(..))
+import Markup.Meta as Meta
 import Markup.Stack as Stack exposing (Stack)
 import Markup.State exposing (State)
 import Markup.Token as Token exposing (Token(..))
@@ -20,6 +21,9 @@ reduce state =
         -- One term pattern:
         (Left (Token.Text str loc)) :: [] ->
             reduceAux (AST.Text str loc) [] state
+
+        (Left (Token.Verbatim "code" str loc)) :: rest ->
+            reduceAux (AST.Verbatim "code" (String.dropLeft 1 (String.dropRight 1 str)) loc) rest state
 
         -- Two term pattern:
         (Left (Token.Text str loc)) :: (Right expr) :: [] ->
