@@ -15,7 +15,13 @@ lineType str =
 
 
 lineTypeParser =
-    Parser.oneOf [ Line.ordinaryLineParser [ '|' ], Line.emptyLineParser, beginVerbatimBlockParser, beginBlockParser ]
+    Parser.oneOf
+        [ beginItemParser
+        , Line.ordinaryLineParser [ '|' ]
+        , Line.emptyLineParser
+        , beginVerbatimBlockParser
+        , beginBlockParser
+        ]
 
 
 beginBlockParser : Parser Line.LineType
@@ -42,3 +48,11 @@ beginVerbatimBlockParser =
         |= Parser.getSource
     )
         |> Parser.map (\s -> Line.BeginVerbatimBlock s)
+
+
+beginItemParser : Parser Line.LineType
+beginItemParser =
+    (Parser.succeed String.slice
+        |. Parser.symbol "-"
+    )
+        |> Parser.map (\_ -> Line.BeginBlock Line.AcceptNibbledFirstLine "item")
