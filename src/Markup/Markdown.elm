@@ -48,8 +48,11 @@ reduce state =
         (Left (MarkedText "math" str loc)) :: [] ->
             { state | committed = AST.Verbatim "math" str loc :: state.committed, stack = [] }
 
-        (Left (AnnotatedText name label value loc)) :: [] ->
-            { state | committed = Expr name [ AST.Text value loc, AST.Text label loc ] loc :: state.committed, stack = [] }
+        (Left (AnnotatedText "image" label value loc)) :: [] ->
+            { state | committed = Expr "image" [ AST.Text value loc, AST.Text label loc ] loc :: state.committed, stack = [] }
+
+        (Left (AnnotatedText "link" label value loc)) :: [] ->
+            { state | committed = Expr "link" [ AST.Text label loc, AST.Text value loc ] loc :: state.committed, stack = [] }
 
         --(Left (MarkedText "arg" url loc2)) :: (Left (MarkedText "annotation" label loc1)) :: [] ->
         --    { state | committed = Expr "link" [ AST.Text label loc1, AST.Text url loc2 ] { begin = loc1.begin, end = loc2.end } :: state.committed, stack = [] }
