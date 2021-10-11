@@ -123,10 +123,6 @@ processToken lang state =
     case Tokenizer.get lang state.scanPointer (String.dropLeft state.scanPointer state.sourceText) of
         TokenError errorData meta ->
             -- Oops, exit
-            let
-                remaining =
-                    String.dropLeft state.scanPointer state.sourceText
-            in
             Done { state | committed = errorValue state errorData :: state.committed }
 
         newToken ->
