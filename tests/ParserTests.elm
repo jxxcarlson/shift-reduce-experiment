@@ -32,7 +32,7 @@ suiteMarkdown =
         , test "(3) LINK" <|
             \_ ->
                 run Markdown "[N Y T](url)"
-                    |> Expect.equal { committed = [ Expr "link" [ Text "N Y T" (loc 0 6), Text "url" (loc 7 11) ] (loc 0 11) ], count = 3, end = 12, scanPointer = 12, sourceText = "[N Y T](url)", stack = [] }
+                    |> Expect.equal { committed = [ Expr "link" [ Text "N Y T" { begin = 0, end = 12 }, Text "url" { begin = 0, end = 12 } ] { begin = 0, end = 12 } ], count = 2, end = 12, scanPointer = 13, sourceText = "[N Y T](url)", stack = [] }
         ]
 
 
