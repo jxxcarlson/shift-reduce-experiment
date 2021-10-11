@@ -12,6 +12,7 @@ import Markup.Simplify as Simplify
 import Render.Block
 import Render.Settings
 import Render.Text
+import Utility
 
 
 defaultSettings : Render.Settings.Settings
@@ -61,7 +62,7 @@ renderFancy settings language count source =
                     E.none
 
                 Just titleString ->
-                    E.el [ Font.size settings.titleSize ] (E.text (titleString |> String.replace "\n" " "))
+                    E.el [ Font.size settings.titleSize, Utility.elementAttribute "id" "title" ] (E.text (titleString |> String.replace "\n" " "))
 
         toc =
             if List.length toc_ > 1 then

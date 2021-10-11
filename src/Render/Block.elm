@@ -81,24 +81,35 @@ blockDict =
         ]
 
 
-heading1 : Int -> Settings -> Block.State.Accumulator -> List Block -> Element msg
-heading1 g s a blocks =
-    simpleElement [ Font.size 30, makeId blocks ] g s a blocks
+internalLink : String -> String
+internalLink str =
+    "#" ++ str |> makeSlug
 
 
-heading2 : Int -> Settings -> Block.State.Accumulator -> List Block -> Element msg
+verticalPadding top bottom =
+    Element.paddingEach { top = top, bottom = bottom, left = 0, right = 0 }
+
+
+heading1 g s a textList =
+    Element.link [ Font.size 30, makeId textList, verticalPadding 30 15 ]
+        { url = internalLink "TITLE", label = Element.paragraph [] (render g s a textList) }
+
+
 heading2 g s a textList =
-    simpleElement [ Font.size 22, makeId textList ] g s a textList
+    Element.link [ Font.size 22, makeId textList, verticalPadding 22 11 ]
+        { url = internalLink "TITLE", label = Element.paragraph [] (render g s a textList) }
 
 
 heading3 : Int -> Settings -> Block.State.Accumulator -> List Block -> Element msg
 heading3 g s a textList =
-    simpleElement [ Font.size 18, makeId textList ] g s a textList
+    Element.link [ Font.size 18, makeId textList, verticalPadding 18 9 ]
+        { url = internalLink "TITLE", label = Element.paragraph [] (render g s a textList) }
 
 
 heading4 : Int -> Settings -> Block.State.Accumulator -> List Block -> Element msg
 heading4 g s a textList =
-    simpleElement [ Font.size 14, Font.italic, Font.bold, makeId textList ] g s a textList
+    Element.link [ Font.size 14, makeId textList, verticalPadding 14 7 ]
+        { url = internalLink "TITLE", label = Element.paragraph [] (render g s a textList) }
 
 
 indent : Int -> Settings -> Block.State.Accumulator -> List Block -> Element msg

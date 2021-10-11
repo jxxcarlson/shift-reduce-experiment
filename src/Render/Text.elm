@@ -307,16 +307,29 @@ heading1 g s a textList =
     simpleElement [ Font.size s.titleSize, makeId textList ] g s a textList
 
 
+verticalPadding top bottom =
+    Element.paddingEach { top = top, bottom = bottom, left = 0, right = 0 }
+
+
 heading2 g s a textList =
-    simpleElement [ Font.size 22, makeId textList ] g s a textList
+    Element.column [ Font.size 22, verticalPadding 22 11 ]
+        [ Element.link [ makeId textList ]
+            { url = internalLink "TITLE", label = Element.paragraph [] (List.map (render g s a) textList) }
+        ]
 
 
 heading3 g s a textList =
-    simpleElement [ Font.size 18, makeId textList ] g s a textList
+    Element.column [ Font.size 18, verticalPadding 18 9 ]
+        [ Element.link [ makeId textList ]
+            { url = internalLink "TITLE", label = Element.paragraph [] (List.map (render g s a) textList) }
+        ]
 
 
 heading4 g s a textList =
-    simpleElement [ Font.size 14, Font.italic, Font.bold, makeId textList ] g s a textList
+    Element.column [ Font.size 14, verticalPadding 14 7 ]
+        [ Element.link [ makeId textList ]
+            { url = internalLink "TITLE", label = Element.paragraph [] (List.map (render g s a) textList) }
+        ]
 
 
 strong g s a textList =
