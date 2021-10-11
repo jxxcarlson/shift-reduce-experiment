@@ -15,6 +15,7 @@ import Markup.API as API
 import Markup.ASTTools as ASTTools
 import Markup.Lang exposing (Lang(..))
 import Process
+import Render.Settings exposing (TitleStatus(..))
 import Task
 
 
@@ -220,7 +221,7 @@ renderedText model =
 
 render : Lang -> Int -> String -> List (Element msg)
 render language count source =
-    API.renderFancy language count (String.lines source)
+    API.renderFancy { width = 500, titleStatus = TitleWithSize 30 } language count (String.lines source)
 
 
 

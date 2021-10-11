@@ -8,11 +8,8 @@ import Markup.Block exposing (ExprM(..))
 import Render.AST2
 import Render.Math
 import Render.MathMacro
+import Render.Settings exposing (Settings, TitleStatus(..))
 import Utility
-
-
-type alias Settings =
-    { width : Int }
 
 
 type alias Accumulator =
@@ -115,8 +112,8 @@ link g s a exprList =
 link_ : String -> String -> Element msg
 link_ url label =
     newTabLink []
-        { url = url |> Debug.log "XXX, URL"
-        , label = el [ Font.color linkColor, Font.italic ] (Element.text (label |> Debug.log "XXX, LABEL"))
+        { url = url
+        , label = el [ Font.color linkColor, Font.italic ] (Element.text label)
         }
 
 
@@ -191,7 +188,7 @@ image generation settings accumuator body =
         displayWidth =
             settings.width
     in
-    column [ spacing 8, Element.width (px displayWidth), placement, Element.paddingXY 0 18 ]
+    column [ spacing 8, Element.width (px settings.width), placement, Element.paddingXY 0 18 ]
         [ Element.image [ Element.width width, placement ]
             { src = url, description = description }
         , caption
@@ -307,7 +304,12 @@ makeId textList =
 
 
 heading1 g s a textList =
-    simpleElement [ Font.size 30, makeId textList ] g s a textList
+    case s.titleStatus of
+        TitleWithSize titleSize ->
+            simpleElement [ Font.size titleSize, makeId textList ] g s a textList
+
+        HideTitle ->
+            Element.none
 
 
 heading2 g s a textList =

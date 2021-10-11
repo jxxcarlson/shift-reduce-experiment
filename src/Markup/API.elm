@@ -10,7 +10,13 @@ import Markup.Lang exposing (Lang(..))
 import Markup.Markup as Markup
 import Markup.Simplify as Simplify
 import Render.Block
+import Render.Settings exposing (TitleStatus(..))
 import Render.Text
+
+
+defaultSettings : Render.Settings.Settings
+defaultSettings =
+    { width = 500, titleStatus = TitleWithSize 30 }
 
 
 p : Lang -> String -> List Simplify.BlockS
@@ -33,8 +39,8 @@ getTitle =
     ASTTools.getTitle
 
 
-renderFancy : Lang -> Int -> List String -> List (Element msg)
-renderFancy language count source =
+renderFancy : Render.Settings.Settings -> Lang -> Int -> List String -> List (Element msg)
+renderFancy settings language count source =
     let
         parseData =
             parse language count source
@@ -50,7 +56,13 @@ renderFancy language count source =
             ASTTools.getTitle ast |> Maybe.withDefault "Untitled" |> String.replace "\n" " "
 
         docTitle =
-            E.el [ Font.size 30 ] (E.text titleString)
+            -- E.el [ Font.size settings.titleSize ] (E.text titleString)
+            case settings.titleStatus of
+                TitleWithSize titleSize ->
+                    E.el [ Font.size titleSize ] (E.text titleString)
+
+                HideTitle ->
+                    E.none
 
         toc =
             if List.length toc_ > 1 then
@@ -61,18 +73,18 @@ renderFancy language count source =
 
         renderedText_ : List (Element msg)
         renderedText_ =
-            render count { width = 500 } parseData.accumulator ast
+            render count settings parseData.accumulator ast
     in
     docTitle :: toc :: renderedText_
 
 
 tableOfContents : Int -> Settings -> Block.State.Accumulator -> List Block -> List (Element msg)
 tableOfContents generation settings accumulator blocks =
-    blocks |> ASTTools.getHeadings |> Render.Text.viewTOC generation settings accumulator
+    blocks |> ASTTools.getHeadings |> Render.Text.viewTOC generation defaultSettings accumulator
 
 
 {-| -}
-compile : Lang -> Int -> Settings -> List String -> List (Element msg)
+compile : Lang -> Int -> Render.Settings.Settings -> List String -> List (Element msg)
 compile language generation settings lines =
     let
         parseData =

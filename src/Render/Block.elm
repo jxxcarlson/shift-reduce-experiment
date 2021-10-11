@@ -1,4 +1,4 @@
-module Render.Block exposing (Settings, render)
+module Render.Block exposing (render)
 
 import Block.State
 import Dict exposing (Dict)
@@ -10,12 +10,9 @@ import Markup.Debugger exposing (debug3)
 import Render.AST2
 import Render.Math
 import Render.MathMacro
+import Render.Settings exposing (Settings)
 import Render.Text
 import Utility
-
-
-type alias Settings =
-    { width : Int }
 
 
 

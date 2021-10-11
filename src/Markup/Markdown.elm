@@ -66,14 +66,12 @@ reduceAux expr rest state =
 
 normalizeExpr : Expr -> Expr
 normalizeExpr expr =
-    (case expr of
+    case expr of
         Expr "image" exprList loc ->
             Expr "image" (List.drop 1 exprList) loc
 
         _ ->
             expr
-    )
-        |> Debug.log "NORMALIZE"
 
 
 recoverFromError : State -> Step State State

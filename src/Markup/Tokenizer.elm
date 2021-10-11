@@ -107,7 +107,7 @@ dropFirstAndLastCharacter str =
 markedTextParser : Int -> String -> Char -> Char -> Parser Context Problem Token
 markedTextParser start mark begin end =
     ParserTools.text (\c -> c == begin) (\c -> c /= end)
-        |> Parser.map (\data -> MarkedText mark (dropLeft mark data.content |> Debug.log "XXX Marked Text") { begin = start, end = start + data.end - data.begin })
+        |> Parser.map (\data -> MarkedText mark (dropLeft mark data.content) { begin = start, end = start + data.end - data.begin })
 
 
 dropLeft : String -> String -> String
