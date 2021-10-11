@@ -12,6 +12,7 @@ import Block.Line exposing (BlockOption(..), LineData, LineType(..))
 import Block.Markdown.Line
 import Block.MiniLaTeX.Line
 import Block.State exposing (Accumulator, State)
+import Markup.AST as AST
 import Markup.Block exposing (SBlock(..))
 import Markup.Debugger exposing (debug1, debug2, debug3)
 import Markup.Lang exposing (Lang(..))
@@ -22,12 +23,43 @@ import Render.MathMacro
 
 finalize : State -> State
 finalize state =
+    state |> identity |> finalizePhase2
+
+
+finalizePhase2 : State -> State
+finalizePhase2 state =
     case state.currentBlock of
         Nothing ->
             { state | committed = state.committed |> List.reverse } |> debug2 "finalize"
 
         Just block ->
             { state | committed = reverseContents block :: state.committed |> List.reverse } |> debug2 "finalize"
+
+
+insertErrorMessage : State -> State
+insertErrorMessage state =
+    case state.errorMessage of
+        Nothing ->
+            state
+
+        Just message ->
+            { state
+                | committed = SParagraph [ errorMessage state.lang message ] { begin = 0, end = 0, id = "error", indent = 0 } :: state.committed
+                , errorMessage = Nothing
+            }
+
+
+errorMessage : Lang -> String -> String
+errorMessage lang str =
+    case lang of
+        L1 ->
+            "[red " ++ str ++ "]"
+
+        Markdown ->
+            "[@red " ++ str ++ "]"
+
+        MiniLaTeX ->
+            "\\red{" ++ str ++ "}"
 
 
 recoverFromError : State -> State
@@ -55,10 +87,10 @@ processLine language state =
             createBlock state
 
         EndBlock _ ->
-            commitBlock state
+            commitBlock (insertErrorMessage state)
 
         EndVerbatimBlock _ ->
-            commitBlock state
+            commitBlock (insertErrorMessage state)
 
         OrdinaryLine ->
             if state.previousLineData.lineType == BlankLine then
@@ -67,13 +99,30 @@ processLine language state =
             else
                 case compare (level state.currentLineData.indent) (level state.previousLineData.indent) of
                     EQ ->
+                        let
+                            _ =
+                                debug1 "OrdinaryLine, EQ" state.currentBlock
+                        in
                         addLineToCurrentBlock state
 
                     GT ->
+                        let
+                            _ =
+                                debug1 "OrdinaryLine, GT" state.currentBlock
+                        in
                         createBlock state |> debug2 "CREATE BLOCK with ordinary line (GT)"
 
                     LT ->
-                        state |> commitBlock |> createBlock
+                        let
+                            _ =
+                                debug1 "OrdinaryLine, LT" ( state.previousLineData.indent, state.currentLineData.indent, state.currentBlock )
+                        in
+                        if state.verbatimBlockInitialIndent == state.previousLineData.indent then
+                            addLineToCurrentBlock { state | errorMessage = Just "Below: you forgot to indent the math text. This is needed for all blocks.  Also, remember the trailing dollar signs" }
+                                |> insertErrorMessage
+
+                        else
+                            state |> commitBlock |> createBlock
 
         VerbatimLine ->
             if state.previousLineData.lineType == VerbatimLine then
@@ -263,6 +312,10 @@ shiftCurrentBlock state =
 
 addLineToCurrentBlock : State -> State
 addLineToCurrentBlock state =
+    let
+        _ =
+            debug1 "addLineToCurrentBlock, currentBlock" state.currentBlock
+    in
     (case state.currentBlock of
         Nothing ->
             state
