@@ -3,6 +3,19 @@ module Data.MiniLaTeXTest exposing (text)
 
 text =
     """
+
+Test $x^2
+
+$$
+   x^2
+
+This is also a test.  \\italic{foo
+
+"""
+
+
+text2 =
+    """
 \\title{Notes on Quantum Field Theory}
 
 

@@ -66,13 +66,13 @@ type alias Flags =
 
 
 initialText =
-    Data.MarkdownTest.text
+    Data.MiniLaTeXTest.text
 
 
 init : Flags -> ( Model, Cmd Msg )
 init flags =
     ( { sourceText = initialText
-      , language = Markdown
+      , language = MiniLaTeX
       , count = 0
       , windowHeight = flags.height
       , windowWidth = flags.width
@@ -214,7 +214,7 @@ renderedText model =
         , moveUp 9
         , Font.size 12
         , alignTop
-        , Background.color (Element.rgb255 255 240 240)
+        , Background.color (Element.rgb255 255 255 255)
         ]
         (render model.language model.count model.sourceText)
 
@@ -230,7 +230,7 @@ render language count source =
 
 inputText : Model -> Element Msg
 inputText model =
-    Input.multiline [ height (px (panelHeight_ model)), width (px panelWidth_), Font.size 14 ]
+    Input.multiline [ height (px (panelHeight_ model)), width (px panelWidth_), Font.size 14, Background.color (Element.rgb255 255 240 240) ]
         { onChange = InputText
         , text = model.sourceText
         , placeholder = Nothing

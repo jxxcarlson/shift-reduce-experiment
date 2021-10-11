@@ -2,6 +2,7 @@ module Render.Text exposing (render, viewTOC)
 
 import Dict exposing (Dict)
 import Element exposing (Element, alignLeft, alignRight, centerX, column, el, newTabLink, px, spacing)
+import Element.Background as Background
 import Element.Font as Font
 import Markup.ASTTools as ASTTools
 import Markup.Block exposing (ExprM(..))
@@ -32,14 +33,14 @@ render generation settings accumulator text =
             Element.none
 
 
-notImplemented str =
-    Element.el [ Font.color (Element.rgb255 200 40 40) ] (Element.text <| "not implemented: " ++ str)
+errorText index str =
+    Element.el [ Font.color (Element.rgb255 200 40 40) ] (Element.text <| "(" ++ String.fromInt index ++ ") not implemented: " ++ str)
 
 
 renderVerbatim name generation settings accumulator str =
     case Dict.get name verbatimDict of
         Nothing ->
-            notImplemented name
+            errorText 1 name
 
         Just f ->
             f generation settings accumulator str
@@ -48,7 +49,7 @@ renderVerbatim name generation settings accumulator str =
 renderMarked name generation settings accumulator textList =
     case Dict.get name markupDict of
         Nothing ->
-            notImplemented name
+            Element.el [ Font.color errorColor ] (Element.text name)
 
         Just f ->
             f generation settings accumulator textList
@@ -62,6 +63,8 @@ markupDict =
         , ( "italic", \g s a textList -> italic g s a textList )
         , ( "boldItalic", \g s a textList -> boldItalic g s a textList )
         , ( "red", \g s a textList -> red g s a textList )
+        , ( "blue", \g s a textList -> blue g s a textList )
+        , ( "errorHighlight", \g s a textList -> errorHighlight g s a textList )
         , ( "title", \_ _ _ _ -> Element.none )
         , ( "heading1", \g s a textList -> heading1 g s a textList )
         , ( "heading2", \g s a textList -> heading2 g s a textList )
@@ -359,3 +362,11 @@ emph g s a textList =
 
 red g s a textList =
     simpleElement [ Font.color (Element.rgb255 200 0 0) ] g s a textList
+
+
+blue g s a textList =
+    simpleElement [ Font.color (Element.rgb255 0 0 200) ] g s a textList
+
+
+errorHighlight g s a textList =
+    simpleElement [ Background.color (Element.rgb255 255 200 200), Element.paddingXY 2 2 ] g s a textList

@@ -1,6 +1,7 @@
 module Markup.Markup exposing (parseExpr, parseToBlock, run)
 
 import Either
+import List.Extra
 import Markup.AST as AST exposing (Expr)
 import Markup.Block as Block exposing (Block)
 import Markup.Common exposing (Step(..), loop)
@@ -122,10 +123,33 @@ processToken : Lang -> State -> Step State State
 processToken lang state =
     case Tokenizer.get lang state.scanPointer (String.dropLeft state.scanPointer state.sourceText) of
         TokenError errorData meta ->
+            let
+                _ =
+                    debug1 "processToken (1), STACK" state.stack
+
+                ( row, col ) =
+                    List.map (\item -> ( item.row, item.col )) errorData |> List.Extra.last |> Maybe.withDefault ( 1, 1 ) |> debug4 "(row, col)"
+
+                firstLines =
+                    List.take (row - 1) (String.lines (String.dropLeft state.scanPointer state.sourceText)) |> debug4 "first lines"
+
+                lastLine =
+                    List.drop (row - 1) (String.lines (String.dropLeft state.scanPointer state.sourceText)) |> String.join "" |> String.left col |> debug4 "last line"
+
+                unprocessedText =
+                    String.join "\n" firstLines ++ lastLine |> debug4 "unprocessedText"
+
+                tokenLength =
+                    String.length unprocessedText |> debug4 "tokenLength"
+            in
             -- Oops, exit
-            Done { state | committed = errorValue state errorData :: state.committed }
+            Loop { state | committed = errorValue state errorData :: state.committed, scanPointer = state.scanPointer + tokenLength + 1 }
 
         newToken ->
+            let
+                _ =
+                    debug1 "processToken (2), STACK" state.stack
+            in
             -- Process the token: reduce the stack, then shift the token onto it.
             Loop (shift newToken (reduce lang state))
 
