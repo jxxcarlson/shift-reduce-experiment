@@ -1,4 +1,4 @@
-module Markup.Markup exposing (parseExpr, parseToBlock, run)
+module Markup.Expr exposing (parseExpr, parseToBlock, run)
 
 import Either
 import List.Extra
