@@ -125,7 +125,7 @@ simpleElement formatList g s a blocks =
 
 makeId : List Block -> Element.Attribute msg
 makeId blockList =
-    Utility.elementAttribute "id" (Render.AST2.stringValueOfBlockList blockList |> makeSlug)
+    Utility.elementAttribute "id" (Render.AST2.stringValueOfBlockList blockList |> String.trim |> makeSlug)
 
 
 makeSlug : String -> String
