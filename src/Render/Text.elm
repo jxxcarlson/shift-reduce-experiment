@@ -60,6 +60,7 @@ markupDict =
         [ ( "strong", \g s a textList -> strong g s a textList )
         , ( "bold", \g s a textList -> strong g s a textList )
         , ( "italic", \g s a textList -> italic g s a textList )
+        , ( "bolditalic", \g s a textList -> bolditalic g s a textList )
         , ( "red", \g s a textList -> red g s a textList )
         , ( "title", \_ _ _ _ -> Element.none )
         , ( "heading1", \g s a textList -> heading1 g s a textList )
@@ -338,6 +339,10 @@ strong g s a textList =
 
 italic g s a textList =
     simpleElement [ Font.italic, Element.paddingEach { left = 0, right = 2, top = 0, bottom = 0 } ] g s a textList
+
+
+bolditalic g s a textList =
+    simpleElement [ Font.italic, Font.bold, Element.paddingEach { left = 0, right = 2, top = 0, bottom = 0 } ] g s a textList
 
 
 term g s a textList =

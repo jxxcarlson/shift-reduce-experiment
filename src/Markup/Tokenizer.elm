@@ -1,4 +1,4 @@
-module Markup.Tokenizer exposing (annotatedTextParser, get, markedTextParser)
+module Markup.Tokenizer exposing (get, linkParser, markedTextParser)
 
 import Markup.Debugger exposing (..)
 import Markup.Error exposing (..)
@@ -31,7 +31,7 @@ miniLaTeXLanguageChars =
 
 
 markdownLanguageChars =
-    [ '*', '_', '`', '$', '[', ']', '(', ')', '#' ]
+    [ '*', '_', '`', '$', '#' ]
 
 
 type alias TokenParser =
@@ -67,31 +67,27 @@ tokenParser lang start =
 
         Markdown ->
             Parser.oneOf
-                [ annotatedTextParser start
+                [ linkParser start
+                , imageParser start
+                , boldItalicTextParser start
+                , italicBoldTextParser start
                 , markedTextParser start "strong" '*' '*'
                 , markedTextParser start "italic" '_' '_'
                 , markedTextParser start "code" '`' '`'
                 , markedTextParser start "math" '$' '$'
-
-                --, markedTextParser start "arg" '(' ')'
-                -- , markedTextParser start "annotation" '[' ']'
-                , markedTextParser start "image" '!' ']'
                 , textParser lang start
                 ]
 
 
 
--- annotatedTextParser : Int -> TokenParser
-
-
-tokenListToToken : List Token -> Token
-tokenListToToken tokenList =
-    case tokenList of
-        (MarkedText "arg" arg loc2) :: (MarkedText "annotation" annotation loc1) :: [] ->
-            AnnotatedText annotation arg (makeLoc loc1 loc2)
-
-        _ ->
-            MarkedText "error" "tokenList is not of the form [annotation](arg)" { begin = 0, end = 0 }
+--tokenListToToken : List Token -> Token
+--tokenListToToken tokenList =
+--    case tokenList of
+--        (MarkedText "arg" arg loc2) :: (MarkedText "annotation" annotation loc1) :: [] ->
+--            AnnotatedText annotation arg (makeLoc loc1 loc2)
+--
+--        _ ->
+--            MarkedText "error" "tokenList is not of the form [annotation](arg)" { begin = 0, end = 0 }
 
 
 textParser : Lang -> Int -> TokenParser
@@ -132,9 +128,9 @@ markedTextParser start mark begin end =
         |> Parser.map (\data -> MarkedText mark (dropLeft mark data.content) { begin = start, end = start + data.end - data.begin })
 
 
-annotatedTextParser : Int -> TokenParser
-annotatedTextParser start =
-    Parser.succeed (\begin annotation arg end -> AnnotatedText annotation.content arg.content { begin = start + begin, end = start + end })
+linkParser : Int -> TokenParser
+linkParser start =
+    Parser.succeed (\begin annotation arg end -> AnnotatedText "link" annotation.content arg.content { begin = start + begin, end = start + end })
         |= Parser.getOffset
         |. Parser.symbol (Parser.Token "[" (ExpectingSymbol "["))
         |= ParserTools.text (\c -> c /= '[') (\c -> c /= ']')
@@ -142,6 +138,39 @@ annotatedTextParser start =
         |. Parser.symbol (Parser.Token "(" (ExpectingSymbol "("))
         |= ParserTools.text (\c -> c /= '(') (\c -> c /= ')')
         |. Parser.symbol (Parser.Token ")" (ExpectingSymbol ")"))
+        |= Parser.getOffset
+
+
+imageParser : Int -> TokenParser
+imageParser start =
+    Parser.succeed (\begin annotation arg end -> AnnotatedText "image" annotation.content arg.content { begin = start + begin, end = start + end })
+        |= Parser.getOffset
+        |. Parser.symbol (Parser.Token "![" (ExpectingSymbol "!["))
+        |= ParserTools.text (\c -> c /= ']') (\c -> c /= ']')
+        |. Parser.symbol (Parser.Token "]" (ExpectingSymbol "]"))
+        |. Parser.symbol (Parser.Token "(" (ExpectingSymbol "("))
+        |= ParserTools.text (\c -> c /= '(') (\c -> c /= ')')
+        |. Parser.symbol (Parser.Token ")" (ExpectingSymbol ")"))
+        |= Parser.getOffset
+
+
+boldItalicTextParser : Int -> TokenParser
+boldItalicTextParser start =
+    Parser.succeed (\begin data end -> MarkedText "boldItalic" data.content { begin = start + begin, end = start + end })
+        |= Parser.getOffset
+        |. Parser.symbol (Parser.Token "*_" (ExpectingSymbol "*_"))
+        |= ParserTools.text (\c -> not (List.member c [ '*', '_' ])) (\c -> not (List.member c [ '*', '_' ]))
+        |. Parser.symbol (Parser.Token "_*" (ExpectingSymbol "_*"))
+        |= Parser.getOffset
+
+
+italicBoldTextParser : Int -> TokenParser
+italicBoldTextParser start =
+    Parser.succeed (\begin data end -> MarkedText "boldItalic" data.content { begin = start + begin, end = start + end })
+        |= Parser.getOffset
+        |. Parser.symbol (Parser.Token "_*" (ExpectingSymbol "_*"))
+        |= ParserTools.text (\c -> not (List.member c [ '*', '_' ])) (\c -> not (List.member c [ '*', '_' ]))
+        |. Parser.symbol (Parser.Token "*_" (ExpectingSymbol "*_"))
         |= Parser.getOffset
 
 

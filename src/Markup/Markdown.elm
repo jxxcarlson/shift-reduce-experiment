@@ -33,6 +33,9 @@ reduce state =
         (Left (Token.Text str loc)) :: [] ->
             reduceAux (AST.Text str loc) [] state |> debug1 "RULE 1"
 
+        (Left (MarkedText "boldItalic" str loc)) :: [] ->
+            reduceAux (Expr "boldItalic" [ AST.Text str loc ] loc) [] state
+
         (Left (MarkedText "strong" str loc)) :: [] ->
             { state | committed = Expr "strong" [ AST.Text str loc ] loc :: state.committed, stack = [] }
 
@@ -45,15 +48,14 @@ reduce state =
         (Left (MarkedText "math" str loc)) :: [] ->
             { state | committed = AST.Verbatim "math" str loc :: state.committed, stack = [] }
 
-        (Left (AnnotatedText label value loc)) :: [] ->
-            { state | committed = Expr "link" [ AST.Text label loc, AST.Text value loc ] loc :: state.committed, stack = [] }
+        (Left (AnnotatedText name label value loc)) :: [] ->
+            { state | committed = Expr name [ AST.Text value loc, AST.Text label loc ] loc :: state.committed, stack = [] }
 
-        (Left (MarkedText "arg" url loc2)) :: (Left (MarkedText "annotation" label loc1)) :: [] ->
-            { state | committed = Expr "link" [ AST.Text label loc1, AST.Text url loc2 ] { begin = loc1.begin, end = loc2.end } :: state.committed, stack = [] }
-
-        (Left (MarkedText "arg" url loc2)) :: (Left (MarkedText "image" label loc1)) :: [] ->
-            { state | committed = normalizeExpr (Expr "image" [ AST.Text label loc1, AST.Text url loc2 ] { begin = loc1.begin, end = loc2.end }) :: state.committed, stack = [] }
-
+        --(Left (MarkedText "arg" url loc2)) :: (Left (MarkedText "annotation" label loc1)) :: [] ->
+        --    { state | committed = Expr "link" [ AST.Text label loc1, AST.Text url loc2 ] { begin = loc1.begin, end = loc2.end } :: state.committed, stack = [] }
+        --
+        --(Left (MarkedText "arg" url loc2)) :: (Left (MarkedText "image" label loc1)) :: [] ->
+        --    { state | committed = normalizeExpr (Expr "image" [ AST.Text label loc1, AST.Text url loc2 ] { begin = loc1.begin, end = loc2.end }) :: state.committed, stack = [] }
         _ ->
             state
 

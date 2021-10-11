@@ -14,7 +14,7 @@ type Token
     | Symbol String Loc
     | FunctionName String Loc
     | MarkedText String String Loc
-    | AnnotatedText String String Loc
+    | AnnotatedText String String String Loc
 
 
 isSymbol : Token -> Bool
@@ -53,7 +53,7 @@ startPositionOf token =
         MarkedText _ _ loc ->
             loc.begin
 
-        AnnotatedText _ _ loc ->
+        AnnotatedText _ _ _ loc ->
             loc.begin
 
 
@@ -75,5 +75,5 @@ length token =
         MarkedText _ _ loc ->
             loc.end - loc.begin
 
-        AnnotatedText _ _ loc ->
+        AnnotatedText _ _ _ loc ->
             loc.end - loc.begin
