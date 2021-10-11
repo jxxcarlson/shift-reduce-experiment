@@ -3,6 +3,7 @@ module Markup.Simplify exposing (BlockS(..), ExprS(..), TokenS(..), blocks, expr
 import Either exposing (Either)
 import Markup.AST exposing (Expr(..))
 import Markup.Block exposing (Block(..), ExprM(..))
+import Markup.Error exposing (Context(..), ErrorData, Problem(..))
 import Markup.Token as Token exposing (Token)
 
 
@@ -27,6 +28,7 @@ type TokenS
     | FunctionNameST String
     | MarkedTextST String String
     | AnnotatedTextST String String String
+    | TokenErrorST ErrorData
 
 
 stack : List (Either Token Expr) -> List (Either TokenS ExprS)
@@ -59,6 +61,9 @@ simplifyToken token =
 
         Token.AnnotatedText str1 str2 str3 _ ->
             AnnotatedTextST str1 str2 str3
+
+        Token.TokenError errorData _ ->
+            TokenErrorST errorData
 
 
 blocks : List Block -> List BlockS

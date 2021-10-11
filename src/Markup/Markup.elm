@@ -1,16 +1,18 @@
 module Markup.Markup exposing (parseExpr, parseToBlock, run)
 
 import Either
-import Markup.AST as AST
+import Markup.AST as AST exposing (Expr)
 import Markup.Block as Block exposing (Block)
 import Markup.Common exposing (Step(..), loop)
 import Markup.Debugger exposing (..)
+import Markup.Error exposing (ErrorData, Problem(..))
 import Markup.L1 as L1
 import Markup.Lang exposing (Lang(..))
 import Markup.Markdown as Markdown
+import Markup.Meta exposing (dummy)
 import Markup.MiniLaTeX as MiniLaTeX
 import Markup.State exposing (State)
-import Markup.Token as Token exposing (Token)
+import Markup.Token as Token exposing (Token(..), dummyLoc)
 import Markup.Tokenizer as Tokenizer
 
 
@@ -119,13 +121,34 @@ finalize lang state =
 processToken : Lang -> State -> Step State State
 processToken lang state =
     case Tokenizer.get lang state.scanPointer (String.dropLeft state.scanPointer state.sourceText) of
-        Err _ ->
+        TokenError errorData meta ->
             -- Oops, exit
-            Done state
+            let
+                remaining =
+                    String.dropLeft state.scanPointer state.sourceText
+            in
+            Done { state | committed = errorValue state errorData :: state.committed }
 
-        Ok newToken ->
+        newToken ->
             -- Process the token: reduce the stack, then shift the token onto it.
             Loop (shift newToken (reduce lang state))
+
+
+errorValue : State -> ErrorData -> Expr
+errorValue state errorData =
+    let
+        problems =
+            List.map .problem errorData
+
+        remaining =
+            String.dropLeft state.scanPointer state.sourceText |> String.trimRight
+    in
+    case List.head problems of
+        Just (ExpectingSymbol "$") ->
+            AST.Verbatim "math" (remaining ++ "$") dummyLoc
+
+        _ ->
+            AST.Text ("Can't correct this text: " ++ remaining) dummyLoc
 
 
 reduceFinal : Lang -> State -> State

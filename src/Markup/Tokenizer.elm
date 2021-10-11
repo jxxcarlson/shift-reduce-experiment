@@ -18,9 +18,19 @@ import Parser.Advanced as Parser exposing ((|.), (|=), Parser)
     which is at this juncture pointing one character beyond the string chomped.
 
 -}
-get : Lang -> Int -> String -> Result (List (Parser.DeadEnd Context Problem)) Token
+get : Lang -> Int -> String -> Token
 get lang start input =
-    Parser.run (tokenParser lang start) input |> debug2 "Tokenizer.get"
+    case Parser.run (tokenParser lang start) input of
+        Ok token ->
+            token
+
+        Err errorList ->
+            TokenError errorList { begin = 0, end = 0 }
+
+
+
+--  Err [{ col = 1, contextStack = [], problem = ExpectingSymbol "$", row = 2 }]
+--|> debug2 "Tokenizer.get"
 
 
 l1LanguageChars =

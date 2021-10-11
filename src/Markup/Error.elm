@@ -1,4 +1,6 @@
-module Markup.Error exposing (Context(..), Problem(..))
+module Markup.Error exposing (Context(..), ErrorData, Problem(..))
+
+import Parser.Advanced
 
 
 type Problem
@@ -8,3 +10,7 @@ type Problem
 
 type Context
     = TextExpression
+
+
+type alias ErrorData =
+    List (Parser.Advanced.DeadEnd Context Problem)

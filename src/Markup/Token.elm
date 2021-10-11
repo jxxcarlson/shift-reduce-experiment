@@ -7,6 +7,8 @@ module Markup.Token exposing
     , startPositionOf
     )
 
+import Markup.Error exposing (Context(..), ErrorData, Problem(..))
+
 
 type Token
     = Text String Loc
@@ -15,6 +17,7 @@ type Token
     | FunctionName String Loc
     | MarkedText String String Loc
     | AnnotatedText String String String Loc
+    | TokenError ErrorData Loc
 
 
 isSymbol : Token -> Bool
@@ -56,6 +59,9 @@ startPositionOf token =
         AnnotatedText _ _ _ loc ->
             loc.begin
 
+        TokenError _ loc ->
+            loc.begin
+
 
 length : Token -> Int
 length token =
@@ -76,4 +82,7 @@ length token =
             loc.end - loc.begin
 
         AnnotatedText _ _ _ loc ->
+            loc.end - loc.begin
+
+        TokenError _ loc ->
             loc.end - loc.begin
