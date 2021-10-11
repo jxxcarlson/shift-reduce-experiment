@@ -3,9 +3,9 @@ module ParserTests exposing (suiteL1, suiteMarkdown, suiteMiniLaTeX)
 import Expect
 import Markup.API as API
 import Markup.AST exposing (Expr(..))
+import Markup.Lang exposing (Lang(..))
 import Markup.Markup exposing (run)
 import Markup.Simplify as Simplify exposing (BlockS(..), ExprS(..))
-import Markup.Tokenizer exposing (Lang(..))
 import Test exposing (..)
 
 
@@ -66,7 +66,7 @@ suiteMiniLaTeX =
         , test "(7) \\foo{\\bar{1}}" <|
             \_ ->
                 run MiniLaTeX "$x^2$"
-                    |> Expect.equal { committed = [ Verbatim "math" "$x^2$" (loc 0 4) ], count = 2, end = 5, scanPointer = 5, sourceText = "$x^2$", stack = [] }
+                    |> Expect.equal { committed = [ Verbatim "math" "x^2" (loc 0 4) ], count = 2, end = 5, scanPointer = 5, sourceText = "$x^2$", stack = [] }
         , test "(8)  abc \\href{1}{2} def" <|
             \_ ->
                 run MiniLaTeX "\\href{1}{2}"

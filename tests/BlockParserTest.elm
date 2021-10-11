@@ -3,7 +3,7 @@ module BlockParserTest exposing (suiteL1BlockParser)
 import Block.Parser
 import Expect
 import Markup.Block exposing (SBlock(..))
-import Markup.Tokenizer exposing (Lang(..))
+import Markup.Lang exposing (Lang(..))
 import Test exposing (..)
 
 
