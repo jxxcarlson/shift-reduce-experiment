@@ -8,7 +8,7 @@ import Markup.Block exposing (ExprM(..))
 import Render.AST2
 import Render.Math
 import Render.MathMacro
-import Render.Settings exposing (Settings, TitleStatus(..))
+import Render.Settings exposing (Settings)
 import Utility
 
 
@@ -304,12 +304,7 @@ makeId textList =
 
 
 heading1 g s a textList =
-    case s.titleStatus of
-        TitleWithSize titleSize ->
-            simpleElement [ Font.size titleSize, makeId textList ] g s a textList
-
-        HideTitle ->
-            Element.none
+    simpleElement [ Font.size s.titleSize, makeId textList ] g s a textList
 
 
 heading2 g s a textList =

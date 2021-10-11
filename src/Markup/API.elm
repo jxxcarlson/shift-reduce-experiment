@@ -10,13 +10,13 @@ import Markup.Lang exposing (Lang(..))
 import Markup.Markup as Markup
 import Markup.Simplify as Simplify
 import Render.Block
-import Render.Settings exposing (TitleStatus(..))
+import Render.Settings
 import Render.Text
 
 
 defaultSettings : Render.Settings.Settings
 defaultSettings =
-    { width = 500, titleStatus = TitleWithSize 30 }
+    { width = 500, titleSize = 30, showTOC = True }
 
 
 p : Lang -> String -> List Simplify.BlockS
@@ -56,17 +56,12 @@ renderFancy settings language count source =
             ASTTools.getTitle ast
 
         docTitle =
-            case settings.titleStatus of
-                TitleWithSize titleSize ->
-                    case maybeTitleString of
-                        Nothing ->
-                            E.none
-
-                        Just titleString ->
-                            E.el [ Font.size titleSize ] (E.text (titleString |> String.replace "\n" " "))
-
-                HideTitle ->
+            case maybeTitleString of
+                Nothing ->
                     E.none
+
+                Just titleString ->
+                    E.el [ Font.size settings.titleSize ] (E.text (titleString |> String.replace "\n" " "))
 
         toc =
             if List.length toc_ > 1 then
@@ -79,7 +74,11 @@ renderFancy settings language count source =
         renderedText_ =
             render count settings parseData.accumulator ast
     in
-    docTitle :: toc :: renderedText_
+    if settings.showTOC then
+        docTitle :: toc :: renderedText_
+
+    else
+        docTitle :: renderedText_
 
 
 tableOfContents : Int -> Settings -> Block.State.Accumulator -> List Block -> List (Element msg)

@@ -1,10 +1,5 @@
-module Render.Settings exposing (Settings, TitleStatus(..))
+module Render.Settings exposing (Settings)
 
 
 type alias Settings =
-    { width : Int, titleStatus : TitleStatus }
-
-
-type TitleStatus
-    = TitleWithSize Int
-    | HideTitle
+    { width : Int, titleSize : Int, showTOC : Bool }
