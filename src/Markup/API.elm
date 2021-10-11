@@ -52,14 +52,18 @@ renderFancy settings language count source =
         toc_ =
             tableOfContents count { width = 500 } parseData.accumulator ast
 
-        titleString =
-            ASTTools.getTitle ast |> Maybe.withDefault "Untitled" |> String.replace "\n" " "
+        maybeTitleString =
+            ASTTools.getTitle ast
 
         docTitle =
-            -- E.el [ Font.size settings.titleSize ] (E.text titleString)
             case settings.titleStatus of
                 TitleWithSize titleSize ->
-                    E.el [ Font.size titleSize ] (E.text titleString)
+                    case maybeTitleString of
+                        Nothing ->
+                            E.none
+
+                        Just titleString ->
+                            E.el [ Font.size titleSize ] (E.text (titleString |> String.replace "\n" " "))
 
                 HideTitle ->
                     E.none
