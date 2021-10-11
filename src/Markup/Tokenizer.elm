@@ -1,11 +1,12 @@
-module Markup.Tokenizer exposing (get)
+module Markup.Tokenizer exposing (annotatedTextParser, get, markedTextParser)
 
 import Markup.Debugger exposing (..)
 import Markup.Error exposing (..)
+import Markup.L1 exposing (makeLoc)
 import Markup.Lang exposing (Lang(..))
 import Markup.ParserTools as ParserTools
 import Markup.Token exposing (Token(..))
-import Parser.Advanced as Parser exposing (Parser)
+import Parser.Advanced as Parser exposing ((|.), (|=), Parser)
 
 
 {-|
@@ -33,12 +34,17 @@ markdownLanguageChars =
     [ '*', '_', '`', '$', '[', ']', '(', ')', '#' ]
 
 
+type alias TokenParser =
+    Parser Context Problem Token
+
+
 {-|
 
     > Tokenizer.run "Test: [i [j foo bar]]"
       Ok [Text ("Test: "),Symbol "[",Text ("i "),Symbol "[",Text ("j foo bar"),Symbol "]",Symbol "]"]
 
 -}
+tokenParser : Lang -> Int -> TokenParser
 tokenParser lang start =
     case lang of
         L1 ->
@@ -61,18 +67,34 @@ tokenParser lang start =
 
         Markdown ->
             Parser.oneOf
-                [ markedTextParser start "strong" '*' '*'
+                [ annotatedTextParser start
+                , markedTextParser start "strong" '*' '*'
                 , markedTextParser start "italic" '_' '_'
                 , markedTextParser start "code" '`' '`'
                 , markedTextParser start "math" '$' '$'
-                , markedTextParser start "arg" '(' ')'
-                , markedTextParser start "annotation" '[' ']'
+
+                --, markedTextParser start "arg" '(' ')'
+                -- , markedTextParser start "annotation" '[' ']'
                 , markedTextParser start "image" '!' ']'
                 , textParser lang start
                 ]
 
 
-textParser : Lang -> Int -> Parser Context Problem Token
+
+-- annotatedTextParser : Int -> TokenParser
+
+
+tokenListToToken : List Token -> Token
+tokenListToToken tokenList =
+    case tokenList of
+        (MarkedText "arg" arg loc2) :: (MarkedText "annotation" annotation loc1) :: [] ->
+            AnnotatedText annotation arg (makeLoc loc1 loc2)
+
+        _ ->
+            MarkedText "error" "tokenList is not of the form [annotation](arg)" { begin = 0, end = 0 }
+
+
+textParser : Lang -> Int -> TokenParser
 textParser lang start =
     case lang of
         L1 ->
@@ -88,13 +110,13 @@ textParser lang start =
                 |> Parser.map (\data -> Text data.content { begin = start, end = start + data.end - data.begin - 1 })
 
 
-macroParser : Int -> Parser Context Problem Token
+macroParser : Int -> TokenParser
 macroParser start =
     ParserTools.text (\c -> c == '\\') (\c -> c /= '{')
         |> Parser.map (\data -> FunctionName (String.dropLeft 1 data.content) { begin = start, end = start + data.end - data.begin - 1 })
 
 
-mathParser : Int -> Parser Context Problem Token
+mathParser : Int -> TokenParser
 mathParser start =
     ParserTools.textWithEndSymbol "$" (\c -> c == '$') (\c -> c /= '$')
         |> Parser.map (\data -> Verbatim "math" (dropFirstAndLastCharacter data.content) { begin = start, end = start + data.end - data.begin - 1 })
@@ -104,10 +126,23 @@ dropFirstAndLastCharacter str =
     String.slice 1 (String.length str - 1) str
 
 
-markedTextParser : Int -> String -> Char -> Char -> Parser Context Problem Token
+markedTextParser : Int -> String -> Char -> Char -> TokenParser
 markedTextParser start mark begin end =
     ParserTools.text (\c -> c == begin) (\c -> c /= end)
         |> Parser.map (\data -> MarkedText mark (dropLeft mark data.content) { begin = start, end = start + data.end - data.begin })
+
+
+annotatedTextParser : Int -> TokenParser
+annotatedTextParser start =
+    Parser.succeed (\begin annotation arg end -> AnnotatedText annotation.content arg.content { begin = start + begin, end = start + end })
+        |= Parser.getOffset
+        |. Parser.symbol (Parser.Token "[" (ExpectingSymbol "["))
+        |= ParserTools.text (\c -> c /= '[') (\c -> c /= ']')
+        |. Parser.symbol (Parser.Token "]" (ExpectingSymbol "]"))
+        |. Parser.symbol (Parser.Token "(" (ExpectingSymbol "("))
+        |= ParserTools.text (\c -> c /= '(') (\c -> c /= ')')
+        |. Parser.symbol (Parser.Token ")" (ExpectingSymbol ")"))
+        |= Parser.getOffset
 
 
 dropLeft : String -> String -> String
@@ -119,19 +154,19 @@ dropLeft mark str =
         String.dropLeft 1 str
 
 
-codeParser : Int -> Parser Context Problem Token
+codeParser : Int -> TokenParser
 codeParser start =
     ParserTools.textWithEndSymbol "`" (\c -> c == '`') (\c -> c /= '`')
         |> Parser.map (\data -> Verbatim "code" data.content { begin = start, end = start + data.end - data.begin - 1 })
 
 
-symbolParser : Int -> Char -> Parser Context Problem Token
+symbolParser : Int -> Char -> TokenParser
 symbolParser start sym =
     ParserTools.text (\c -> c == sym) (\_ -> False)
         |> Parser.map (\data -> Symbol data.content { begin = start, end = start + data.end - data.begin - 1 })
 
 
-l1FunctionNameParser : Int -> Parser Context Problem Token
+l1FunctionNameParser : Int -> TokenParser
 l1FunctionNameParser start =
     ParserTools.textWithEndSymbol " " (\c -> c == '[') (\c -> c /= ' ')
         |> Parser.map (\data -> FunctionName data.content { begin = start, end = start + data.end - data.begin - 1 })
