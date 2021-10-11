@@ -54,11 +54,6 @@ reduce state =
         (Left (AnnotatedText "link" label value loc)) :: [] ->
             { state | committed = Expr "link" [ AST.Text label loc, AST.Text value loc ] loc :: state.committed, stack = [] }
 
-        --(Left (MarkedText "arg" url loc2)) :: (Left (MarkedText "annotation" label loc1)) :: [] ->
-        --    { state | committed = Expr "link" [ AST.Text label loc1, AST.Text url loc2 ] { begin = loc1.begin, end = loc2.end } :: state.committed, stack = [] }
-        --
-        --(Left (MarkedText "arg" url loc2)) :: (Left (MarkedText "image" label loc1)) :: [] ->
-        --    { state | committed = normalizeExpr (Expr "image" [ AST.Text label loc1, AST.Text url loc2 ] { begin = loc1.begin, end = loc2.end }) :: state.committed, stack = [] }
         _ ->
             state
 
