@@ -25,6 +25,11 @@ p lang str =
     parse lang 0 (String.lines str) |> .ast |> Simplify.blocks
 
 
+rl : String -> List (Element msg)
+rl str =
+    renderFancy { width = 500, titleSize = 30, showTOC = True } L1 0 (String.lines str)
+
+
 parse : Lang -> Int -> List String -> { ast : List Block, accumulator : Block.State.Accumulator }
 parse lang generation lines =
     let

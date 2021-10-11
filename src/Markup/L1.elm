@@ -30,7 +30,7 @@ reduce state =
                     reduceAux (AST.Verbatim name (String.dropLeft 1 (String.dropRight 1 str)) loc) rest state
 
             else
-                reduceAux (AST.Verbatim name (String.dropLeft 1 (String.dropRight 1 str)) loc) rest state
+                reduceAux (AST.Verbatim name str loc) rest state
 
         -- Two term pattern:
         (Left (Token.Text str loc)) :: (Right expr) :: [] ->

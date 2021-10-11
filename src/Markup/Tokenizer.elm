@@ -1,8 +1,9 @@
-module Markup.Tokenizer exposing (get, linkParser, markedTextParser)
+module Markup.Tokenizer exposing (get)
 
+import Lang.L1
+import Lang.Markdown
 import Markup.Debugger exposing (..)
 import Markup.Error exposing (..)
-import Markup.L1 exposing (makeLoc)
 import Markup.Lang exposing (Lang(..))
 import Markup.ParserTools as ParserTools
 import Markup.Token exposing (Token(..))
@@ -51,8 +52,8 @@ tokenParser lang start =
             Parser.oneOf
                 [ textParser lang start
                 , mathParser start
-                , codeParser start
-                , l1FunctionNameParser start
+                , Lang.L1.codeParser start
+                , Lang.L1.functionNameParser start
                 , symbolParser start ']'
                 ]
 
@@ -67,14 +68,14 @@ tokenParser lang start =
 
         Markdown ->
             Parser.oneOf
-                [ linkParser start
-                , imageParser start
-                , boldItalicTextParser start
-                , italicBoldTextParser start
-                , markedTextParser start "strong" '*' '*'
-                , markedTextParser start "italic" '_' '_'
-                , markedTextParser start "code" '`' '`'
-                , markedTextParser start "math" '$' '$'
+                [ Lang.Markdown.linkParser start
+                , Lang.Markdown.imageParser start
+                , Lang.Markdown.boldItalicTextParser start
+                , Lang.Markdown.italicBoldTextParser start
+                , Lang.Markdown.markedTextParser start "strong" '*' '*'
+                , Lang.Markdown.markedTextParser start "italic" '_' '_'
+                , Lang.Markdown.markedTextParser start "code" '`' '`'
+                , Lang.Markdown.markedTextParser start "math" '$' '$'
                 , textParser lang start
                 ]
 
@@ -122,80 +123,7 @@ dropFirstAndLastCharacter str =
     String.slice 1 (String.length str - 1) str
 
 
-markedTextParser : Int -> String -> Char -> Char -> TokenParser
-markedTextParser start mark begin end =
-    ParserTools.text (\c -> c == begin) (\c -> c /= end)
-        |> Parser.map (\data -> MarkedText mark (dropLeft mark data.content) { begin = start, end = start + data.end - data.begin })
-
-
-linkParser : Int -> TokenParser
-linkParser start =
-    Parser.succeed (\begin annotation arg end -> AnnotatedText "link" annotation.content arg.content { begin = start + begin, end = start + end })
-        |= Parser.getOffset
-        |. Parser.symbol (Parser.Token "[" (ExpectingSymbol "["))
-        |= ParserTools.text (\c -> c /= '[') (\c -> c /= ']')
-        |. Parser.symbol (Parser.Token "]" (ExpectingSymbol "]"))
-        |. Parser.symbol (Parser.Token "(" (ExpectingSymbol "("))
-        |= ParserTools.text (\c -> c /= '(') (\c -> c /= ')')
-        |. Parser.symbol (Parser.Token ")" (ExpectingSymbol ")"))
-        |= Parser.getOffset
-
-
-imageParser : Int -> TokenParser
-imageParser start =
-    Parser.succeed (\begin annotation arg end -> AnnotatedText "image" annotation.content arg.content { begin = start + begin, end = start + end })
-        |= Parser.getOffset
-        |. Parser.symbol (Parser.Token "![" (ExpectingSymbol "!["))
-        |= ParserTools.text (\c -> c /= ']') (\c -> c /= ']')
-        |. Parser.symbol (Parser.Token "]" (ExpectingSymbol "]"))
-        |. Parser.symbol (Parser.Token "(" (ExpectingSymbol "("))
-        |= ParserTools.text (\c -> c /= '(') (\c -> c /= ')')
-        |. Parser.symbol (Parser.Token ")" (ExpectingSymbol ")"))
-        |= Parser.getOffset
-
-
-boldItalicTextParser : Int -> TokenParser
-boldItalicTextParser start =
-    Parser.succeed (\begin data end -> MarkedText "boldItalic" data.content { begin = start + begin, end = start + end })
-        |= Parser.getOffset
-        |. Parser.symbol (Parser.Token "*_" (ExpectingSymbol "*_"))
-        |= ParserTools.text (\c -> not (List.member c [ '*', '_' ])) (\c -> not (List.member c [ '*', '_' ]))
-        |. Parser.symbol (Parser.Token "_*" (ExpectingSymbol "_*"))
-        |= Parser.getOffset
-
-
-italicBoldTextParser : Int -> TokenParser
-italicBoldTextParser start =
-    Parser.succeed (\begin data end -> MarkedText "boldItalic" data.content { begin = start + begin, end = start + end })
-        |= Parser.getOffset
-        |. Parser.symbol (Parser.Token "_*" (ExpectingSymbol "_*"))
-        |= ParserTools.text (\c -> not (List.member c [ '*', '_' ])) (\c -> not (List.member c [ '*', '_' ]))
-        |. Parser.symbol (Parser.Token "*_" (ExpectingSymbol "*_"))
-        |= Parser.getOffset
-
-
-dropLeft : String -> String -> String
-dropLeft mark str =
-    if mark == "image" then
-        String.dropLeft 2 str
-
-    else
-        String.dropLeft 1 str
-
-
-codeParser : Int -> TokenParser
-codeParser start =
-    ParserTools.textWithEndSymbol "`" (\c -> c == '`') (\c -> c /= '`')
-        |> Parser.map (\data -> Verbatim "code" data.content { begin = start, end = start + data.end - data.begin - 1 })
-
-
 symbolParser : Int -> Char -> TokenParser
 symbolParser start sym =
     ParserTools.text (\c -> c == sym) (\_ -> False)
         |> Parser.map (\data -> Symbol data.content { begin = start, end = start + data.end - data.begin - 1 })
-
-
-l1FunctionNameParser : Int -> TokenParser
-l1FunctionNameParser start =
-    ParserTools.textWithEndSymbol " " (\c -> c == '[') (\c -> c /= ' ')
-        |> Parser.map (\data -> FunctionName data.content { begin = start, end = start + data.end - data.begin - 1 })
