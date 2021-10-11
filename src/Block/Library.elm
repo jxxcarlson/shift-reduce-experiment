@@ -14,8 +14,8 @@ import Block.MiniLaTeX.Line
 import Block.State exposing (Accumulator, State)
 import Markup.Block exposing (SBlock(..))
 import Markup.Debugger exposing (debug1, debug2, debug3)
+import Markup.Lang exposing (Lang(..))
 import Markup.ParserTools
-import Markup.Tokenizer exposing (Lang(..))
 import Parser.Advanced
 import Render.MathMacro
 

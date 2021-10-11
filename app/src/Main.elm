@@ -13,7 +13,7 @@ import File.Download as Download
 import Html exposing (Html)
 import Markup.API as API
 import Markup.ASTTools as ASTTools
-import Markup.Tokenizer exposing (Lang(..))
+import Markup.Lang exposing (Lang(..))
 import Process
 import Task
 

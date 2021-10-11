@@ -6,9 +6,9 @@ import Element as E exposing (Element)
 import Element.Font as Font
 import Markup.ASTTools as ASTTools
 import Markup.Block as Block exposing (Block)
+import Markup.Lang exposing (Lang(..))
 import Markup.Markup as Markup
 import Markup.Simplify as Simplify
-import Markup.Tokenizer exposing (Lang)
 import Render.Block
 import Render.Text
 

@@ -4,7 +4,7 @@ import Block.Library
 import Block.State exposing (State)
 import List.Extra
 import Markup.Debugger exposing (debug2, debug3)
-import Markup.Tokenizer exposing (Lang)
+import Markup.Lang exposing (Lang(..))
 
 
 

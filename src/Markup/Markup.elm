@@ -6,11 +6,12 @@ import Markup.Block as Block exposing (Block)
 import Markup.Common exposing (Step(..), loop)
 import Markup.Debugger exposing (..)
 import Markup.L1 as L1
+import Markup.Lang exposing (Lang(..))
 import Markup.Markdown as Markdown
 import Markup.MiniLaTeX as MiniLaTeX
 import Markup.State exposing (State)
 import Markup.Token as Token exposing (Token)
-import Markup.Tokenizer as Tokenizer exposing (Lang(..))
+import Markup.Tokenizer as Tokenizer
 
 
 parseExpr : Lang -> String -> List AST.Expr

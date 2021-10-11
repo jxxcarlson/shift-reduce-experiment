@@ -1,7 +1,8 @@
-module Markup.Tokenizer exposing (Lang(..), get)
+module Markup.Tokenizer exposing (get)
 
 import Markup.Debugger exposing (..)
 import Markup.Error exposing (..)
+import Markup.Lang exposing (Lang(..))
 import Markup.ParserTools as ParserTools
 import Markup.Token exposing (Token(..))
 import Parser.Advanced as Parser exposing (Parser)
@@ -18,12 +19,6 @@ import Parser.Advanced as Parser exposing (Parser)
 get : Lang -> Int -> String -> Result (List (Parser.DeadEnd Context Problem)) Token
 get lang start input =
     Parser.run (tokenParser lang start) input |> debug2 "Tokenizer.get"
-
-
-type Lang
-    = L1
-    | MiniLaTeX
-    | Markdown
 
 
 l1LanguageChars =
