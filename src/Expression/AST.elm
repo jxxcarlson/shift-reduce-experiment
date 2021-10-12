@@ -8,7 +8,7 @@ module Expression.AST exposing
     , stringValueOfList
     )
 
-import Markup.Token as Token
+import Expression.Token as Token
 import Maybe.Extra
 
 

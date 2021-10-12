@@ -1,8 +1,8 @@
-module Markup.State exposing (State)
+module Expression.State exposing (State)
 
 import Either exposing (Either)
 import Expression.AST exposing (Expr)
-import Markup.Token exposing (Token)
+import Expression.Token exposing (Token)
 
 
 type alias State =

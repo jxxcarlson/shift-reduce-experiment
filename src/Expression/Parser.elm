@@ -3,6 +3,9 @@ module Expression.Parser exposing (parseExpr, parseToBlock, run)
 import Either
 import Expression.AST as AST exposing (Expr)
 import Expression.Error exposing (ErrorData, Problem(..))
+import Expression.State exposing (State)
+import Expression.Token as Token exposing (Token(..), dummyLoc)
+import Expression.Tokenizer as Tokenizer
 import Lang.Lang exposing (Lang(..))
 import Lang.Reduce.L1 as L1
 import Lang.Reduce.Markdown as Markdown
@@ -11,9 +14,6 @@ import List.Extra
 import Markup.Block as Block exposing (Block)
 import Markup.Common exposing (Step(..), loop)
 import Markup.Debugger exposing (..)
-import Markup.State exposing (State)
-import Markup.Token as Token exposing (Token(..), dummyLoc)
-import Markup.Tokenizer as Tokenizer
 
 
 parseExpr : Lang -> String -> List AST.Expr

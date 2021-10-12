@@ -1,10 +1,10 @@
 module Lang.Token.L1 exposing (tokenParser)
 
 import Expression.Error exposing (..)
+import Expression.Token exposing (Token(..))
 import Lang.Lang exposing (Lang(..))
 import Lang.Token.Common as Common
 import Markup.ParserTools as ParserTools
-import Markup.Token exposing (Token(..))
 import Parser.Advanced as Parser exposing (Parser)
 
 

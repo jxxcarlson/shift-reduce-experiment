@@ -3,8 +3,8 @@ module Markup.Simplify exposing (BlockS(..), ExprS(..), TokenS(..), blocks, expr
 import Either exposing (Either)
 import Expression.AST exposing (Expr(..))
 import Expression.Error exposing (ErrorData)
+import Expression.Token as Token exposing (Token)
 import Markup.Block exposing (Block(..), ExprM(..))
-import Markup.Token as Token exposing (Token)
 
 
 type ExprS

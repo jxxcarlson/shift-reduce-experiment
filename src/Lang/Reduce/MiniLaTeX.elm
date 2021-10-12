@@ -2,11 +2,11 @@ module Lang.Reduce.MiniLaTeX exposing (recoverFromError, reduce, reduceFinal)
 
 import Either exposing (Either(..))
 import Expression.AST as AST exposing (Expr)
+import Expression.Stack as Stack
+import Expression.State exposing (State)
+import Expression.Token as Token exposing (Token(..))
 import Markup.Common exposing (Step(..))
 import Markup.Debugger exposing (debug1)
-import Markup.Stack as Stack
-import Markup.State exposing (State)
-import Markup.Token as Token exposing (Token(..))
 
 
 reduceFinal : State -> State

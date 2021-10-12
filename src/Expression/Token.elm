@@ -1,4 +1,4 @@
-module Markup.Token exposing
+module Expression.Token exposing
     ( Loc
     , Token(..)
     , dummyLoc

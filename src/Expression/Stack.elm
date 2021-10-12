@@ -1,4 +1,4 @@
-module Markup.Stack exposing
+module Expression.Stack exposing
     ( Stack
     , dump
     , isFunctionName
@@ -8,7 +8,7 @@ module Markup.Stack exposing
 
 import Either exposing (Either(..))
 import Expression.AST as AST exposing (Expr)
-import Markup.Token as Token exposing (Token(..))
+import Expression.Token as Token exposing (Token(..))
 import Maybe.Extra
 
 

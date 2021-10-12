@@ -2,11 +2,11 @@ module Lang.Reduce.L1 exposing (makeLoc, recoverFromError, reduce, reduceFinal)
 
 import Either exposing (Either(..))
 import Expression.AST as AST exposing (Expr(..))
+import Expression.Stack as Stack exposing (Stack)
+import Expression.State exposing (State)
+import Expression.Token as Token exposing (Token(..))
 import List.Extra
 import Markup.Common exposing (Step(..))
-import Markup.Stack as Stack exposing (Stack)
-import Markup.State exposing (State)
-import Markup.Token as Token exposing (Token(..))
 
 
 reduceFinal state =

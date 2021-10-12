@@ -1,9 +1,9 @@
 module Lang.Token.Common exposing (TokenParser, mathParser, symbolParser, textParser)
 
 import Expression.Error exposing (..)
+import Expression.Token exposing (Token(..))
 import Lang.Lang exposing (Lang(..))
 import Markup.ParserTools as ParserTools
-import Markup.Token exposing (Token(..))
 import Parser.Advanced as Parser exposing (Parser)
 
 

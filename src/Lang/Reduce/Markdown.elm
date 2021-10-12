@@ -2,10 +2,10 @@ module Lang.Reduce.Markdown exposing (normalizeExpr, recoverFromError, reduce, r
 
 import Either exposing (Either(..))
 import Expression.AST as AST exposing (Expr(..))
+import Expression.State exposing (State)
+import Expression.Token as Token exposing (Token(..))
 import Markup.Common exposing (Step(..))
 import Markup.Debugger exposing (debug1)
-import Markup.State exposing (State)
-import Markup.Token as Token exposing (Token(..))
 
 
 reduceFinal : State -> State

@@ -10,8 +10,8 @@ module Markup.Meta exposing
     , stringAtLoc
     )
 
+import Expression.Token as Token
 import List.Extra
-import Markup.Token as Token
 
 
 type alias ExpressionMeta =
