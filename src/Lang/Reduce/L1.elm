@@ -1,4 +1,4 @@
-module Markup.L1 exposing (makeLoc, recoverFromError, reduce, reduceFinal)
+module Lang.Reduce.L1 exposing (makeLoc, recoverFromError, reduce, reduceFinal)
 
 import Either exposing (Either(..))
 import List.Extra

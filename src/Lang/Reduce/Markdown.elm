@@ -1,4 +1,4 @@
-module Markup.Markdown exposing (normalizeExpr, recoverFromError, reduce, reduceFinal)
+module Lang.Reduce.Markdown exposing (normalizeExpr, recoverFromError, reduce, reduceFinal)
 
 import Either exposing (Either(..))
 import Markup.AST as AST exposing (Expr(..))

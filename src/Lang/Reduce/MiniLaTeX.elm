@@ -1,4 +1,4 @@
-module Markup.MiniLaTeX exposing (recoverFromError, reduce, reduceFinal)
+module Lang.Reduce.MiniLaTeX exposing (recoverFromError, reduce, reduceFinal)
 
 import Either exposing (Either(..))
 import Markup.AST as AST exposing (Expr)

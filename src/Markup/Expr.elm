@@ -2,15 +2,15 @@ module Markup.Expr exposing (parseExpr, parseToBlock, run)
 
 import Either
 import Lang.Lang exposing (Lang(..))
+import Lang.Reduce.L1 as L1
+import Lang.Reduce.Markdown as Markdown
+import Lang.Reduce.MiniLaTeX as MiniLaTeX
 import List.Extra
 import Markup.AST as AST exposing (Expr)
 import Markup.Block as Block exposing (Block)
 import Markup.Common exposing (Step(..), loop)
 import Markup.Debugger exposing (..)
 import Markup.Error exposing (ErrorData, Problem(..))
-import Markup.L1 as L1
-import Markup.Markdown as Markdown
-import Markup.MiniLaTeX as MiniLaTeX
 import Markup.State exposing (State)
 import Markup.Token as Token exposing (Token(..), dummyLoc)
 import Markup.Tokenizer as Tokenizer

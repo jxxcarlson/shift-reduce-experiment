@@ -12,6 +12,7 @@ type alias TokenParser =
     Parser Context Problem Token
 
 
+tokenParser : Int -> TokenParser
 tokenParser start =
     Parser.oneOf
         [ Common.textParser L1 start
