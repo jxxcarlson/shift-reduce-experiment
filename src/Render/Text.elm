@@ -64,6 +64,7 @@ markupDict =
         , ( "boldItalic", \g s a textList -> boldItalic g s a textList )
         , ( "red", \g s a textList -> red g s a textList )
         , ( "blue", \g s a textList -> blue g s a textList )
+        , ( "violet", \g s a textList -> violet g s a textList )
         , ( "errorHighlight", \g s a textList -> errorHighlight g s a textList )
         , ( "title", \_ _ _ _ -> Element.none )
         , ( "heading1", \g s a textList -> heading1 g s a textList )
@@ -366,6 +367,10 @@ red g s a textList =
 
 blue g s a textList =
     simpleElement [ Font.color (Element.rgb255 0 0 200) ] g s a textList
+
+
+violet g s a textList =
+    simpleElement [ Font.color (Element.rgb255 150 100 255) ] g s a textList
 
 
 errorHighlight g s a textList =

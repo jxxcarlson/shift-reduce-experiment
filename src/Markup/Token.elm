@@ -5,6 +5,7 @@ module Markup.Token exposing
     , isSymbol
     , length
     , startPositionOf
+    , stringValue
     )
 
 import Markup.Error exposing (Context(..), ErrorData, Problem(..))
@@ -18,6 +19,31 @@ type Token
     | MarkedText String String Loc
     | AnnotatedText String String String Loc
     | TokenError ErrorData Loc
+
+
+stringValue : Token -> String
+stringValue token =
+    case token of
+        Text str _ ->
+            str
+
+        Verbatim _ str _ ->
+            str
+
+        Symbol str _ ->
+            str
+
+        FunctionName str _ ->
+            str
+
+        MarkedText _ str _ ->
+            str
+
+        AnnotatedText _ _ str _ ->
+            str
+
+        TokenError _ _ ->
+            "token error"
 
 
 isSymbol : Token -> Bool

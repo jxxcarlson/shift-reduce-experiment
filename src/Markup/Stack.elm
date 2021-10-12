@@ -1,4 +1,10 @@
-module Markup.Stack exposing (Stack, isFunctionName, stackHasSymbol, toExprList)
+module Markup.Stack exposing
+    ( Stack
+    , dump
+    , isFunctionName
+    , stackHasSymbol
+    , toExprList
+    )
 
 import Either exposing (Either(..))
 import Markup.AST as AST exposing (Expr)
@@ -12,6 +18,21 @@ type alias StackItem =
 
 type alias Stack =
     List StackItem
+
+
+dump : Stack -> String
+dump stack =
+    List.map dumpItem stack |> List.reverse |> String.join "" |> String.trim
+
+
+dumpItem : StackItem -> String
+dumpItem stackItem =
+    case stackItem of
+        Left token ->
+            Token.stringValue token
+
+        Right expr ->
+            AST.miniLaTeXStringValue expr
 
 
 isFunctionName : StackItem -> Bool

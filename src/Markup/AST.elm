@@ -1,4 +1,12 @@
-module Markup.AST exposing (Expr(..), args2M, getName, stringValueOfList, textToString)
+module Markup.AST exposing
+    ( Expr(..)
+    , args2M
+    , getName
+    , miniLaTeXStringValue
+    , stringValue
+    , stringValueOfArgList
+    , stringValueOfList
+    )
 
 import Markup.Token as Token
 import Maybe.Extra
@@ -80,33 +88,55 @@ stringValueOfList textList =
     String.join " " (List.map stringValue textList)
 
 
+stringValueOfArgList : List Expr -> String
+stringValueOfArgList textList =
+    String.join "" (List.map (stringValue >> (\s -> "{" ++ s ++ "}")) textList)
+
+
+
+--stringValue : Expr -> String
+--stringValue text =
+--    case text of
+--        Text str _ ->
+--            str
+--
+--        Expr _ textList _ ->
+--            String.join " " (List.map stringValue textList)
+--
+--        Arg textList _ ->
+--            String.join " " (List.map stringValue textList)
+--
+--        Verbatim _ str _ ->
+--            str
+
+
 stringValue : Expr -> String
 stringValue text =
-    case text of
-        Text str _ ->
-            str
-
-        Expr _ textList _ ->
-            String.join " " (List.map stringValue textList)
-
-        Arg textList _ ->
-            String.join " " (List.map stringValue textList)
-
-        Verbatim _ str _ ->
-            str
-
-
-textToString : Expr -> String
-textToString text =
     case text of
         Text string _ ->
             string
 
         Expr _ textList _ ->
-            List.map textToString textList |> String.join "\n"
+            List.map stringValue textList |> String.join "\n"
 
         Arg textList _ ->
-            List.map textToString textList |> String.join "\n"
+            List.map stringValue textList |> String.join "\n"
+
+        Verbatim _ str _ ->
+            str
+
+
+miniLaTeXStringValue : Expr -> String
+miniLaTeXStringValue text =
+    case text of
+        Text string _ ->
+            string
+
+        Expr name textList _ ->
+            [ name ++ "{" ] ++ List.map stringValue textList ++ [ "}" ] |> String.join ""
+
+        Arg textList _ ->
+            List.map stringValue textList |> String.join ""
 
         Verbatim _ str _ ->
             str

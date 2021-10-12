@@ -116,7 +116,7 @@ finalize lang state =
         Done (state |> (\st -> { st | committed = List.reverse st.committed })) |> debug2 "ReduceFinal (1)"
 
     else
-        recoverFromError lang state |> debug2 "ReduceFinal (2)"
+        recoverFromError lang state |> debug2 "ReduceFinal (2, recoverFromErrors)"
 
 
 processToken : Lang -> State -> Step State State

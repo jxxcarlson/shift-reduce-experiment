@@ -11,6 +11,11 @@ $$
 
 This is also a test.  \\italic{foo
 
+
+\\href{1}{2
+
+\\foo{1}{2}{3
+
 """
 
 
