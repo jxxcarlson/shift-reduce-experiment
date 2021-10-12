@@ -11,9 +11,9 @@ import Element.Font as Font
 import Element.Input as Input
 import File.Download as Download
 import Html exposing (Html)
+import Lang.Lang exposing (Lang(..))
 import Markup.API as API
 import Markup.ASTTools as ASTTools
-import Markup.Lang exposing (Lang(..))
 import Process
 import Render.Settings
 import Task
