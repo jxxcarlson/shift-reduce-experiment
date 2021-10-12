@@ -12,6 +12,8 @@ when inside the directory containing this file.
 -}
 
 import CognitiveComplexity
+import NoExposingEverything
+import NoImportingEverything
 import NoUnused.CustomTypeConstructors
 import NoUnused.Dependencies
 import NoUnused.Parameters
@@ -24,8 +26,10 @@ config : List Rule
 config =
     [ NoUnused.CustomTypeConstructors.rule []
     , NoUnused.Dependencies.rule
+    , NoImportingEverything.rule [ "Element" ]
     , NoUnused.Parameters.rule
     , NoUnused.Patterns.rule
     , NoUnused.Variables.rule
+    , NoExposingEverything.rule
     , CognitiveComplexity.rule 15
     ]
