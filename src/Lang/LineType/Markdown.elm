@@ -1,4 +1,4 @@
-module Block.Markdown.Line exposing (lineType)
+module Lang.LineType.Markdown exposing (lineType)
 
 import Block.Line as Line
 import Parser exposing ((|.), Parser)

@@ -1,4 +1,4 @@
-module Block.L1.Line exposing (lineType)
+module Lang.LineType.L1 exposing (lineType)
 
 import Block.Line as Line
 import Parser exposing ((|.), (|=), Parser)

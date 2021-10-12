@@ -1,4 +1,4 @@
-module Block.MiniLaTeX.Line exposing (lineType)
+module Lang.LineType.MiniLaTeX exposing (lineType)
 
 import Block.Line as Line
 import Parser exposing ((|.), (|=), Parser)
