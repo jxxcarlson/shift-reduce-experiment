@@ -7,7 +7,7 @@ module Markup.Stack exposing
     )
 
 import Either exposing (Either(..))
-import Markup.AST as AST exposing (Expr)
+import Expression.AST as AST exposing (Expr)
 import Markup.Token as Token exposing (Token(..))
 import Maybe.Extra
 

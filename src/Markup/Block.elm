@@ -8,7 +8,7 @@ module Markup.Block exposing (Block(..), ExprM(..), Meta, SBlock(..), exprMToExp
 --, test
 --)
 
-import Markup.AST exposing (Expr(..))
+import Expression.AST exposing (Expr(..))
 import Markup.Meta as Meta exposing (ExpressionMeta)
 
 

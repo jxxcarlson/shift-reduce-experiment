@@ -1,8 +1,8 @@
 module Lang.Token.MiniLaTeX exposing (tokenParser)
 
+import Expression.Error exposing (..)
 import Lang.Lang exposing (Lang(..))
 import Lang.Token.Common as Common exposing (TokenParser)
-import Markup.Error exposing (..)
 import Markup.ParserTools as ParserTools
 import Markup.Token exposing (Token(..))
 import Parser.Advanced as Parser exposing (Parser)

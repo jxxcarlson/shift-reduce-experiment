@@ -4,7 +4,7 @@ import Dict exposing (Dict)
 import Element exposing (Element, alignLeft, alignRight, centerX, column, el, newTabLink, px, spacing)
 import Element.Background as Background
 import Element.Font as Font
-import Markup.ASTTools as ASTTools
+import Expression.ASTTools as ASTTools
 import Markup.Block exposing (ExprM(..))
 import Render.AST2
 import Render.Math

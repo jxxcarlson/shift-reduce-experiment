@@ -4,9 +4,9 @@ import Block.Parser
 import Block.State
 import Element as E exposing (Element)
 import Element.Font as Font
+import Expression.ASTTools as ASTTools
 import Expression.Parser
 import Lang.Lang exposing (Lang(..))
-import Markup.ASTTools as ASTTools
 import Markup.Block as Block exposing (Block)
 import Markup.Simplify as Simplify
 import Render.Block

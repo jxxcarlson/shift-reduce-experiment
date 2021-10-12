@@ -1,10 +1,10 @@
 module ParserTests exposing (suiteL1, suiteMarkdown, suiteMiniLaTeX)
 
 import Expect
+import Expression.AST exposing (Expr(..))
 import Expression.Parser exposing (run)
 import Lang.Lang exposing (Lang(..))
 import Markup.API as API
-import Markup.AST exposing (Expr(..))
 import Markup.Simplify as Simplify exposing (BlockS(..), ExprS(..))
 import Test exposing (..)
 

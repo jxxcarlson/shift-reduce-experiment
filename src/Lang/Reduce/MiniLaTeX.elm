@@ -1,7 +1,7 @@
 module Lang.Reduce.MiniLaTeX exposing (recoverFromError, reduce, reduceFinal)
 
 import Either exposing (Either(..))
-import Markup.AST as AST exposing (Expr)
+import Expression.AST as AST exposing (Expr)
 import Markup.Common exposing (Step(..))
 import Markup.Debugger exposing (debug1)
 import Markup.Stack as Stack

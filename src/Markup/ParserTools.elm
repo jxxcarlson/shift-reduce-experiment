@@ -6,7 +6,7 @@ module Markup.ParserTools exposing
     , textWithEndSymbol
     )
 
-import Markup.Error exposing (Context, Problem(..))
+import Expression.Error exposing (Context, Problem(..))
 import Parser.Advanced as Parser exposing ((|.), (|=))
 
 

@@ -1,4 +1,4 @@
-module Markup.Error exposing (Context(..), ErrorData, Problem(..))
+module Expression.Error exposing (Context(..), ErrorData, Problem(..))
 
 import Parser.Advanced
 

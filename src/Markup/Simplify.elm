@@ -1,9 +1,9 @@
 module Markup.Simplify exposing (BlockS(..), ExprS(..), TokenS(..), blocks, expressions, stack)
 
 import Either exposing (Either)
-import Markup.AST exposing (Expr(..))
+import Expression.AST exposing (Expr(..))
+import Expression.Error exposing (ErrorData)
 import Markup.Block exposing (Block(..), ExprM(..))
-import Markup.Error exposing (ErrorData)
 import Markup.Token as Token exposing (Token)
 
 

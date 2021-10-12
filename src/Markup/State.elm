@@ -1,7 +1,7 @@
 module Markup.State exposing (State)
 
 import Either exposing (Either)
-import Markup.AST exposing (Expr)
+import Expression.AST exposing (Expr)
 import Markup.Token exposing (Token)
 
 

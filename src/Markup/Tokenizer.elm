@@ -1,10 +1,10 @@
 module Markup.Tokenizer exposing (get)
 
+import Expression.Error exposing (..)
 import Lang.Lang exposing (Lang(..))
 import Lang.Token.L1 as L1
 import Lang.Token.Markdown as Markdown
 import Lang.Token.MiniLaTeX as MiniLaTeX
-import Markup.Error exposing (..)
 import Markup.ParserTools as ParserTools
 import Markup.Token exposing (Token(..))
 import Parser.Advanced as Parser exposing (Parser)
