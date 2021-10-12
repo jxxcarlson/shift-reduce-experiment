@@ -1,4 +1,4 @@
-module Markup.Expr exposing (parseExpr, parseToBlock, run)
+module Expression.Parser exposing (parseExpr, parseToBlock, run)
 
 import Either
 import Lang.Lang exposing (Lang(..))

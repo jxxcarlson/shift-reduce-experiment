@@ -1,15 +1,15 @@
 module SourceMapTest exposing (suiteSourceMap)
 
 import Expect
+import Expression.Parser
 import Lang.Lang exposing (Lang(..))
 import Markup.Debugger exposing (..)
-import Markup.Expr as Markup
 import Markup.SourceMap as SourceMap
 import Test exposing (..)
 
 
 makeBlock lang id str =
-    Markup.parseToBlock lang id str
+    Expression.Parser.parseToBlock lang id str
 
 
 block1 =

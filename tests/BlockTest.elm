@@ -1,14 +1,14 @@
 module BlockTest exposing (suiteBlock)
 
 import Expect
+import Expression.Parser
 import Lang.Lang exposing (Lang(..))
 import Markup.Block exposing (Block(..), ExprM(..))
-import Markup.Expr as Markup
 import Test exposing (..)
 
 
 blockTest lang id firstLine str =
-    Markup.parseToBlock lang id firstLine str
+    Expression.Parser.parseToBlock lang id firstLine str
 
 
 suiteBlock : Test

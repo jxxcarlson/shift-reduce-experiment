@@ -4,10 +4,10 @@ import Block.Parser
 import Block.State
 import Element as E exposing (Element)
 import Element.Font as Font
+import Expression.Parser
 import Lang.Lang exposing (Lang(..))
 import Markup.ASTTools as ASTTools
 import Markup.Block as Block exposing (Block)
-import Markup.Expr as Markup
 import Markup.Simplify as Simplify
 import Render.Block
 import Render.Settings
@@ -36,7 +36,7 @@ parse lang generation lines =
         state =
             Block.Parser.run lang generation lines
     in
-    { ast = List.map (Block.map (Markup.parseExpr lang)) state.committed, accumulator = state.accumulator }
+    { ast = List.map (Block.map (Expression.Parser.parseExpr lang)) state.committed, accumulator = state.accumulator }
 
 
 {-| -}
