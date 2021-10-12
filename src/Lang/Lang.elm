@@ -1,4 +1,4 @@
-module Markup.Lang exposing (Lang(..))
+module Lang.Lang exposing (Lang(..))
 
 
 type Lang

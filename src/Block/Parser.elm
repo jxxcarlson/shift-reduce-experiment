@@ -2,9 +2,9 @@ module Block.Parser exposing (run)
 
 import Block.Library
 import Block.State exposing (State)
+import Lang.Lang exposing (Lang(..))
 import List.Extra
 import Markup.Debugger exposing (debug2, debug3)
-import Markup.Lang exposing (Lang(..))
 
 
 

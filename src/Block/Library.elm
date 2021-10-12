@@ -12,10 +12,9 @@ import Block.Line exposing (BlockOption(..), LineData, LineType(..))
 import Block.Markdown.Line
 import Block.MiniLaTeX.Line
 import Block.State exposing (Accumulator, State)
-import Markup.AST as AST
+import Lang.Lang exposing (Lang(..))
 import Markup.Block exposing (SBlock(..))
 import Markup.Debugger exposing (debug1, debug2, debug3)
-import Markup.Lang exposing (Lang(..))
 import Markup.ParserTools
 import Parser.Advanced
 import Render.MathMacro

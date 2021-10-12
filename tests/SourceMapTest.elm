@@ -1,9 +1,9 @@
 module SourceMapTest exposing (suiteSourceMap)
 
 import Expect
+import Lang.Lang exposing (Lang(..))
 import Markup.Debugger exposing (..)
 import Markup.Expr as Markup
-import Markup.Lang exposing (Lang(..))
 import Markup.SourceMap as SourceMap
 import Test exposing (..)
 

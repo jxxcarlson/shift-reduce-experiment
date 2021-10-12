@@ -1,5 +1,7 @@
-module Lang.L1 exposing (codeParser, functionNameParser)
+module Lang.Token.L1 exposing (tokenParser)
 
+import Lang.Lang exposing (Lang(..))
+import Lang.Token.Common as Common
 import Markup.Error exposing (..)
 import Markup.ParserTools as ParserTools
 import Markup.Token exposing (Token(..))
@@ -8,6 +10,16 @@ import Parser.Advanced as Parser exposing (Parser)
 
 type alias TokenParser =
     Parser Context Problem Token
+
+
+tokenParser start =
+    Parser.oneOf
+        [ Common.textParser L1 start
+        , Common.mathParser start
+        , codeParser start
+        , functionNameParser start
+        , Common.symbolParser start ']'
+        ]
 
 
 codeParser : Int -> TokenParser

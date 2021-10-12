@@ -1,11 +1,7 @@
-module Lang.Markdown exposing
-    ( boldItalicTextParser
-    , imageParser
-    , italicBoldTextParser
-    , linkParser
-    , markedTextParser
-    )
+module Lang.Token.Markdown exposing (tokenParser)
 
+import Lang.Lang exposing (Lang(..))
+import Lang.Token.Common as Common
 import Markup.Error exposing (..)
 import Markup.ParserTools as ParserTools
 import Markup.Token exposing (Token(..))
@@ -14,6 +10,20 @@ import Parser.Advanced as Parser exposing ((|.), (|=), Parser)
 
 type alias TokenParser =
     Parser Context Problem Token
+
+
+tokenParser start =
+    Parser.oneOf
+        [ linkParser start
+        , imageParser start
+        , boldItalicTextParser start
+        , italicBoldTextParser start
+        , markedTextParser start "strong" '*' '*'
+        , markedTextParser start "italic" '_' '_'
+        , markedTextParser start "code" '`' '`'
+        , markedTextParser start "math" '$' '$'
+        , Common.textParser Markdown start
+        ]
 
 
 markedTextParser : Int -> String -> Char -> Char -> TokenParser

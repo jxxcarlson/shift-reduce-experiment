@@ -2,8 +2,8 @@ module BlockParserTest exposing (suiteL1BlockParser)
 
 import Block.Parser
 import Expect
+import Lang.Lang exposing (Lang(..))
 import Markup.Block exposing (SBlock(..))
-import Markup.Lang exposing (Lang(..))
 import Test exposing (..)
 
 

@@ -1,6 +1,7 @@
 module Markup.Expr exposing (parseExpr, parseToBlock, run)
 
 import Either
+import Lang.Lang exposing (Lang(..))
 import List.Extra
 import Markup.AST as AST exposing (Expr)
 import Markup.Block as Block exposing (Block)
@@ -8,7 +9,6 @@ import Markup.Common exposing (Step(..), loop)
 import Markup.Debugger exposing (..)
 import Markup.Error exposing (ErrorData, Problem(..))
 import Markup.L1 as L1
-import Markup.Lang exposing (Lang(..))
 import Markup.Markdown as Markdown
 import Markup.MiniLaTeX as MiniLaTeX
 import Markup.State exposing (State)
