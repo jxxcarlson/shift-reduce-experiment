@@ -3,8 +3,7 @@ module Markup.MiniLaTeX exposing (recoverFromError, reduce, reduceFinal)
 import Either exposing (Either(..))
 import Markup.AST as AST exposing (Expr)
 import Markup.Common exposing (Step(..))
-import Markup.Debugger exposing (debug1, debug2, debug3, debug4)
-import Markup.Simplify as Simplify
+import Markup.Debugger exposing (debug1)
 import Markup.Stack as Stack
 import Markup.State exposing (State)
 import Markup.Token as Token exposing (Token(..))
@@ -12,10 +11,6 @@ import Markup.Token as Token exposing (Token(..))
 
 reduceFinal : State -> State
 reduceFinal state =
-    let
-        _ =
-            debug4 "reduceFinal, STATE" (state.stack |> Simplify.stack)
-    in
     case state.stack of
         (Right (AST.Expr name args loc)) :: [] ->
             { state | committed = AST.Expr (transformMacroNames name) (List.reverse args) loc :: state.committed, stack = [] } |> debug1 "FINAL RULE 1"
@@ -112,9 +107,6 @@ recoverFromError state =
         -- fix for macro with argument but no closing right brace
         (Left (Token.Text content loc3)) :: (Left (Symbol "{" loc2)) :: (Left (FunctionName name loc1)) :: rest ->
             let
-                _ =
-                    debug4 "recover, RULE" 1
-
                 loc =
                     { begin = loc1.begin, end = loc3.end }
 
@@ -128,9 +120,6 @@ recoverFromError state =
 
         (Left (Token.Text content loc3)) :: (Left (Symbol "{" loc2)) :: (Right (AST.Expr name exprList loc1)) :: rest ->
             let
-                _ =
-                    debug4 "recover, RULE" 1
-
                 loc =
                     { begin = loc1.begin, end = loc3.end }
 
@@ -144,10 +133,6 @@ recoverFromError state =
 
         -- temporary fix for incomplete macro application
         (Left (Symbol "{" loc2)) :: (Left (FunctionName name loc1)) :: rest ->
-            let
-                _ =
-                    debug4 "recover, RULE" 2
-            in
             Loop { state | committed = AST.Expr "red" [ AST.Text ("\\" ++ name ++ "{??}") { begin = loc1.begin, end = loc2.end } ] { begin = loc1.begin, end = loc2.end } :: state.committed, stack = rest }
 
         -- commit text at the top of the stack
@@ -168,10 +153,6 @@ recoverFromError state =
         --            , committed = AST.Expr "red" [ AST.Text content loc1 ] loc1 :: tstate.committed
         --        }
         (Left (Symbol "{" loc1)) :: (Left (Token.Text _ _)) :: (Left (Symbol "{" _)) :: _ ->
-            let
-                _ =
-                    debug4 "recover, RULE" 4
-            in
             Loop
                 { state
                     | stack = Left (Symbol "}" loc1) :: state.stack
@@ -180,13 +161,6 @@ recoverFromError state =
                 }
 
         _ ->
-            let
-                _ =
-                    debug4 "recover, RULE 5" (state.stack |> Simplify.stack)
-
-                _ =
-                    debug1 "STACK in branch _ of RECOVER" (state.stack |> Simplify.stack)
-            in
             Done
                 ({ state
                     | stack = Left (Symbol "}" { begin = state.scanPointer, end = state.scanPointer + 1 }) :: state.stack
@@ -195,18 +169,3 @@ recoverFromError state =
                     |> reduce
                     |> (\st -> { st | committed = List.reverse st.committed })
                 )
-
-
-stackBottom : List (Either Token Expr) -> Maybe (Either Token Expr)
-stackBottom stack =
-    List.head (List.reverse stack)
-
-
-scanPointerOfItem : Either Token Expr -> Maybe Int
-scanPointerOfItem item =
-    case item of
-        Left token ->
-            Just (Token.startPositionOf token)
-
-        Right _ ->
-            Nothing

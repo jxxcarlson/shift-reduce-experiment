@@ -1,4 +1,4 @@
-module APITest exposing (..)
+module APITest exposing (parseMiniLaTeX, suiteAPITestMiniLaTeX)
 
 import Block.State
 import Dict

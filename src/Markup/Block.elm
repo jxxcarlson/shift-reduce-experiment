@@ -1,4 +1,4 @@
-module Markup.Block exposing (..)
+module Markup.Block exposing (Block(..), ExprM(..), Meta, SBlock(..), exprMToExpr, exprToExprM, make, map, mapMeta)
 
 --( Block(..)
 --, ExpressionMeta

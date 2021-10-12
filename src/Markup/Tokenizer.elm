@@ -2,12 +2,11 @@ module Markup.Tokenizer exposing (get)
 
 import Lang.L1
 import Lang.Markdown
-import Markup.Debugger exposing (..)
 import Markup.Error exposing (..)
 import Markup.Lang exposing (Lang(..))
 import Markup.ParserTools as ParserTools
 import Markup.Token exposing (Token(..))
-import Parser.Advanced as Parser exposing ((|.), (|=), Parser)
+import Parser.Advanced as Parser exposing (Parser)
 
 
 {-|

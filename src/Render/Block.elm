@@ -118,11 +118,6 @@ indent g s a textList =
         (List.map (renderBlock g s a) textList)
 
 
-simpleElement : List (Attribute msg) -> Int -> Settings -> Block.State.Accumulator -> List Block -> Element msg
-simpleElement formatList g s a blocks =
-    Element.paragraph formatList (List.map (renderBlock g s a) (debug3 "XX, block in quotation" blocks))
-
-
 makeId : List Block -> Element.Attribute msg
 makeId blockList =
     Utility.elementAttribute "id" (Render.AST2.stringValueOfBlockList blockList |> String.trim |> makeSlug)

@@ -8,7 +8,7 @@ module Markup.Token exposing
     , stringValue
     )
 
-import Markup.Error exposing (Context(..), ErrorData, Problem(..))
+import Markup.Error exposing (ErrorData)
 
 
 type Token

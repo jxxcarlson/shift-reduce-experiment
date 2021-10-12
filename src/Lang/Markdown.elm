@@ -7,7 +7,6 @@ module Lang.Markdown exposing
     )
 
 import Markup.Error exposing (..)
-import Markup.L1 exposing (makeLoc)
 import Markup.ParserTools as ParserTools
 import Markup.Token exposing (Token(..))
 import Parser.Advanced as Parser exposing ((|.), (|=), Parser)
