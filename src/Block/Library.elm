@@ -218,10 +218,11 @@ createBlockPhase1 state =
 
                 Just _ ->
                     let
+                        -- TODO: think about this
                         errorMessage_ =
                             debug4 "createBlockPhase1 (LT)" (Just { red = "You need to terminate this block (1)", blue = "??" })
                     in
-                    commitBlock { state | errorMessage = errorMessage_ }
+                    commitBlock state
 
         EQ ->
             case state.currentBlock of
@@ -230,10 +231,11 @@ createBlockPhase1 state =
 
                 Just _ ->
                     let
+                        -- TODO: think about this
                         errorMessage_ =
                             debug4 "createBlockPhase1 (EQ)" (Just { red = "You need to terminate this block (2)", blue = "??2" })
                     in
-                    commitBlock { state | errorMessage = errorMessage_ }
+                    commitBlock state
 
         GT ->
             shiftCurrentBlock state
