@@ -33,8 +33,8 @@ renderBlock generation settings accumulator block =
                 (List.map (Render.Text.render generation settings accumulator) textList)
 
         VerbatimBlock name lines _ meta ->
-            if meta.status == BlockIncomplete then
-                renderLinesIncomplete lines
+            if meta.status /= BlockComplete then
+                renderLinesIncomplete name meta.status lines
 
             else
                 case Dict.get name verbatimBlockDict of
@@ -45,8 +45,8 @@ renderBlock generation settings accumulator block =
                         f generation settings accumulator lines
 
         Block name blocks meta ->
-            if meta.status == BlockIncomplete then
-                renderBlocksIncomplete blocks
+            if meta.status /= BlockComplete then
+                renderBlocksIncomplete name meta.status blocks
 
             else
                 case Dict.get name blockDict of
@@ -60,32 +60,41 @@ renderBlock generation settings accumulator block =
             error desc
 
 
-renderBlocksIncomplete : List Block -> Element msg
-renderBlocksIncomplete blocks =
+renderBlocksIncomplete : String -> BlockStatus -> List Block -> Element msg
+renderBlocksIncomplete name status blocks =
     column
         [ Font.family
             [ Font.typeface "Inconsolata"
             , Font.monospace
             ]
         , Font.color codeColor
-        , paddingEach { left = 0, right = 0, top = 0, bottom = 8 }
-        , spacing 6
         ]
-        [ Element.text <| Block.BlockTools.stringValueOfBlockList blocks ]
+        (message name status
+            :: (Element.text <| Block.BlockTools.stringValueOfBlockList blocks)
+            :: []
+        )
 
 
-renderLinesIncomplete : List String -> Element msg
-renderLinesIncomplete lines =
+message : String -> BlockStatus -> Element msg
+message name blockStatus =
+    case blockStatus of
+        BlockComplete ->
+            Element.none
+
+        BlockIncomplete str ->
+            Element.el [ Font.color (Element.rgb 200 0 0), Element.moveDown 12 ] (Element.text <| "Unterminated block " ++ name)
+
+
+renderLinesIncomplete : String -> BlockStatus -> List String -> Element msg
+renderLinesIncomplete name status lines =
     column
         [ Font.family
             [ Font.typeface "Inconsolata"
             , Font.monospace
             ]
         , Font.color codeColor
-        , paddingEach { left = 0, right = 0, top = 0, bottom = 8 }
-        , spacing 6
         ]
-        (List.map (\t -> el [] (text t)) lines)
+        (message name status :: List.map (\t -> el [] (text t)) lines)
 
 
 error str =

@@ -19,7 +19,7 @@ type alias Meta =
 
 
 type BlockStatus
-    = BlockIncomplete
+    = BlockIncomplete String
     | BlockComplete
 
 

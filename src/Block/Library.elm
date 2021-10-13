@@ -17,13 +17,14 @@ import Lang.LineType.Markdown
 import Lang.LineType.MiniLaTeX
 import Markup.Debugger exposing (debug1, debug2, debug4)
 import Markup.ParserTools
+import Markup.Simplify
 import Parser.Advanced
 import Render.MathMacro
 
 
 finalize : State -> State
 finalize state =
-    state |> identity |> finalizePhase2
+    state |> identity |> finalizePhase2 |> deBUG4 "finalize"
 
 
 finalizePhase2 : State -> State
@@ -81,46 +82,68 @@ processLine : Lang -> State -> State
 processLine language state =
     case state.currentLineData.lineType of
         BeginBlock _ _ ->
-            createBlock state
+            let
+                _ =
+                    deBUG4 "BeginBlock (IN)" state
+            in
+            createBlock state |> deBUG1 "BeginBlock (OUT)"
 
         BeginVerbatimBlock _ ->
-            createBlock state
+            let
+                _ =
+                    deBUG4 "BeginVerbatimBlock (IN)" state
+            in
+            createBlock state |> deBUG4 "BeginVerbatimBlock (OUT)"
 
         EndBlock name ->
-            let
+            (let
+                _ =
+                    deBUG4 "EndBlock (IN)" state
+
                 currentlockName =
                     Maybe.andThen Block.BlockTools.sblockName state.currentBlock |> Maybe.withDefault "???"
-            in
-            if name == currentlockName then
+             in
+             if name == currentlockName then
                 commitBlock { state | currentBlock = Maybe.map (Block.BlockTools.mapMeta (\meta -> { meta | status = BlockComplete })) state.currentBlock }
 
-            else
-                commitBlock
-                    { state
-                        | errorMessage =
-                            Just { red = "Oops, the begin and end tags must match", blue = currentlockName ++ " ≠ " ++ name }
-                    }
+             else
+                commitBlock state
+            )
+                |> deBUG1 "EndBlock (OUT)"
 
+        --{ state
+        --    --| errorMessage =
+        --     --   Just { red = "Oops, the begin and end tags must match", blue = currentlockName ++ " ≠ " ++ name }
+        --}
         EndVerbatimBlock name ->
-            let
-                currentlockName =
+            (let
+                _ =
+                    deBUG4 "EndVerbatimBlock (IN)" state
+
+                currentBlockName =
                     Maybe.andThen Block.BlockTools.sblockName state.currentBlock |> Maybe.withDefault "???"
-            in
-            if name == currentlockName then
+             in
+             if name == currentBlockName || name == "$$" && currentBlockName == "math" then
                 commitBlock { state | currentBlock = Maybe.map (Block.BlockTools.mapMeta (\meta -> { meta | status = BlockComplete })) state.currentBlock }
 
-            else
+             else
                 commitBlock
                     { state
                         | errorMessage =
-                            Just { red = "Oops, the begin and end tags must match", blue = currentlockName ++ " ≠ " ++ name }
+                            Just { red = "Oops, the begin and end tags must match", blue = currentBlockName ++ " ≠ " ++ name }
                     }
+            )
+                |> deBUG1 "EndVerbatimBlock (OUT)"
 
         OrdinaryLine ->
-            if state.previousLineData.lineType == BlankLine then
+            (let
+                _ =
+                    deBUG4 "OrdinaryLine (IN)" state
+             in
+             if state.previousLineData.lineType == BlankLine then
                 createBlock state
 
-            else
+             else
                 case compare (level state.currentLineData.indent) (level state.previousLineData.indent) of
                     EQ ->
                         addLineToCurrentBlock state
@@ -135,12 +158,18 @@ processLine language state =
 
                         else
                             state |> commitBlock |> createBlock
+            )
+                |> deBUG1 "OrdinaryLine (OUT)"
 
         VerbatimLine ->
-            if state.previousLineData.lineType == VerbatimLine then
+            (let
+                _ =
+                    deBUG4 "VerbatimLine (IN)" state
+             in
+             if state.previousLineData.lineType == VerbatimLine then
                 addLineToCurrentBlock state
 
-            else
+             else
                 case compare (level state.currentLineData.indent) (level state.previousLineData.indent) of
                     EQ ->
                         addLineToCurrentBlock state
@@ -155,12 +184,18 @@ processLine language state =
 
                         else
                             state |> commitBlock |> createBlock
+            )
+                |> deBUG4 "VerbatimLine (OUT)"
 
         BlankLine ->
-            if state.previousLineData.lineType == BlankLine then
+            (let
+                _ =
+                    deBUG4 "BlankLine (IN)" state
+             in
+             if state.previousLineData.lineType == BlankLine then
                 state
 
-            else
+             else
                 case compare (level state.currentLineData.indent) (level state.previousLineData.indent) of
                     EQ ->
                         addLineToCurrentBlock state
@@ -176,24 +211,61 @@ processLine language state =
                             Just block ->
                                 if state.lang == MiniLaTeX then
                                     state
-                                        |> addErrorMessage
-                                            "You need to terminate this block: "
-                                            ("\\texmacro{begin} \\texarg{" ++ getBlockName block ++ "}")
                                         |> commitBlock
 
                                 else
                                     state |> commitBlock
+            )
+                |> deBUG1 "BlankLine (OUT)"
 
         Problem _ ->
+            let
+                _ =
+                    deBUG4 "Problem" state
+            in
             state
+
+
+deBUG4 label state =
+    let
+        _ =
+            debug4 (label ++ ": line") state.currentLineData
+
+        _ =
+            debug4 (label ++ ": block") state.currentBlock |> Maybe.map Markup.Simplify.sblock
+
+        _ =
+            debug4 (label ++ ": stack") state.stack
+
+        _ =
+            debug4 (label ++ ": committed") (state.committed |> List.map Markup.Simplify.sblock)
+    in
+    state
+
+
+deBUG1 label state =
+    let
+        _ =
+            debug1 (label ++ ": line") state.currentLineData
+
+        _ =
+            debug1 (label ++ ": block") state.currentBlock |> Maybe.map Markup.Simplify.sblock
+
+        _ =
+            debug1 (label ++ ": stack") state.stack
+
+        _ =
+            debug1 (label ++ ": committed") (state.committed |> List.map Markup.Simplify.sblock)
+    in
+    state
 
 
 getBlockName sblock =
     Block.BlockTools.sblockName sblock |> Maybe.withDefault "UNNAMED"
 
 
-addErrorMessage : String -> String -> State -> State
-addErrorMessage red blue state =
+postErrorMessage : String -> String -> State -> State
+postErrorMessage red blue state =
     { state | errorMessage = Just { red = red, blue = blue } }
 
 
@@ -271,7 +343,7 @@ createBlockPhase2 state =
                     Just <|
                         SBlock mark
                             []
-                            { begin = state.index, end = state.index, status = statusIncomplete state.lang, id = String.fromInt state.blockCount, indent = state.currentLineData.indent }
+                            { begin = state.index, end = state.index, status = statusIncomplete state.lang "begin", id = String.fromInt state.blockCount, indent = state.currentLineData.indent }
                 , currentLineData = incrementLevel state.currentLineData -- do this because a block expects subsequent lines to be indented
                 , blockCount = state.blockCount + 1
             }
@@ -282,7 +354,7 @@ createBlockPhase2 state =
                     Just <|
                         SBlock (nibble state.currentLineData.content |> transformHeading)
                             [ SParagraph [ deleteSpaceDelimitedPrefix state.currentLineData.content ] { status = BlockComplete, begin = state.index, end = state.index, id = String.fromInt state.blockCount, indent = state.currentLineData.indent } ]
-                            { begin = state.index, end = state.index, status = statusIncomplete state.lang, id = String.fromInt state.blockCount, indent = state.currentLineData.indent }
+                            { begin = state.index, end = state.index, status = statusIncomplete state.lang "begin", id = String.fromInt state.blockCount, indent = state.currentLineData.indent }
                 , currentLineData = incrementLevel state.currentLineData -- do this because a block expects subsequent lines to be indented
                 , blockCount = state.blockCount + 1
             }
@@ -293,7 +365,7 @@ createBlockPhase2 state =
                     Just <|
                         SBlock kind
                             [ SParagraph [ deleteSpaceDelimitedPrefix state.currentLineData.content ] { status = BlockComplete, begin = state.index, end = state.index, id = String.fromInt state.blockCount, indent = state.currentLineData.indent } ]
-                            { begin = state.index, end = state.index, status = statusIncomplete state.lang, id = String.fromInt state.blockCount, indent = state.currentLineData.indent }
+                            { begin = state.index, end = state.index, status = statusIncomplete state.lang "begin", id = String.fromInt state.blockCount, indent = state.currentLineData.indent }
                 , currentLineData = incrementLevel state.currentLineData -- do this because a block expects subsequent lines to be indented
                 , blockCount = state.blockCount + 1
             }
@@ -304,7 +376,7 @@ createBlockPhase2 state =
                     Just <|
                         SVerbatimBlock mark
                             []
-                            { begin = state.index, end = state.index, status = statusIncomplete state.lang, id = String.fromInt state.blockCount, indent = state.currentLineData.indent }
+                            { begin = state.index, end = state.index, status = statusIncomplete state.lang "begin", id = String.fromInt state.blockCount, indent = state.currentLineData.indent }
                 , currentLineData = incrementLevel state.currentLineData -- do this because a block expects subsequent lines to be indented
                 , inVerbatimBlock = True
                 , verbatimBlockInitialIndent = state.currentLineData.indent + quantumOfIndentation -- account for indentation of succeeding lines
@@ -361,7 +433,7 @@ updateAccumulator sblock1 accumulator =
 
 shiftBlock : SBlock -> State -> State
 shiftBlock block state =
-    { state | stack = block :: state.stack, currentBlock = Nothing } |> debug2 "shiftBlock"
+    { state | stack = block :: state.stack, currentBlock = Nothing }
 
 
 shiftCurrentBlock : State -> State
@@ -371,7 +443,7 @@ shiftCurrentBlock state =
             state
 
         Just block ->
-            shiftBlock block state |> debug2 "shiftCURRENTBlock"
+            shiftBlock block state |> deBUG4 "shiftCurrentBlock"
 
 
 addLineToCurrentBlock : State -> State
@@ -392,15 +464,15 @@ addLineToCurrentBlock state =
         _ ->
             state
     )
-        |> debug2 "addLineToCurrentBlock"
+        |> deBUG1 "addLineToCurrentBlock"
 
 
 
 -- HELPERS
 
 
-statusIncomplete : Lang -> BlockStatus
-statusIncomplete lang =
+statusIncomplete : Lang -> String -> BlockStatus
+statusIncomplete lang message =
     case lang of
         L1 ->
             BlockComplete
@@ -409,17 +481,19 @@ statusIncomplete lang =
             BlockComplete
 
         MiniLaTeX ->
-            BlockIncomplete
+            BlockIncomplete message
 
 
 addLineToBlocks : Int -> LineData -> List SBlock -> List SBlock
 addLineToBlocks index lineData blocks =
     case blocks of
         (SParagraph lines meta) :: rest ->
+            -- there was a leading paragraph, so we can prepend the line lineData.content
             SParagraph (lineData.content :: lines) { meta | end = index } :: rest
 
         rest ->
             -- TODO: the id field is questionable
+            -- otherwise we prepend a paragraph with the given line
             SParagraph [ lineData.content ] { status = BlockComplete, begin = index, end = index, id = String.fromInt index, indent = lineData.indent } :: rest
 
 

@@ -76,7 +76,7 @@ make id firstLine str =
         lines =
             String.lines str
     in
-    SParagraph lines { begin = firstLine, end = firstLine + List.length lines, indent = 0, id = id, status = BlockIncomplete }
+    SParagraph lines { begin = firstLine, end = firstLine + List.length lines, indent = 0, id = id, status = BlockComplete }
 
 
 {-|

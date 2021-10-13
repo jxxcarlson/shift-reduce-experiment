@@ -1,6 +1,6 @@
-module Markup.Simplify exposing (BlockS(..), ExprS(..), TokenS(..), blocks, expressions, stack)
+module Markup.Simplify exposing (BlockS(..), ExprS(..), TokenS(..), blocks, expressions, sblock, stack)
 
-import Block.Block exposing (Block(..), ExprM(..))
+import Block.Block exposing (Block(..), BlockStatus, ExprM(..), SBlock(..))
 import Either exposing (Either)
 import Expression.AST exposing (Expr(..))
 import Expression.Error exposing (ErrorData)
@@ -90,6 +90,29 @@ simplify block =
 
         BError str ->
             BErrorS str
+
+
+sblock : SBlock -> SBlockS
+sblock block =
+    case block of
+        SParagraph strings meta ->
+            SParagraphS strings meta.status
+
+        SVerbatimBlock str strList meta ->
+            SVerbatimBlockS str strList meta.status
+
+        SBlock name blocks_ meta ->
+            SBlockS name (List.map sblock blocks_) meta.status
+
+        SError str ->
+            SErrorS str
+
+
+type SBlockS
+    = SParagraphS (List String) BlockStatus
+    | SVerbatimBlockS String (List String) BlockStatus
+    | SBlockS String (List SBlockS) BlockStatus
+    | SErrorS String
 
 
 simplifyToExprS : ExprM -> ExprS

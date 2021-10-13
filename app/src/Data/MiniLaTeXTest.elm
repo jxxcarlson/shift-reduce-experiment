@@ -1,25 +1,11 @@
 module Data.MiniLaTeXTest exposing (text)
 
 
-text2 =
-    """
-
-Test $x^2
-
-$$
-   x^2
-
-This is also a test.  \\italic{foo
-
-
-\\href{1}{2
-
-\\foo{1}{2}{3
-
-"""
-
-
 text =
+    ""
+
+
+text2 =
     """
 \\title{Notes on Quantum Field Theory}
 
