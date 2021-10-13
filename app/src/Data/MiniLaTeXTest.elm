@@ -1,11 +1,11 @@
 module Data.MiniLaTeXTest exposing (text)
 
 
-text =
+text1 =
     ""
 
 
-text1 =
+text =
     """
 \\title{Notes on Quantum Field Theory}
 

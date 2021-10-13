@@ -45,13 +45,13 @@ insertErrorMessage state =
 
         Just message ->
             { state
-                | committed = SParagraph [ errorMessage state.lang message ] { status = BlockComplete, begin = 0, end = 0, id = "error", indent = 0 } :: state.committed
+                | committed = SParagraph [ renderErrorMessage state.lang message ] { status = BlockComplete, begin = 0, end = 0, id = "error", indent = 0 } :: state.committed
                 , errorMessage = Nothing
             }
 
 
-errorMessage : Lang -> { red : String, blue : String } -> String
-errorMessage lang msg =
+renderErrorMessage : Lang -> { red : String, blue : String } -> String
+renderErrorMessage lang msg =
     case lang of
         L1 ->
             "[red " ++ msg.red ++ "]" ++ "[blue" ++ msg.blue ++ "]"
@@ -152,7 +152,30 @@ processLine language state =
              else
                 case compare (level state.currentLineData.indent) (levelOfCurrentBlock state) of
                     EQ ->
-                        state |> postErrorMessage "Error, current line has same level as block." "I'll go ahead and add it to your block" |> addLineToCurrentBlock
+                        case state.currentBlock of
+                            Nothing ->
+                                state
+
+                            Just currentBlock ->
+                                case currentBlock of
+                                    SParagraph lines meta ->
+                                        state |> addLineToCurrentBlock
+
+                                    SBlock _ _ _ ->
+                                        state
+                                            |> postErrorMessage "Error, current line has same level as the current block. I'll go ahead and add it to your block"
+                                                state.currentLineData.content
+                                            |> addLineToCurrentBlock
+
+                                    SVerbatimBlock _ _ _ ->
+                                        state
+                                            |> postErrorMessage "Error, current line has same level as the current block. I'll go ahead and add it to your block"
+                                                state.currentLineData.content
+                                            |> addLineToCurrentBlock
+
+                                    SError _ ->
+                                        -- TODO: what should we do here?
+                                        state
 
                     GT ->
                         state |> addLineToCurrentBlock |> debug2 "Add ordinary line to current block (GT)"
