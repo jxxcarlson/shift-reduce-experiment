@@ -6,7 +6,6 @@ import Lang.Lang exposing (Lang(..))
 import Lang.Token.L1 as L1
 import Lang.Token.Markdown as Markdown
 import Lang.Token.MiniLaTeX as MiniLaTeX
-import Markup.ParserTools as ParserTools
 import Parser.Advanced as Parser exposing (Parser)
 
 
@@ -31,18 +30,6 @@ get lang start input =
 
 --  Err [{ col = 1, contextStack = [], problem = ExpectingSymbol "$", row = 2 }]
 --|> debug2 "Tokenizer.get"
-
-
-l1LanguageChars =
-    [ '[', ']', '`', '$' ]
-
-
-miniLaTeXLanguageChars =
-    [ '{', '}', '\\', '$' ]
-
-
-markdownLanguageChars =
-    [ '*', '_', '`', '$', '#' ]
 
 
 type alias TokenParser =

@@ -2,9 +2,9 @@ module Block.Parser exposing (run)
 
 import Block.Library
 import Block.State exposing (State)
-import Lang.Lang exposing (Lang(..))
+import Lang.Lang exposing (Lang)
 import List.Extra
-import Markup.Debugger exposing (debug1, debug2, debug3, debug4)
+import Markup.Debugger exposing (debug2, debug3)
 
 
 
@@ -29,13 +29,6 @@ run language generation input =
 -}
 nextStep : Lang -> State -> Step State State
 nextStep lang state =
-    let
-        _ =
-            debug1 "Current block" state.currentBlock
-
-        _ =
-            debug1 "Committed" state.committed
-    in
     if state.index >= state.lastIndex then
         finalizeOrRecoverFromError state
 

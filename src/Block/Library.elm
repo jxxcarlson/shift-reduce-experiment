@@ -14,7 +14,7 @@ import Lang.Lang exposing (Lang(..))
 import Lang.LineType.L1
 import Lang.LineType.Markdown
 import Lang.LineType.MiniLaTeX
-import Markup.Debugger exposing (debug1, debug2, debug3, debug4)
+import Markup.Debugger exposing (debug1, debug2, debug4)
 import Markup.ParserTools
 import Parser.Advanced
 import Render.MathMacro
@@ -42,10 +42,6 @@ insertErrorMessage state =
             state
 
         Just message ->
-            let
-                _ =
-                    debug4 "insertErrorMessage" message
-            in
             { state
                 | committed = SParagraph [ errorMessage state.lang message ] { begin = 0, end = 0, id = "error", indent = 0 } :: state.committed
                 , errorMessage = Nothing
@@ -89,18 +85,10 @@ processLine language state =
         BeginVerbatimBlock _ ->
             createBlock state
 
-        EndBlock name ->
-            let
-                _ =
-                    debug4 "EndBlock" name
-            in
+        EndBlock _ ->
             commitBlock (insertErrorMessage state)
 
-        EndVerbatimBlock name ->
-            let
-                _ =
-                    debug4 "EndVerbatimBlock" name
-            in
+        EndVerbatimBlock _ ->
             commitBlock (insertErrorMessage state)
 
         OrdinaryLine ->
@@ -110,24 +98,12 @@ processLine language state =
             else
                 case compare (level state.currentLineData.indent) (level state.previousLineData.indent) of
                     EQ ->
-                        let
-                            _ =
-                                debug1 "OrdinaryLine, EQ" state.currentBlock
-                        in
                         addLineToCurrentBlock state
 
                     GT ->
-                        let
-                            _ =
-                                debug1 "OrdinaryLine, GT" state.currentBlock
-                        in
                         createBlock state |> debug2 "CREATE BLOCK with ordinary line (GT)"
 
                     LT ->
-                        let
-                            _ =
-                                debug1 "OrdinaryLine, LT" ( state.previousLineData.indent, state.currentLineData.indent, state.currentBlock )
-                        in
                         if state.verbatimBlockInitialIndent == state.previousLineData.indent then
                             addLineToCurrentBlock { state | errorMessage = Just { red = "Below: you forgot to indent the math text. This is needed for all blocks.  Also, remember the trailing dollar signs", blue = "" } }
                                 |> insertErrorMessage
@@ -148,10 +124,6 @@ processLine language state =
                         addLineToCurrentBlock state
 
                     LT ->
-                        let
-                            _ =
-                                debug1 "OrdinaryLine, LT" ( state.previousLineData.indent, state.currentLineData.indent, state.currentBlock )
-                        in
                         if state.verbatimBlockInitialIndent == state.previousLineData.indent then
                             addLineToCurrentBlock { state | errorMessage = Just { red = "Below: you forgot to indent the math text. This is needed for all blocks.  Also, remember the trailing dollar signs", blue = "" } }
                                 |> insertErrorMessage
@@ -219,7 +191,7 @@ createBlockPhase1 state =
                 Nothing ->
                     commitBlock state
 
-                Just block ->
+                Just _ ->
                     let
                         errorMessage_ =
                             debug4 "createBlockPhase1 (LT)" (Just { red = "You need to terminate this block (1)", blue = "??" })
@@ -231,7 +203,7 @@ createBlockPhase1 state =
                 Nothing ->
                     commitBlock state
 
-                Just block ->
+                Just _ ->
                     let
                         errorMessage_ =
                             debug4 "createBlockPhase1 (EQ)" (Just { red = "You need to terminate this block (2)", blue = "??2" })
@@ -365,10 +337,6 @@ shiftCurrentBlock state =
 
 addLineToCurrentBlock : State -> State
 addLineToCurrentBlock state =
-    let
-        _ =
-            debug1 "addLineToCurrentBlock, currentBlock" state.currentBlock
-    in
     (case state.currentBlock of
         Nothing ->
             state
