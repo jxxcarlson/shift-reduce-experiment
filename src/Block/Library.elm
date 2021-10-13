@@ -138,7 +138,7 @@ processLine language state =
                                     SVerbatimBlock _ _ _ ->
                                         state
                                             |> postErrorMessage "Error, current line has same level as the current block. I'll go ahead and add it to your block"
-                                                "Hmmmm..."
+                                                "Hmmmm......."
                                             |> addLineToCurrentBlock
 
                                     SError _ ->
@@ -231,17 +231,17 @@ endBlock name state =
         _ =
             deBUG4 "EndBlock (IN)" state
 
-        currentlockName =
+        currentBlockName =
             Maybe.andThen Block.BlockTools.sblockName state.currentBlock |> Maybe.withDefault "???" |> debug3 "CURRENT BLOCK NAME"
 
         _ =
             debug3 "END TAG" name
      in
-     if name == currentlockName then
+     if name == currentBlockName then
         commitBlock { state | currentBlock = Maybe.map (Block.BlockTools.mapMeta (\meta -> { meta | status = BlockComplete })) state.currentBlock }
 
      else
-        commitBlock state
+        { state | currentBlock = Maybe.map (Block.BlockTools.mapMeta (\meta -> { meta | status = MismatchedTags currentBlockName name })) state.currentBlock } |> commitBlock
     )
         |> deBUG4 "EndBlock (OUT)"
 

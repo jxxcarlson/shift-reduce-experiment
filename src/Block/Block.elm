@@ -25,6 +25,7 @@ dummyMeta =
 
 type BlockStatus
     = BlockIncomplete String
+    | MismatchedTags String String
     | BlockComplete
 
 

@@ -86,8 +86,11 @@ message name blockStatus =
         BlockComplete ->
             Element.none
 
+        MismatchedTags first second ->
+            Element.el [ Font.color (Element.rgb 180 0 0) ] (Element.text <| "Mismatched tags: " ++ first ++ " ≠ " ++ second)
+
         BlockIncomplete str ->
-            Element.el [ Font.color (Element.rgb 200 0 0) ] (Element.text <| "Unterminated block: " ++ name)
+            Element.el [ Font.color (Element.rgb 180 0 0) ] (Element.text <| "Unterminated block: " ++ name)
 
 
 renderLinesIncomplete : String -> BlockStatus -> List String -> Element msg
