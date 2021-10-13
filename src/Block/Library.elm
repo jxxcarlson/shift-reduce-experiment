@@ -15,7 +15,7 @@ import Lang.Lang exposing (Lang(..))
 import Lang.LineType.L1
 import Lang.LineType.Markdown
 import Lang.LineType.MiniLaTeX
-import Markup.Debugger exposing (debug1, debug2, debug4)
+import Markup.Debugger exposing (debug1, debug2, debug3, debug4)
 import Markup.ParserTools
 import Markup.Simplify
 import Parser.Advanced
@@ -98,10 +98,16 @@ processLine language state =
         EndBlock name ->
             (let
                 _ =
+                    debug3 "EndBlock, name" name
+
+                _ =
                     deBUG4 "EndBlock (IN)" state
 
                 currentlockName =
-                    Maybe.andThen Block.BlockTools.sblockName state.currentBlock |> Maybe.withDefault "???"
+                    Maybe.andThen Block.BlockTools.sblockName state.currentBlock |> Maybe.withDefault "???" |> debug3 "CURRENT BLOCK NAME"
+
+                _ =
+                    debug3 "END TAG" name
              in
              if name == currentlockName then
                 commitBlock { state | currentBlock = Maybe.map (Block.BlockTools.mapMeta (\meta -> { meta | status = BlockComplete })) state.currentBlock }
@@ -149,7 +155,7 @@ processLine language state =
                         state |> postErrorMessage "Error, current line has same level as block." "I'll go ahead and add it to your block" |> addLineToCurrentBlock
 
                     GT ->
-                        createBlock state |> debug2 "CREATE BLOCK with ordinary line (GT)"
+                        state |> addLineToCurrentBlock |> debug2 "Add ordinary line to current block (GT)"
 
                     LT ->
                         if state.verbatimBlockInitialIndent == state.previousLineData.indent then
@@ -294,7 +300,7 @@ createBlock state =
 
 createBlockPhase1 : State -> State
 createBlockPhase1 state =
-    case compare (level state.currentLineData.indent) (level state.previousLineData.indent) of
+    case compare (level state.currentLineData.indent) (levelOfCurrentBlock state) of
         LT ->
             case state.currentBlock of
                 Nothing ->

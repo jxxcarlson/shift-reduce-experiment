@@ -1,13 +1,13 @@
 module Render.Block exposing (render)
 
 import Block.Block exposing (Block(..), BlockStatus(..))
-import Block.BlockTools
+import Block.BlockTools as Block
 import Block.State
 import Dict exposing (Dict)
 import Element exposing (..)
 import Element.Background as Background
 import Element.Font as Font
-import Markup.Debugger exposing (debug3)
+import Markup.Debugger exposing (debug1, debug3)
 import Render.Math
 import Render.MathMacro
 import Render.Settings exposing (Settings)
@@ -26,6 +26,10 @@ render generation settings accumulator blocks =
 
 renderBlock : Int -> Settings -> Block.State.Accumulator -> Block -> Element msg
 renderBlock generation settings accumulator block =
+    let
+        _ =
+            debug1 "renderBlock, block status" (Block.getMeta block |> .status)
+    in
     case block of
         Paragraph textList _ ->
             paragraph
@@ -71,7 +75,7 @@ renderBlocksIncomplete name status blocks =
         , spacing 8
         ]
         (message name status
-            :: (Element.text <| Block.BlockTools.stringValueOfBlockList blocks)
+            :: (Element.text <| Block.stringValueOfBlockList blocks)
             :: []
         )
 
@@ -93,7 +97,7 @@ renderLinesIncomplete name status lines =
             [ Font.typeface "Inconsolata"
             , Font.monospace
             ]
-        , Font.color codeColor
+        , Font.color (Element.rgb 0 0 200)
         , spacing 8
         ]
         (message name status :: List.map (\t -> el [] (text t)) lines)
@@ -169,7 +173,7 @@ indent g s a textList =
 
 makeId : List Block -> Element.Attribute msg
 makeId blockList =
-    Utility.elementAttribute "id" (Block.BlockTools.stringValueOfBlockList blockList |> String.trim |> makeSlug)
+    Utility.elementAttribute "id" (Block.stringValueOfBlockList blockList |> String.trim |> makeSlug)
 
 
 makeSlug : String -> String
