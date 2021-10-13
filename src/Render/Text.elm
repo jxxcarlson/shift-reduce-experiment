@@ -6,7 +6,6 @@ import Element exposing (Element, alignLeft, alignRight, centerX, column, el, ne
 import Element.Background as Background
 import Element.Font as Font
 import Expression.ASTTools as ASTTools
-import Render.AST2
 import Render.Math
 import Render.MathMacro
 import Render.Settings exposing (Settings)
@@ -284,7 +283,7 @@ tocLink : List ExprM -> Element msg
 tocLink textList =
     let
         t =
-            Render.AST2.stringValueOfList textList
+            ASTTools.stringValueOfList textList
     in
     Element.link [] { url = internalLink t, label = Element.text t }
 
@@ -327,7 +326,7 @@ makeSlug str =
 
 makeId : List ExprM -> Element.Attribute msg
 makeId textList =
-    Utility.elementAttribute "id" (Render.AST2.stringValueOfList textList |> String.trim |> makeSlug)
+    Utility.elementAttribute "id" (ASTTools.stringValueOfList textList |> String.trim |> makeSlug)
 
 
 heading1 g s a textList =
@@ -367,7 +366,7 @@ skip g s a textList =
 
         f : String -> Element msg
         f str =
-            column [ Element.spacingXY 0 (numVal str) ] [ Element.text "-" ]
+            column [ Element.spacingXY 0 (numVal str) ] [ Element.text "" ]
     in
     macro1 f g s a textList
 

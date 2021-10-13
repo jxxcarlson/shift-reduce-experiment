@@ -1,6 +1,7 @@
 module Markup.API exposing (Settings, compile, defaultSettings, getTitle, p, parse, prepareForExport, render, renderFancy, rl, tableOfContents)
 
 import Block.Block as Block exposing (Block)
+import Block.BlockTools
 import Block.Parser
 import Block.State
 import Element as E exposing (Element)
@@ -36,7 +37,7 @@ parse lang generation lines =
         state =
             Block.Parser.run lang generation lines
     in
-    { ast = List.map (Block.map (Expression.Parser.parseExpr lang)) state.committed, accumulator = state.accumulator }
+    { ast = List.map (Block.BlockTools.map (Expression.Parser.parseExpr lang)) state.committed, accumulator = state.accumulator }
 
 
 {-| -}

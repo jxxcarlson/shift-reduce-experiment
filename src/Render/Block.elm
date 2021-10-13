@@ -1,13 +1,13 @@
 module Render.Block exposing (render)
 
-import Block.Block exposing (Block(..))
+import Block.Block exposing (Block(..), BlockStatus(..))
+import Block.BlockTools
 import Block.State
 import Dict exposing (Dict)
 import Element exposing (..)
 import Element.Background as Background
 import Element.Font as Font
 import Markup.Debugger exposing (debug3)
-import Render.AST2
 import Render.Math
 import Render.MathMacro
 import Render.Settings exposing (Settings)
@@ -32,24 +32,60 @@ renderBlock generation settings accumulator block =
                 []
                 (List.map (Render.Text.render generation settings accumulator) textList)
 
-        VerbatimBlock name lines _ _ ->
-            case Dict.get name verbatimBlockDict of
-                Nothing ->
-                    error ("Unimplemented verbatim block: " ++ name)
+        VerbatimBlock name lines _ meta ->
+            if meta.status == BlockIncomplete then
+                renderLinesIncomplete lines
 
-                Just f ->
-                    f generation settings accumulator lines
+            else
+                case Dict.get name verbatimBlockDict of
+                    Nothing ->
+                        error ("Unimplemented verbatim block: " ++ name)
 
-        Block name blocks _ ->
-            case Dict.get name blockDict of
-                Nothing ->
-                    error ("Unimplemented block: " ++ name)
+                    Just f ->
+                        f generation settings accumulator lines
 
-                Just f ->
-                    f generation settings accumulator blocks
+        Block name blocks meta ->
+            if meta.status == BlockIncomplete then
+                renderBlocksIncomplete blocks
+
+            else
+                case Dict.get name blockDict of
+                    Nothing ->
+                        error ("Unimplemented block: " ++ name)
+
+                    Just f ->
+                        f generation settings accumulator blocks
 
         BError desc ->
             error desc
+
+
+renderBlocksIncomplete : List Block -> Element msg
+renderBlocksIncomplete blocks =
+    column
+        [ Font.family
+            [ Font.typeface "Inconsolata"
+            , Font.monospace
+            ]
+        , Font.color codeColor
+        , paddingEach { left = 0, right = 0, top = 0, bottom = 8 }
+        , spacing 6
+        ]
+        [ Element.text <| Block.BlockTools.stringValueOfBlockList blocks ]
+
+
+renderLinesIncomplete : List String -> Element msg
+renderLinesIncomplete lines =
+    column
+        [ Font.family
+            [ Font.typeface "Inconsolata"
+            , Font.monospace
+            ]
+        , Font.color codeColor
+        , paddingEach { left = 0, right = 0, top = 0, bottom = 8 }
+        , spacing 6
+        ]
+        (List.map (\t -> el [] (text t)) lines)
 
 
 error str =
@@ -122,7 +158,7 @@ indent g s a textList =
 
 makeId : List Block -> Element.Attribute msg
 makeId blockList =
-    Utility.elementAttribute "id" (Render.AST2.stringValueOfBlockList blockList |> String.trim |> makeSlug)
+    Utility.elementAttribute "id" (Block.BlockTools.stringValueOfBlockList blockList |> String.trim |> makeSlug)
 
 
 makeSlug : String -> String

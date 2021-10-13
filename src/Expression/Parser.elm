@@ -1,6 +1,7 @@
 module Expression.Parser exposing (parseExpr, parseToBlock, run)
 
-import Block.Block as Block exposing (Block)
+import Block.Block exposing (Block)
+import Block.BlockTools
 import Either
 import Expression.AST as AST exposing (Expr)
 import Expression.Error exposing (ErrorData, Problem(..))
@@ -33,7 +34,7 @@ parseExpr lang str =
 
 parseToBlock : Lang -> String -> Int -> String -> Block
 parseToBlock lang id firstLine str =
-    Block.make id firstLine str |> Block.map (parseExpr lang)
+    Block.BlockTools.make id firstLine str |> Block.BlockTools.map (parseExpr lang)
 
 
 {-|
