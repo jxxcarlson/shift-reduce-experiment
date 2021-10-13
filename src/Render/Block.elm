@@ -68,6 +68,7 @@ renderBlocksIncomplete name status blocks =
             , Font.monospace
             ]
         , Font.color codeColor
+        , spacing 8
         ]
         (message name status
             :: (Element.text <| Block.BlockTools.stringValueOfBlockList blocks)
@@ -82,7 +83,7 @@ message name blockStatus =
             Element.none
 
         BlockIncomplete str ->
-            Element.el [ Font.color (Element.rgb 200 0 0), Element.moveDown 12 ] (Element.text <| "Unterminated block " ++ name)
+            Element.el [ Font.color (Element.rgb 200 0 0) ] (Element.text <| "Unterminated block " ++ name)
 
 
 renderLinesIncomplete : String -> BlockStatus -> List String -> Element msg
@@ -93,6 +94,7 @@ renderLinesIncomplete name status lines =
             , Font.monospace
             ]
         , Font.color codeColor
+        , spacing 8
         ]
         (message name status :: List.map (\t -> el [] (text t)) lines)
 

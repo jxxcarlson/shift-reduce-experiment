@@ -144,9 +144,9 @@ processLine language state =
                 createBlock state
 
              else
-                case compare (level state.currentLineData.indent) (level state.previousLineData.indent) of
+                case compare (level state.currentLineData.indent) (levelOfCurrentBlock state) of
                     EQ ->
-                        addLineToCurrentBlock state
+                        state |> postErrorMessage "Error, current line has same level as block." "I'll go ahead and add it to your block" |> addLineToCurrentBlock
 
                     GT ->
                         createBlock state |> debug2 "CREATE BLOCK with ordinary line (GT)"
@@ -553,6 +553,16 @@ levelOfBlock block =
 
         SError _ ->
             0
+
+
+levelOfCurrentBlock : State -> Int
+levelOfCurrentBlock state =
+    case state.currentBlock of
+        Nothing ->
+            -1
+
+        Just block ->
+            levelOfBlock block
 
 
 level : Int -> Int
