@@ -87,7 +87,7 @@ message name blockStatus =
             Element.none
 
         BlockIncomplete str ->
-            Element.el [ Font.color (Element.rgb 200 0 0) ] (Element.text <| "Unterminated block " ++ name)
+            Element.el [ Font.color (Element.rgb 200 0 0) ] (Element.text <| "Unterminated block: " ++ name)
 
 
 renderLinesIncomplete : String -> BlockStatus -> List String -> Element msg

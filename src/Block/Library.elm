@@ -88,58 +88,26 @@ processLine language state =
             in
             createBlock state |> deBUG1 "BeginBlock (OUT)"
 
-        BeginVerbatimBlock _ ->
+        BeginVerbatimBlock mark ->
             let
                 _ =
                     deBUG4 "BeginVerbatimBlock (IN)" state
             in
-            createBlock state |> deBUG4 "BeginVerbatimBlock (OUT)"
+            if Just mark == Maybe.map getBlockName state.currentBlock && mark == "math" then
+                state |> endBlock mark
+
+            else
+                createBlock state |> deBUG4 "BeginVerbatimBlock (OUT)"
 
         EndBlock name ->
-            (let
-                _ =
-                    debug3 "EndBlock, name" name
-
-                _ =
-                    deBUG4 "EndBlock (IN)" state
-
-                currentlockName =
-                    Maybe.andThen Block.BlockTools.sblockName state.currentBlock |> Maybe.withDefault "???" |> debug3 "CURRENT BLOCK NAME"
-
-                _ =
-                    debug3 "END TAG" name
-             in
-             if name == currentlockName then
-                commitBlock { state | currentBlock = Maybe.map (Block.BlockTools.mapMeta (\meta -> { meta | status = BlockComplete })) state.currentBlock }
-
-             else
-                commitBlock state
-            )
-                |> deBUG1 "EndBlock (OUT)"
+            endBlock name state
 
         --{ state
         --    --| errorMessage =
         --     --   Just { red = "Oops, the begin and end tags must match", blue = currentlockName ++ " ≠ " ++ name }
         --}
         EndVerbatimBlock name ->
-            (let
-                _ =
-                    deBUG4 "EndVerbatimBlock (IN)" state
-
-                currentBlockName =
-                    Maybe.andThen Block.BlockTools.sblockName state.currentBlock |> Maybe.withDefault "???"
-             in
-             if name == currentBlockName || name == "$$" && currentBlockName == "math" then
-                commitBlock { state | currentBlock = Maybe.map (Block.BlockTools.mapMeta (\meta -> { meta | status = BlockComplete })) state.currentBlock }
-
-             else
-                commitBlock
-                    { state
-                        | errorMessage =
-                            Just { red = "Oops, the begin and end tags must match", blue = currentBlockName ++ " ≠ " ++ name }
-                    }
-            )
-                |> deBUG1 "EndVerbatimBlock (OUT)"
+            endBlock name state
 
         OrdinaryLine ->
             (let
@@ -164,13 +132,13 @@ processLine language state =
                                     SBlock _ _ _ ->
                                         state
                                             |> postErrorMessage "Error, current line has same level as the current block. I'll go ahead and add it to your block"
-                                                state.currentLineData.content
+                                                "Hmmmm..."
                                             |> addLineToCurrentBlock
 
                                     SVerbatimBlock _ _ _ ->
                                         state
                                             |> postErrorMessage "Error, current line has same level as the current block. I'll go ahead and add it to your block"
-                                                state.currentLineData.content
+                                                "Hmmmm..."
                                             |> addLineToCurrentBlock
 
                                     SError _ ->
@@ -253,6 +221,29 @@ processLine language state =
                     deBUG4 "Problem" state
             in
             state
+
+
+endBlock name state =
+    (let
+        _ =
+            debug3 "EndBlock, name" name
+
+        _ =
+            deBUG4 "EndBlock (IN)" state
+
+        currentlockName =
+            Maybe.andThen Block.BlockTools.sblockName state.currentBlock |> Maybe.withDefault "???" |> debug3 "CURRENT BLOCK NAME"
+
+        _ =
+            debug3 "END TAG" name
+     in
+     if name == currentlockName then
+        commitBlock { state | currentBlock = Maybe.map (Block.BlockTools.mapMeta (\meta -> { meta | status = BlockComplete })) state.currentBlock }
+
+     else
+        commitBlock state
+    )
+        |> deBUG4 "EndBlock (OUT)"
 
 
 deBUG4 label state =
