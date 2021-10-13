@@ -93,7 +93,7 @@ processLine language state =
                 _ =
                     deBUG4 "BeginVerbatimBlock (IN)" state
             in
-            if Just mark == Maybe.map getBlockName state.currentBlock && mark == "math" then
+            if Just mark == Maybe.map getBlockName state.currentBlock && (mark == "math" || mark == "code") then
                 state |> endBlock mark
 
             else
