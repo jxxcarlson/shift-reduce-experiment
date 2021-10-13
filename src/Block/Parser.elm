@@ -14,7 +14,7 @@ import Markup.Debugger exposing (debug2, debug3)
 {-| -}
 run : Lang -> Int -> List String -> State
 run language generation input =
-    loop (Block.State.init generation input |> debug3 "INITIAL STATE") (nextStep language)
+    loop (Block.State.init language generation input |> debug3 "INITIAL STATE") (nextStep language)
 
 
 {-|

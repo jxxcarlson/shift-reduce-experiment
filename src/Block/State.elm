@@ -39,8 +39,8 @@ type alias Accumulator =
 -- INTIALIZERS
 
 
-init : Int -> List String -> State
-init generation input =
+init : Lang -> Int -> List String -> State
+init lang generation input =
     { input = input
     , committed = []
     , lastIndex = List.length input
@@ -56,7 +56,7 @@ init generation input =
     , accumulator = initialAccumulator
     , stack = []
     , errorMessage = Nothing
-    , lang = Lang.MiniLaTeX
+    , lang = lang
     }
 
 
