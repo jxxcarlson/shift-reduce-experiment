@@ -1,11 +1,11 @@
 module APITest exposing (parseMiniLaTeX, suiteAPITestMiniLaTeX)
 
+import Block.Block exposing (Block(..), ExprM(..))
 import Block.State
 import Dict
 import Expect
 import Lang.Lang exposing (Lang(..))
 import Markup.API as API
-import Markup.Block exposing (Block(..), ExprM(..))
 import Test exposing (..)
 
 

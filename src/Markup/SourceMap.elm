@@ -1,6 +1,6 @@
 module Markup.SourceMap exposing (find, getFragment)
 
-import Markup.Block exposing (Block(..), ExprM(..))
+import Block.Block exposing (Block(..), ExprM(..))
 import Markup.Meta as Meta exposing (ExpressionMeta)
 
 

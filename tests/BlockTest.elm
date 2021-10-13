@@ -1,9 +1,9 @@
 module BlockTest exposing (suiteBlock)
 
+import Block.Block exposing (Block(..), ExprM(..))
 import Expect
 import Expression.Parser
 import Lang.Lang exposing (Lang(..))
-import Markup.Block exposing (Block(..), ExprM(..))
 import Test exposing (..)
 
 

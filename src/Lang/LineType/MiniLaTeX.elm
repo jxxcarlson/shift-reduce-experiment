@@ -5,7 +5,7 @@ import Parser exposing ((|.), (|=), Parser)
 
 
 verbatimEnvironments =
-    [ "align", "equation", "mathmacro" ]
+    [ "align", "equation", "mathmacro", "code", "math" ]
 
 
 lineType : String -> Line.LineType

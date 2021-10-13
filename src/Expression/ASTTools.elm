@@ -12,7 +12,7 @@ module Expression.ASTTools exposing
     , listExprMToString
     )
 
-import Markup.Block exposing (Block(..), ExprM(..))
+import Block.Block exposing (Block(..), ExprM(..))
 import Markup.Meta as Meta
 import Maybe.Extra
 

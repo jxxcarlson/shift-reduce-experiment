@@ -1,6 +1,6 @@
 module Render.AST2 exposing (getName, stringValueOfBlockList, stringValueOfList, textToString)
 
-import Markup.Block exposing (Block(..), ExprM(..))
+import Block.Block exposing (Block(..), ExprM(..))
 
 
 getName : ExprM -> Maybe String

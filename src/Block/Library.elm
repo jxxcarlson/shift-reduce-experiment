@@ -7,14 +7,14 @@ module Block.Library exposing
     , shiftCurrentBlock
     )
 
+import Block.Block as Block exposing (SBlock(..))
 import Block.Line exposing (BlockOption(..), LineData, LineType(..))
 import Block.State exposing (Accumulator, State)
 import Lang.Lang exposing (Lang(..))
 import Lang.LineType.L1
 import Lang.LineType.Markdown
 import Lang.LineType.MiniLaTeX
-import Markup.Block exposing (SBlock(..))
-import Markup.Debugger exposing (debug1, debug2, debug3)
+import Markup.Debugger exposing (debug1, debug2, debug3, debug4)
 import Markup.ParserTools
 import Parser.Advanced
 import Render.MathMacro
@@ -42,28 +42,32 @@ insertErrorMessage state =
             state
 
         Just message ->
+            let
+                _ =
+                    debug4 "insertErrorMessage" message
+            in
             { state
                 | committed = SParagraph [ errorMessage state.lang message ] { begin = 0, end = 0, id = "error", indent = 0 } :: state.committed
                 , errorMessage = Nothing
             }
 
 
-errorMessage : Lang -> String -> String
-errorMessage lang str =
+errorMessage : Lang -> { red : String, blue : String } -> String
+errorMessage lang msg =
     case lang of
         L1 ->
-            "[red " ++ str ++ "]"
+            "[red " ++ msg.red ++ "]" ++ "[blue" ++ msg.blue ++ "]"
 
         Markdown ->
-            "[@red " ++ str ++ "]"
+            "@red[" ++ msg.red ++ "] @blue[" ++ msg.blue ++ "]"
 
         MiniLaTeX ->
-            "\\red{" ++ str ++ "}"
+            "\\red{" ++ msg.red ++ "} \\skip{10} \\blue{" ++ msg.blue ++ "}"
 
 
 recoverFromError : State -> State
 recoverFromError state =
-    { state | stack = [] } |> debug3 "recoverFromError "
+    { state | stack = [] } |> debug4 "recoverFromError "
 
 
 {-|
@@ -85,10 +89,18 @@ processLine language state =
         BeginVerbatimBlock _ ->
             createBlock state
 
-        EndBlock _ ->
+        EndBlock name ->
+            let
+                _ =
+                    debug4 "EndBlock" name
+            in
             commitBlock (insertErrorMessage state)
 
-        EndVerbatimBlock _ ->
+        EndVerbatimBlock name ->
+            let
+                _ =
+                    debug4 "EndVerbatimBlock" name
+            in
             commitBlock (insertErrorMessage state)
 
         OrdinaryLine ->
@@ -117,7 +129,7 @@ processLine language state =
                                 debug1 "OrdinaryLine, LT" ( state.previousLineData.indent, state.currentLineData.indent, state.currentBlock )
                         in
                         if state.verbatimBlockInitialIndent == state.previousLineData.indent then
-                            addLineToCurrentBlock { state | errorMessage = Just "Below: you forgot to indent the math text. This is needed for all blocks.  Also, remember the trailing dollar signs" }
+                            addLineToCurrentBlock { state | errorMessage = Just { red = "Below: you forgot to indent the math text. This is needed for all blocks.  Also, remember the trailing dollar signs", blue = "" } }
                                 |> insertErrorMessage
 
                         else
@@ -136,7 +148,16 @@ processLine language state =
                         addLineToCurrentBlock state
 
                     LT ->
-                        commitBlock state
+                        let
+                            _ =
+                                debug1 "OrdinaryLine, LT" ( state.previousLineData.indent, state.currentLineData.indent, state.currentBlock )
+                        in
+                        if state.verbatimBlockInitialIndent == state.previousLineData.indent then
+                            addLineToCurrentBlock { state | errorMessage = Just { red = "Below: you forgot to indent the math text. This is needed for all blocks.  Also, remember the trailing dollar signs", blue = "" } }
+                                |> insertErrorMessage
+
+                        else
+                            state |> commitBlock |> createBlock
 
         BlankLine ->
             if state.previousLineData.lineType == BlankLine then
@@ -151,7 +172,17 @@ processLine language state =
                         createBlock state
 
                     LT ->
-                        commitBlock state
+                        case state.currentBlock of
+                            Nothing ->
+                                commitBlock state
+
+                            Just block ->
+                                let
+                                    errorMessage_ =
+                                        -- debug4 "BlankLine (LT)" (Just ("You need to terminate this block: begin{" ++ (Block.name block |> Maybe.withDefault "UNNAMED") ++ "}"))
+                                        Just { red = "You need to terminate this block: ", blue = "\\texmacro{begin} \\texarg{" ++ (Block.name block |> Maybe.withDefault "UNNAMED") ++ "}" }
+                                in
+                                commitBlock { state | errorMessage = errorMessage_ }
 
         Problem _ ->
             state
@@ -183,14 +214,32 @@ createBlock state =
 createBlockPhase1 : State -> State
 createBlockPhase1 state =
     case compare (level state.currentLineData.indent) (level state.previousLineData.indent) of
+        LT ->
+            case state.currentBlock of
+                Nothing ->
+                    commitBlock state
+
+                Just block ->
+                    let
+                        errorMessage_ =
+                            debug4 "createBlockPhase1 (LT)" (Just { red = "You need to terminate this block (1)", blue = "??" })
+                    in
+                    commitBlock { state | errorMessage = errorMessage_ }
+
         EQ ->
-            commitBlock state
+            case state.currentBlock of
+                Nothing ->
+                    commitBlock state
+
+                Just block ->
+                    let
+                        errorMessage_ =
+                            debug4 "createBlockPhase1 (EQ)" (Just { red = "You need to terminate this block (2)", blue = "??2" })
+                    in
+                    commitBlock { state | errorMessage = errorMessage_ }
 
         GT ->
             shiftCurrentBlock state
-
-        LT ->
-            commitBlock state
 
 
 createBlockPhase2 : State -> State
@@ -259,6 +308,11 @@ createBlockPhase2 state =
 
 commitBlock : State -> State
 commitBlock state =
+    state |> insertErrorMessage |> commitBlock_
+
+
+commitBlock_ : State -> State
+commitBlock_ state =
     case state.currentBlock of
         Nothing ->
             state

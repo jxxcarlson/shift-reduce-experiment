@@ -1,12 +1,15 @@
-module Markup.Block exposing (Block(..), ExprM(..), Meta, SBlock(..), exprMToExpr, exprToExprM, make, map, mapMeta)
-
---( Block(..)
---, ExpressionMeta
---, Meta
---, SBlock(..)
---, stringAtLoc
---, test
---)
+module Block.Block exposing
+    ( Block(..)
+    , ExprM(..)
+    , Meta
+    , SBlock(..)
+    , exprMToExpr
+    , exprToExprM
+    , make
+    , map
+    , mapMeta
+    , name
+    )
 
 import Expression.AST exposing (Expr(..))
 import Markup.Meta as Meta exposing (ExpressionMeta)
@@ -31,6 +34,22 @@ type SBlock
     | SVerbatimBlock String (List String) Meta
     | SBlock String (List SBlock) Meta
     | SError String
+
+
+name : SBlock -> Maybe String
+name sblock =
+    case sblock of
+        SParagraph _ _ ->
+            Nothing
+
+        SVerbatimBlock name_ _ _ ->
+            Just name_
+
+        SBlock name_ _ _ ->
+            Just name_
+
+        SError _ ->
+            Nothing
 
 
 type alias Meta =
@@ -63,11 +82,11 @@ mapMeta f block =
         SParagraph strings meta ->
             SParagraph strings (f meta)
 
-        SVerbatimBlock name strings meta ->
-            SVerbatimBlock name strings (f meta)
+        SVerbatimBlock name_ strings meta ->
+            SVerbatimBlock name_ strings (f meta)
 
-        SBlock name blocks meta ->
-            SBlock name blocks (f meta)
+        SBlock name_ blocks meta ->
+            SBlock name_ blocks (f meta)
 
         SError str ->
             SError str
@@ -97,7 +116,7 @@ map exprParser sblock =
             in
             Paragraph (List.indexedMap (\i expr -> exprToExprM i blockData expr) (exprParser blockData.content)) meta
 
-        SVerbatimBlock name strList meta ->
+        SVerbatimBlock name_ strList meta ->
             let
                 exprMeta =
                     -- TODO: this is incomplete (id, last col)
@@ -105,9 +124,9 @@ map exprParser sblock =
                     , loc = { begin = { row = meta.begin, col = 0 }, end = { row = meta.end, col = 7 } }
                     }
             in
-            VerbatimBlock name strList exprMeta meta
+            VerbatimBlock name_ strList exprMeta meta
 
-        SBlock name blocks meta ->
+        SBlock name_ blocks meta ->
             let
                 mapper : SBlock -> Block
                 mapper =
@@ -117,7 +136,7 @@ map exprParser sblock =
                 f =
                     List.map mapper
             in
-            Block name (List.map mapper blocks) meta
+            Block name_ (List.map mapper blocks) meta
 
         SError str ->
             BError str
@@ -136,11 +155,11 @@ exprToExprM count blockData expr =
         Text str meta ->
             TextM str (Meta.make Meta.getBlockData count meta blockData.lines blockData.firstLine blockData.id)
 
-        Verbatim name content meta ->
-            VerbatimM name content (Meta.make Meta.getBlockData count meta [ content ] blockData.firstLine blockData.id)
+        Verbatim name_ content meta ->
+            VerbatimM name_ content (Meta.make Meta.getBlockData count meta [ content ] blockData.firstLine blockData.id)
 
-        Expr name exprList meta ->
-            ExprM name (List.map (exprToExprM count blockData) exprList) (Meta.make Meta.getBlockData count meta [] blockData.firstLine blockData.id)
+        Expr name_ exprList meta ->
+            ExprM name_ (List.map (exprToExprM count blockData) exprList) (Meta.make Meta.getBlockData count meta [] blockData.firstLine blockData.id)
 
         Arg exprList meta ->
             ArgM (List.map (exprToExprM count blockData) exprList) (Meta.make Meta.getBlockData count meta [] blockData.firstLine blockData.id)

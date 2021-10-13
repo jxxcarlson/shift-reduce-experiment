@@ -1,5 +1,6 @@
 module Markup.API exposing (Settings, compile, defaultSettings, getTitle, p, parse, prepareForExport, render, renderFancy, rl, tableOfContents)
 
+import Block.Block as Block exposing (Block)
 import Block.Parser
 import Block.State
 import Element as E exposing (Element)
@@ -7,7 +8,6 @@ import Element.Font as Font
 import Expression.ASTTools as ASTTools
 import Expression.Parser
 import Lang.Lang exposing (Lang(..))
-import Markup.Block as Block exposing (Block)
 import Markup.Simplify as Simplify
 import Render.Block
 import Render.Settings

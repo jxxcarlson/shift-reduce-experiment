@@ -1,5 +1,6 @@
 module Expression.Parser exposing (parseExpr, parseToBlock, run)
 
+import Block.Block as Block exposing (Block)
 import Either
 import Expression.AST as AST exposing (Expr)
 import Expression.Error exposing (ErrorData, Problem(..))
@@ -11,7 +12,6 @@ import Lang.Reduce.L1 as L1
 import Lang.Reduce.Markdown as Markdown
 import Lang.Reduce.MiniLaTeX as MiniLaTeX
 import List.Extra
-import Markup.Block as Block exposing (Block)
 import Markup.Common exposing (Step(..), loop)
 import Markup.Debugger exposing (..)
 

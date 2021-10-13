@@ -1,9 +1,9 @@
 module Block.State exposing (Accumulator, State, init)
 
+import Block.Block exposing (SBlock)
 import Block.Line
 import Dict
 import Lang.Lang as Lang exposing (Lang(..))
-import Markup.Block exposing (SBlock)
 import Render.MathMacro
 
 
@@ -26,7 +26,7 @@ type alias State =
     , blockCount : Int
     , inVerbatimBlock : Bool
     , accumulator : Accumulator
-    , errorMessage : Maybe String
+    , errorMessage : Maybe { red : String, blue : String }
     , lang : Lang
     }
 

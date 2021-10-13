@@ -1,11 +1,11 @@
 module Render.Block exposing (render)
 
+import Block.Block exposing (Block(..))
 import Block.State
 import Dict exposing (Dict)
 import Element exposing (..)
 import Element.Background as Background
 import Element.Font as Font
-import Markup.Block exposing (Block(..))
 import Markup.Debugger exposing (debug3)
 import Render.AST2
 import Render.Math
@@ -70,14 +70,16 @@ verbatimBlockDict =
 blockDict : Dict String (Int -> Settings -> Block.State.Accumulator -> List Block -> Element msg)
 blockDict =
     Dict.fromList
-        [ ( "quotation", \g s a blocks -> quotationBlock g s a blocks )
+        [ ( "indent", \g s a blocks -> indent g s a blocks )
+
+        -- Used by Markdown
+        , ( "quotation", \g s a blocks -> quotationBlock g s a blocks )
         , ( "item", \g s a blocks -> item g s a blocks )
         , ( "title", \_ _ _ _ -> Element.none )
         , ( "heading1", \g s a blocks -> heading1 g s a blocks )
         , ( "heading2", \g s a blocks -> heading2 g s a blocks )
         , ( "heading3", \g s a blocks -> heading3 g s a blocks )
         , ( "heading4", \g s a blocks -> heading4 g s a blocks )
-        , ( "indent", \g s a blocks -> indent g s a blocks )
         ]
 
 
