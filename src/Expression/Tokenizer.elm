@@ -24,7 +24,7 @@ get lang start input =
             token
 
         Err errorList ->
-            TokenError (errorList |> Debug.log "ERROR LIST") { begin = start, end = start + 1 }
+            TokenError errorList { begin = start, end = start + 1 }
 
 
 
