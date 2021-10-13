@@ -55,7 +55,8 @@ renderBlock generation settings accumulator block =
             else
                 case Dict.get name blockDict of
                     Nothing ->
-                        error ("Unimplemented block: " ++ name)
+                        -- error ("Unimplemented block: " ++ name)
+                        renderBlocksIncomplete name BlockUnimplemented blocks
 
                     Just f ->
                         f generation settings accumulator blocks
@@ -91,6 +92,9 @@ message name blockStatus =
 
         BlockIncomplete str ->
             Element.el [ Font.color (Element.rgb 180 0 0) ] (Element.text <| "Unterminated block: " ++ name)
+
+        BlockUnimplemented ->
+            Element.el [ Font.color (Element.rgb 180 0 0) ] (Element.text <| "Unimplemented block: " ++ name)
 
 
 renderLinesIncomplete : String -> BlockStatus -> List String -> Element msg
