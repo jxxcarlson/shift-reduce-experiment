@@ -143,7 +143,7 @@ processLine language state =
                         state |> addLineToCurrentBlock |> debugCyan "Add ordinary line to current block (GT)"
 
                     LT ->
-                        if state.verbatimBlockInitialIndent == state.previousLineData.indent then
+                        if state.verbatimBlockInitialIndent == levelOfCurrentBlock state then
                             addLineToCurrentBlock { state | errorMessage = Just { red = "Below: you forgot to indent the math text. This is needed for all blocks.  Also, remember the trailing dollar signs", blue = "" } }
                                 |> insertErrorMessage
 
@@ -161,7 +161,7 @@ processLine language state =
                 addLineToCurrentBlock state
 
              else
-                case compare (level state.currentLineData.indent) (level state.previousLineData.indent) of
+                case compare (level state.currentLineData.indent) (levelOfCurrentBlock state) of
                     EQ ->
                         addLineToCurrentBlock state
 
@@ -169,7 +169,7 @@ processLine language state =
                         addLineToCurrentBlock state
 
                     LT ->
-                        if state.verbatimBlockInitialIndent == state.previousLineData.indent then
+                        if state.verbatimBlockInitialIndent == levelOfCurrentBlock state then
                             addLineToCurrentBlock { state | errorMessage = Just { red = "Below: you forgot to indent the math text. This is needed for all blocks.  Also, remember the trailing dollar signs", blue = "" } }
                                 |> insertErrorMessage
 
@@ -187,7 +187,7 @@ processLine language state =
                 state
 
              else
-                case compare (level state.currentLineData.indent) (level state.previousLineData.indent) of
+                case compare (level state.currentLineData.indent) (levelOfCurrentBlock state) of
                     EQ ->
                         let
                             _ =
