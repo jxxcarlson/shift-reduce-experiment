@@ -262,7 +262,7 @@ endBlock name state =
 deBUG4 label state =
     let
         n =
-            String.fromInt state.blockCount ++ ". "
+            String.fromInt state.index ++ ". "
 
         _ =
             debugBlue (n ++ label ++ ": line") state.currentLineData
@@ -279,7 +279,7 @@ deBUG4 label state =
 deBUG1 label state =
     let
         n =
-            String.fromInt state.blockCount ++ ". "
+            String.fromInt state.index ++ ". "
 
         _ =
             debugMagenta (n ++ label ++ ": line") state.currentLineData
@@ -332,6 +332,7 @@ createBlock state =
 
 createBlockPhase1 : State -> State
 createBlockPhase1 state =
+    -- Determine whether we need to reduce the stack, pushing something onto committed
     case compare (level state.currentLineData.indent) (levelOfCurrentBlock state) of
         LT ->
             case stackTop state of
@@ -365,6 +366,7 @@ createBlockPhase1 state =
 
 createBlockPhase2 : State -> State
 createBlockPhase2 state =
+    -- create a ne block
     (case state.currentLineData.lineType of
         OrdinaryLine ->
             let
@@ -581,7 +583,7 @@ statusIncomplete lang message =
             BlockComplete
 
         MiniLaTeX ->
-            BlockIncomplete message
+            BlockStarted
 
 
 addLineToBlocks : Int -> LineData -> List SBlock -> List SBlock

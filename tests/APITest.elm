@@ -32,7 +32,7 @@ suiteAPITestMiniLaTeX =
                                 , TextM "\n\n" { id = "0.4", loc = { begin = { col = 31, row = 0 }, end = { col = 0, row = 1 } } }
                                 ]
                                 { begin = 0, end = 1, id = "0", indent = 0, status = BlockComplete }
-                            , Block "theorem" [ Paragraph [ TextM "   Pythagoras sez: " { id = "3.0", loc = { begin = { col = 0, row = 3 }, end = { col = 18, row = 3 } } }, VerbatimM "math" "a^2 + b^2 = c^2" { id = "3.1", loc = { begin = { col = 19, row = 3 }, end = { col = 35, row = 3 } } }, TextM "\n" { id = "3.2", loc = { begin = { col = 36, row = 3 }, end = { col = 36, row = 3 } } } ] { begin = 3, end = 3, id = "3", indent = 3, status = BlockComplete } ] { begin = 2, end = 3, id = "1", indent = 0, status = BlockIncomplete "begin" }
+                            , Block "theorem" [ Paragraph [ TextM "   Pythagoras sez: " { id = "3.0", loc = { begin = { col = 0, row = 3 }, end = { col = 18, row = 3 } } }, VerbatimM "math" "a^2 + b^2 = c^2" { id = "3.1", loc = { begin = { col = 19, row = 3 }, end = { col = 35, row = 3 } } }, TextM "\n" { id = "3.2", loc = { begin = { col = 36, row = 3 }, end = { col = 36, row = 3 } } } ] { begin = 3, end = 3, id = "3", indent = 3, status = BlockComplete } ] { begin = 2, end = 3, id = "1", indent = 0, status = BlockStarted }
                             ]
                         }
         ]

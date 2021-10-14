@@ -31,7 +31,7 @@ type Block
 
 
 type BlockStatus
-    = BlockIncomplete String
+    = BlockStarted
     | MismatchedTags String String
     | BlockUnimplemented
     | BlockComplete
