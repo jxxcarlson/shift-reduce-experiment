@@ -73,6 +73,8 @@ renderBlocksIncomplete name status blocks =
             , Font.monospace
             ]
         , Font.color codeColor
+        , Background.color (Element.rgb255 230 233 250)
+        , paddingXY 8 8
         , spacing 8
         ]
         (message name status
