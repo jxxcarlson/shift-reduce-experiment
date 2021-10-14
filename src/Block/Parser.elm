@@ -1,5 +1,6 @@
 module Block.Parser exposing (run)
 
+import Block.Function as Function
 import Block.Library
 import Block.State exposing (State)
 import Lang.Lang exposing (Lang)
@@ -62,7 +63,7 @@ getLine language state =
 
 finalizeOrRecoverFromError : State -> Step State State
 finalizeOrRecoverFromError state =
-    state |> Block.Library.reduce |> finalizeOrRecoverFromError_
+    state |> Function.reduce |> finalizeOrRecoverFromError_
 
 
 finalizeOrRecoverFromError_ : State -> Step State State
@@ -73,7 +74,7 @@ finalizeOrRecoverFromError_ state =
         --    Loop (Block.Library.finalize state)
 
     else
-        Loop (Block.Library.recoverFromError state)
+        Loop (Function.recoverFromError state)
 
 
 stackIsReducible stack =

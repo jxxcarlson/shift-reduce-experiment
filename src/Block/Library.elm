@@ -1,13 +1,11 @@
 module Block.Library exposing
     ( classify
-    , finalize
     , processLine
-    , recoverFromError
-    , reduce
     )
 
 import Block.Block exposing (BlockStatus(..), SBlock(..))
 import Block.BlockTools as BlockTools
+import Block.Function as Function
 import Block.Line exposing (BlockOption(..), LineData, LineType(..))
 import Block.State exposing (Accumulator, State)
 import Lang.Lang exposing (Lang(..))
@@ -19,57 +17,6 @@ import Markup.ParserTools
 import Markup.Simplify
 import Parser.Advanced
 import Render.MathMacro
-
-
-finalize : State -> State
-finalize state =
-    state
-        |> finalizeBlockStatusOfStack
-        |> dumpStack
-        |> reverseCommitted
-        |> debugBlue "FINALIZE"
-
-
-insertErrorMessage : State -> State
-insertErrorMessage state =
-    case state.errorMessage of
-        Nothing ->
-            state
-
-        Just message ->
-            { state
-                | committed = SParagraph [ renderErrorMessage state.lang message ] { status = BlockComplete, begin = 0, end = 0, id = "error", indent = 0 } :: state.committed
-                , errorMessage = Nothing
-            }
-
-
-renderErrorMessage : Lang -> { red : String, blue : String } -> String
-renderErrorMessage lang msg =
-    case lang of
-        L1 ->
-            "[red " ++ msg.red ++ "]" ++ "[blue" ++ msg.blue ++ "]"
-
-        Markdown ->
-            "@red[" ++ msg.red ++ "] @blue[" ++ msg.blue ++ "]"
-
-        MiniLaTeX ->
-            case ( msg.red, msg.blue ) of
-                ( "", "" ) ->
-                    ""
-
-                ( red, "" ) ->
-                    "\\red{" ++ red ++ "}"
-
-                ( "", blue ) ->
-                    "\\skip{10} \\blue{" ++ blue ++ "}"
-
-                ( red, blue ) ->
-                    "\\red{" ++ red ++ "} \\skip{10} \\blue{" ++ blue ++ "}"
-
-
-recoverFromError : State -> State
-recoverFromError state =
-    { state | stack = [] } |> debugBlue "recoverFromError "
 
 
 {-|
@@ -97,7 +44,7 @@ processLine language state =
                 _ =
                     debugIn "BeginVerbatimBlock (IN)" state
             in
-            if Just mark == Maybe.map getBlockName (stackTop state) && (mark == "math" || mark == "code") then
+            if Just mark == Maybe.map getBlockName (Function.stackTop state) && (mark == "math" || mark == "code") then
                 state |> endBlock mark
 
             else
@@ -115,12 +62,12 @@ processLine language state =
                     debugIn "OrdinaryLine (IN)" state
              in
              if state.previousLineData.lineType == BlankLine then
-                state |> finalizeBlockStatusOfStackTop |> simpleCommit |> createBlock
+                state |> Function.finalizeBlockStatusOfStackTop |> Function.simpleCommit |> createBlock
 
              else
-                case compare (level state.currentLineData.indent) (levelOfCurrentBlock state) of
+                case compare (Function.level state.currentLineData.indent) (Function.levelOfCurrentBlock state) of
                     EQ ->
-                        case stackTop state of
+                        case Function.stackTop state of
                             Nothing ->
                                 state |> createBlock |> debugRed "TROUBLE HERE? (6)"
 
@@ -149,9 +96,9 @@ processLine language state =
                         state |> addLineToCurrentBlock |> debugRed "TROUBLE HERE? (2) — Add ordinary line to current block (GT)"
 
                     LT ->
-                        if state.verbatimBlockInitialIndent == levelOfCurrentBlock state then
+                        if state.verbatimBlockInitialIndent == Function.levelOfCurrentBlock state then
                             addLineToCurrentBlock { state | errorMessage = Just { red = "Below: you forgot to indent the math text. This is needed for all blocks.  Also, remember the trailing dollar signs", blue = "" } }
-                                |> insertErrorMessage
+                                |> Function.insertErrorMessage
 
                         else
                             state |> commitBlock |> createBlock |> debugRed "TROUBLE HERE? (1)"
@@ -167,7 +114,7 @@ processLine language state =
                 addLineToCurrentBlock state
 
              else
-                case compare (level state.currentLineData.indent) (levelOfCurrentBlock state) of
+                case compare (Function.level state.currentLineData.indent) (Function.levelOfCurrentBlock state) of
                     EQ ->
                         addLineToCurrentBlock state
 
@@ -175,9 +122,9 @@ processLine language state =
                         addLineToCurrentBlock state
 
                     LT ->
-                        if state.verbatimBlockInitialIndent == levelOfCurrentBlock state then
+                        if state.verbatimBlockInitialIndent == Function.levelOfCurrentBlock state then
                             addLineToCurrentBlock { state | errorMessage = Just { red = "Below: you forgot to indent the math text. This is needed for all blocks.  Also, remember the trailing dollar signs", blue = "" } }
-                                |> insertErrorMessage
+                                |> Function.insertErrorMessage
 
                         else
                             state |> commitBlock |> createBlock
@@ -193,7 +140,7 @@ processLine language state =
                 state |> debugYellow "BlankLine 0"
 
              else
-                case compare (level state.currentLineData.indent) (levelOfCurrentBlock state) of
+                case compare (Function.level state.currentLineData.indent) (Function.levelOfCurrentBlock state) of
                     EQ ->
                         addLineToCurrentBlock state |> debugYellow "BlankLine 1"
 
@@ -201,7 +148,7 @@ processLine language state =
                         createBlock state |> debugYellow "BlankLine 2"
 
                     LT ->
-                        case stackTop state of
+                        case Function.stackTop state of
                             Nothing ->
                                 commitBlock state |> debugYellow "BlankLine 3"
 
@@ -228,16 +175,16 @@ endBlock name state =
         _ =
             debugIn "EndBlock (IN)" state
      in
-     case nameOfStackTop state of
+     case Function.nameOfStackTop state of
         Nothing ->
-            state |> changeStatusOfTopOfStack (MismatchedTags "anonymous" name) |> simpleCommit
+            state |> Function.changeStatusOfTopOfStack (MismatchedTags "anonymous" name) |> Function.simpleCommit
 
         Just stackTopName ->
             if name == stackTopName then
-                state |> changeStatusOfTopOfStack BlockComplete |> simpleCommit
+                state |> Function.changeStatusOfTopOfStack BlockComplete |> Function.simpleCommit
 
             else
-                state |> changeStatusOfTopOfStack (MismatchedTags stackTopName name) |> simpleCommit
+                state |> Function.changeStatusOfTopOfStack (MismatchedTags stackTopName name) |> Function.simpleCommit
     )
         |> debugOut "EndBlock (OUT)"
 
@@ -299,44 +246,12 @@ postErrorMessage red blue state =
     { state | errorMessage = Just { red = red, blue = blue } }
 
 
-reduce : State -> State
-reduce state =
-    let
-        finalize_ =
-            reverseContents >> finalizeBlockStatus
-    in
-    case state.stack of
-        block1 :: ((SBlock name blocks meta) as block2) :: rest ->
-            if levelOfBlock block1 > levelOfBlock block2 then
-                -- incorporate block1 into the block just below it in the stack
-                -- then reduce again
-                reduce { state | stack = SBlock name (block1 :: blocks) meta :: rest }
-
-            else
-                -- TODO: is this correct?
-                reduce { state | committed = finalize_ block1 :: finalize_ block2 :: state.committed, stack = List.drop 2 state.stack }
-
-        block :: [] ->
-            -- Only one block remains on the stack, so commit it.
-            -- TODO: do we need to consider error handling
-            { state | committed = finalize_ block :: state.committed, stack = [] }
-
-        _ ->
-            -- TODO. This ignores many cases.  Probably wrong.
-            state
-
-
-createBlock : State -> State
-createBlock state =
-    state |> createBlockPhase1 |> createBlockPhase2
-
-
 createBlockPhase1 : State -> State
 createBlockPhase1 state =
     -- Determine whether we need to reduce the stack, pushing something onto committed
-    case compare (level state.currentLineData.indent) (levelOfCurrentBlock state) of
+    case compare (Function.level state.currentLineData.indent) (Function.levelOfCurrentBlock state) of
         LT ->
-            case stackTop state of
+            case Function.stackTop state of
                 Nothing ->
                     commitBlock state |> debugBlue "createBlockPhase1 (LT, NOTHING)" |> debugRed "TROUBLE HERE? (1)"
 
@@ -349,12 +264,12 @@ createBlockPhase1 state =
                     commitBlock state |> debugRed "TROUBLE HERE? (2)"
 
         EQ ->
-            case stackTop state of
+            case Function.stackTop state of
                 Nothing ->
                     commitBlock state
 
                 Just _ ->
-                    state |> finalizeBlockStatusOfStackTop |> simpleCommit |> debugRed "TROUBLE HERE? (3)"
+                    state |> Function.finalizeBlockStatusOfStackTop |> Function.simpleCommit |> debugRed "TROUBLE HERE? (3)"
 
         GT ->
             state |> debugRed "TROUBLE HERE? (4)"
@@ -369,14 +284,14 @@ createBlockPhase2 state =
                 newBlock =
                     SParagraph [ state.currentLineData.content ] { begin = state.index, end = state.index, status = BlockStarted, id = String.fromInt state.blockCount, indent = state.currentLineData.indent }
             in
-            pushBlock newBlock state
+            Function.pushBlock newBlock state
 
         BeginBlock RejectFirstLine mark ->
             let
                 newBlock =
                     SBlock mark [] { begin = state.index, end = state.index, status = BlockStarted, id = String.fromInt state.blockCount, indent = state.currentLineData.indent }
             in
-            pushBlock newBlock state
+            Function.pushBlock newBlock state
 
         BeginBlock AcceptFirstLine _ ->
             let
@@ -385,7 +300,7 @@ createBlockPhase2 state =
                         [ SParagraph [ deleteSpaceDelimitedPrefix state.currentLineData.content ] { status = BlockStarted, begin = state.index, end = state.index, id = String.fromInt state.blockCount, indent = state.currentLineData.indent } ]
                         { begin = state.index, end = state.index, status = BlockStarted, id = String.fromInt state.blockCount, indent = state.currentLineData.indent }
             in
-            pushBlock newBlock state
+            Function.pushBlock newBlock state
 
         BeginBlock AcceptNibbledFirstLine kind ->
             let
@@ -394,7 +309,7 @@ createBlockPhase2 state =
                         [ SParagraph [ deleteSpaceDelimitedPrefix state.currentLineData.content ] { status = BlockStarted, begin = state.index, end = state.index, id = String.fromInt state.blockCount, indent = state.currentLineData.indent } ]
                         { begin = state.index, end = state.index, status = BlockStarted, id = String.fromInt state.blockCount, indent = state.currentLineData.indent }
             in
-            pushBlock newBlock state
+            Function.pushBlock newBlock state
 
         BeginVerbatimBlock mark ->
             let
@@ -404,12 +319,12 @@ createBlockPhase2 state =
                         { begin = state.index, end = state.index, status = BlockStarted, id = String.fromInt state.blockCount, indent = state.currentLineData.indent }
             in
             { state
-                | currentLineData = incrementLevel state.currentLineData -- do this because a block expects subsequent lines to be indented
+                | currentLineData = Function.incrementLevel state.currentLineData -- do this because a block expects subsequent lines to be indented
                 , inVerbatimBlock = True
-                , verbatimBlockInitialIndent = state.currentLineData.indent + quantumOfIndentation -- account for indentation of succeeding lines
+                , verbatimBlockInitialIndent = state.currentLineData.indent + Function.quantumOfIndentation -- account for indentation of succeeding lines
                 , blockCount = state.blockCount + 1
             }
-                |> pushBlock newBlock
+                |> Function.pushBlock newBlock
 
         _ ->
             state
@@ -419,14 +334,14 @@ createBlockPhase2 state =
 
 commitBlock : State -> State
 commitBlock state =
-    state |> insertErrorMessage |> commitBlock_
+    state |> Function.insertErrorMessage |> commitBlock_
 
 
 commitBlock_ : State -> State
 commitBlock_ state =
     let
         finalize_ =
-            finalizeBlockStatus >> reverseContents
+            Function.finalizeBlockStatus >> Function.reverseContents
     in
     case state.stack of
         [] ->
@@ -451,9 +366,9 @@ commitBlock_ state =
                 next_ =
                     finalize_ next
             in
-            case compare (levelOfBlock top) (levelOfBlock next) of
+            case compare (Function.levelOfBlock top) (Function.levelOfBlock next) of
                 GT ->
-                    shiftBlock top_ state |> debugCyan "commitBlock (2)"
+                    Function.shiftBlock top_ state |> debugCyan "commitBlock (2)"
 
                 EQ ->
                     { state | committed = top_ :: next_ :: state.committed, stack = List.drop 1 state.stack } |> debugMagenta "commitBlock (3)"
@@ -476,19 +391,14 @@ updateAccumulator sblock1 accumulator =
             accumulator
 
 
-shiftBlock : SBlock -> State -> State
-shiftBlock block state =
-    { state | stack = block :: state.stack }
-
-
 addLineToCurrentBlock : State -> State
 addLineToCurrentBlock state =
-    (case stackTop state of
+    (case Function.stackTop state of
         Nothing ->
             state
 
         Just (SParagraph lines meta) ->
-            pushLineOntoStack state.index state.currentLineData.content state
+            Function.pushLineOntoStack state.index state.currentLineData.content state
 
         Just (SBlock mark blocks meta) ->
             let
@@ -498,7 +408,7 @@ addLineToCurrentBlock state =
             { state | stack = top :: List.drop 1 state.stack }
 
         Just (SVerbatimBlock mark lines meta) ->
-            pushLineOntoStack state.index state.currentLineData.content state
+            Function.pushLineOntoStack state.index state.currentLineData.content state
 
         _ ->
             state
@@ -508,130 +418,6 @@ addLineToCurrentBlock state =
 
 
 -- HELPERS
-
-
-finalizeBlockStatusOfStack : State -> State
-finalizeBlockStatusOfStack state =
-    { state | stack = List.map finalizeBlockStatus state.stack }
-
-
-finalizeBlockStatusOfStackTop : State -> State
-finalizeBlockStatusOfStackTop state =
-    case List.head state.stack of
-        Nothing ->
-            state
-
-        Just top ->
-            { state | stack = finalizeBlockStatus top :: List.drop 1 state.stack }
-
-
-finalizeBlockStatus_ : BlockStatus -> BlockStatus
-finalizeBlockStatus_ status =
-    if status == BlockStarted then
-        BlockComplete
-
-    else
-        status
-
-
-finalizeBlockStatus : SBlock -> SBlock
-finalizeBlockStatus block =
-    case block of
-        SParagraph strings meta ->
-            SParagraph strings { meta | status = finalizeBlockStatus_ (getStatus block) }
-
-        SBlock name blocks meta ->
-            SBlock name blocks { meta | status = finalizeBlockStatus_ (getStatus block) }
-
-        SVerbatimBlock name strings meta ->
-            SVerbatimBlock name strings { meta | status = finalizeBlockStatus_ (getStatus block) }
-
-        _ ->
-            block
-
-
-getStatus : SBlock -> BlockStatus
-getStatus block =
-    BlockTools.getSBlockMeta block |> .status
-
-
-reverseCommitted : State -> State
-reverseCommitted state =
-    { state | committed = List.reverse state.committed }
-
-
-dumpStack : State -> State
-dumpStack state =
-    { state | committed = state.stack ++ state.committed, stack = [] }
-
-
-pushLineOntoStack : Int -> String -> State -> State
-pushLineOntoStack index str state =
-    { state | stack = pushLineOntoStack_ index str state.stack }
-
-
-pushLineOntoStack_ : Int -> String -> List SBlock -> List SBlock
-pushLineOntoStack_ index str stack =
-    case List.head stack of
-        Nothing ->
-            stack
-
-        Just top ->
-            pushLineIntoBlock index str top :: List.drop 1 stack
-
-
-pushLineIntoBlock : Int -> String -> SBlock -> SBlock
-pushLineIntoBlock index str block =
-    case block of
-        SParagraph strings meta ->
-            SParagraph (str :: strings) { meta | end = index }
-
-        SVerbatimBlock name strings meta ->
-            SVerbatimBlock name (str :: strings) { meta | end = index }
-
-        _ ->
-            block
-
-
-pushBlock : SBlock -> State -> State
-pushBlock block state =
-    { state | stack = block :: state.stack, blockCount = state.blockCount + 1 }
-
-
-changeStatusOfTopOfStack : BlockStatus -> State -> State
-changeStatusOfTopOfStack status state =
-    case stackTop state of
-        Nothing ->
-            state
-
-        Just block ->
-            { state | stack = setBlockStatus status block :: List.drop 1 state.stack }
-
-
-setBlockStatus : BlockStatus -> SBlock -> SBlock
-setBlockStatus status block =
-    BlockTools.mapMeta (\meta -> { meta | status = status }) block
-
-
-simpleCommit : State -> State
-simpleCommit state =
-    -- Assume that the status of the block on top of the stack has already been set
-    case List.head state.stack of
-        Nothing ->
-            state
-
-        Just block ->
-            { state | committed = reverseContents block :: state.committed, stack = List.drop 1 state.stack }
-
-
-stackTop : State -> Maybe SBlock
-stackTop state =
-    List.head state.stack
-
-
-nameOfStackTop : State -> Maybe String
-nameOfStackTop state =
-    Maybe.andThen BlockTools.sblockName (stackTop state)
 
 
 addLineToBlocks : Int -> LineData -> List SBlock -> List SBlock
@@ -684,60 +470,9 @@ getLineTypeParser language =
             Lang.LineType.MiniLaTeX.lineType
 
 
-quantumOfIndentation =
-    3
-
-
-levelOfBlock : SBlock -> Int
-levelOfBlock block =
-    case block of
-        SParagraph _ meta ->
-            level meta.indent
-
-        SVerbatimBlock _ _ meta ->
-            level meta.indent
-
-        SBlock _ _ meta ->
-            level meta.indent
-
-        SError _ ->
-            0
-
-
-levelOfCurrentBlock : State -> Int
-levelOfCurrentBlock state =
-    case stackTop state of
-        Nothing ->
-            -1
-
-        Just block ->
-            levelOfBlock block
-
-
-level : Int -> Int
-level indentation =
-    indentation // quantumOfIndentation
-
-
-reverseContents : SBlock -> SBlock
-reverseContents block =
-    case block of
-        SParagraph strings meta ->
-            SParagraph (List.reverse strings) meta
-
-        SVerbatimBlock name strings meta ->
-            SVerbatimBlock name (List.reverse strings) meta
-
-        SBlock name blocks meta ->
-            SBlock name (List.reverse (List.map reverseContents blocks)) meta
-
-        SError s ->
-            SError s
-
-
-incrementLevel : LineData -> LineData
-incrementLevel lineData =
-    { lineData | indent = lineData.indent + quantumOfIndentation }
+createBlock : State -> State
+createBlock state =
+    state |> createBlockPhase1 |> createBlockPhase2
 
 
 nibble : String -> String

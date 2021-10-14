@@ -1,5 +1,6 @@
 module ParserTests exposing (suiteL1, suiteMarkdown, suiteMiniLaTeX)
 
+import Block.Block exposing (Block(..), BlockStatus(..))
 import Expect
 import Expression.AST exposing (Expr(..))
 import Expression.Parser exposing (run)
@@ -12,6 +13,10 @@ import Test exposing (..)
 p : Lang -> String -> List Simplify.BlockS
 p lang str =
     API.parse lang 0 (String.lines str) |> .ast |> Simplify.blocks
+
+
+
+-- |> Simplify.expressions
 
 
 loc i j =
@@ -90,25 +95,25 @@ suiteL1 =
         , test "(2) foo [i ABC]" <|
             \_ ->
                 p L1 "foo [i ABC]"
-                    |> Expect.equal [ ParagraphS [ TextS "foo ", ExprS "italic" [ TextS "ABC" ], TextS "\n" ] ]
+                    |> Expect.equal [ ParagraphS [ TextS "foo ", ExprS "italic" [ TextS "ABC" ], TextS "\n" ] BlockComplete ]
         , test "(3) foo [i [j ABC]] (composition)" <|
             \_ ->
                 p L1 "foo [i [j ABC]]"
-                    |> Expect.equal [ ParagraphS [ TextS "foo ", ExprS "italic" [ ExprS "j" [ TextS "ABC" ] ], TextS "\n" ] ]
+                    |> Expect.equal [ ParagraphS [ TextS "foo ", ExprS "italic" [ ExprS "j" [ TextS "ABC" ] ], TextS "\n" ] BlockComplete ]
         , test "(4) [i ABC] [j DEF]" <|
             \_ ->
                 p L1 "[i ABC] [j DEF]"
-                    |> Expect.equal [ ParagraphS [ ExprS "italic" [ TextS "ABC" ], TextS " ", ExprS "j" [ TextS "DEF" ], TextS "\n" ] ]
+                    |> Expect.equal [ ParagraphS [ ExprS "italic" [ TextS "ABC" ], TextS " ", ExprS "j" [ TextS "DEF" ], TextS "\n" ] BlockComplete ]
         , test "(5) [i foo (ERROR: missing right bracket)" <|
             \_ ->
                 p L1 "[i foo"
-                    |> Expect.equal [ ParagraphS [ TextS "Error! I added a bracket after this: [i foo\n", ExprS "italic" [ TextS "foo\n" ] ] ]
+                    |> Expect.equal [ ParagraphS [ TextS "Error! I added a bracket after this: [i foo\n", ExprS "italic" [ TextS "foo\n" ] ] BlockComplete ]
         , test "(6) foo [i bar] [j UUU (ERROR: missing right bracket)" <|
             \_ ->
                 p L1 "foo [i bar] [j UUU"
-                    |> Expect.equal [ ParagraphS [ TextS "foo ", ExprS "italic" [ TextS "bar" ], TextS " ", TextS "Error! I added a bracket after this: [j UUU\n", ExprS "j" [ TextS "UUU\n" ] ] ]
+                    |> Expect.equal [ ParagraphS [ TextS "foo ", ExprS "italic" [ TextS "bar" ], TextS " ", TextS "Error! I added a bracket after this: [j UUU\n", ExprS "j" [ TextS "UUU\n" ] ] BlockComplete ]
         , test "(7) foo [i bar [j UUU] (ERROR: missing right bracket)" <|
             \_ ->
                 p L1 "foo [i bar [j UUU]"
-                    |> Expect.equal [ ParagraphS [ TextS "foo ", TextS "Error! I added a bracket after this: [i bar [j UUU]\n" ] ]
+                    |> Expect.equal [ ParagraphS [ TextS "foo ", TextS "Error! I added a bracket after this: [i bar [j UUU]\n" ] BlockComplete ]
         ]
