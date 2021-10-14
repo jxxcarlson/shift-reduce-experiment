@@ -111,7 +111,6 @@ processLine language state =
                     deBUG4 "OrdinaryLine (IN)" state
              in
              if state.previousLineData.lineType == BlankLine then
-                -- createBlock state |> debugRed "TROUBLE HERE? (7)"
                 state |> finalizeBlockStatusOfStackTop |> simpleCommit |> createBlock
 
              else
