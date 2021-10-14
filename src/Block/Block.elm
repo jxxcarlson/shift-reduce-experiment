@@ -23,6 +23,13 @@ dummyMeta =
     { begin = 0, end = 0, indent = 0, id = "ID", status = BlockComplete }
 
 
+type Block
+    = Paragraph (List ExprM) Meta
+    | VerbatimBlock String (List String) ExpressionMeta Meta
+    | Block String (List Block) Meta
+    | BError String
+
+
 type BlockStatus
     = BlockIncomplete String
     | MismatchedTags String String
@@ -35,13 +42,6 @@ type ExprM
     | VerbatimM String String ExpressionMeta
     | ArgM (List ExprM) ExpressionMeta
     | ExprM String (List ExprM) ExpressionMeta
-
-
-type Block
-    = Paragraph (List ExprM) Meta
-    | VerbatimBlock String (List String) ExpressionMeta Meta
-    | Block String (List Block) Meta
-    | BError String
 
 
 type SBlock
