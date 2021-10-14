@@ -61,16 +61,23 @@ getLine language state =
 
 finalizeOrRecoverFromError : State -> Step State State
 finalizeOrRecoverFromError state =
-    state |> Block.Library.shiftCurrentBlock |> Block.Library.reduce |> finalizeOrRecoverFromError_
+    state |> Block.Library.reduce |> finalizeOrRecoverFromError_
 
 
 finalizeOrRecoverFromError_ : State -> Step State State
 finalizeOrRecoverFromError_ state =
     if List.isEmpty state.stack then
-        Done (Block.Library.finalize state)
+        Done state
+
+    else if stackIsReducible state.stack then
+        Loop (Block.Library.finalize state)
 
     else
         Loop (Block.Library.recoverFromError state)
+
+
+stackIsReducible stack =
+    True
 
 
 

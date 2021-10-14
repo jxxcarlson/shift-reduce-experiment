@@ -16,7 +16,6 @@ type alias State =
     , index : Int
     , lastIndex : Int
     , stack : List SBlock
-    , currentBlock : Maybe SBlock
     , currentLineData : Block.Line.LineData
     , previousLineData : Block.Line.LineData
     , committed : List SBlock
@@ -47,7 +46,6 @@ init lang generation input =
     , index = 0
     , currentLineData = { indent = 0, lineType = Block.Line.BlankLine, content = "" }
     , previousLineData = { indent = 0, lineType = Block.Line.BlankLine, content = "" }
-    , currentBlock = Nothing
     , indent = 0
     , verbatimBlockInitialIndent = 0
     , generation = generation

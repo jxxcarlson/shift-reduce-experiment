@@ -1,7 +1,7 @@
 module Data.MiniLaTeXTest exposing (text)
 
 
-text =
+text1 =
     """
 \\begin{foo}
 abc
@@ -9,7 +9,7 @@ abc
 """
 
 
-text2 =
+text =
     """
 \\title{Notes on Quantum Field Theory}
 
