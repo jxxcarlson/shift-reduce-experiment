@@ -1,6 +1,15 @@
 module Block.TestStuff exposing (..)
 
 
+m1 =
+    """
+$$
+   \\int_0^1
+
+## Code
+"""
+
+
 t1 =
     """
 one two three

@@ -4,7 +4,7 @@ import Block.Library
 import Block.State exposing (State)
 import Lang.Lang exposing (Lang)
 import List.Extra
-import Markup.Debugger exposing (debugCyan, debugYellow)
+import Markup.Debugger exposing (debugCyan, debugRed, debugYellow)
 
 
 
@@ -31,7 +31,7 @@ run language generation input =
 nextStep : Lang -> State -> Step State State
 nextStep lang state =
     if state.index >= state.lastIndex then
-        finalizeOrRecoverFromError state
+        finalizeOrRecoverFromError state |> debugRed "finalizeOrRecoverFromError"
 
     else
         Loop (state |> getLine lang |> Block.Library.processLine lang |> postProcess)
@@ -69,9 +69,8 @@ finalizeOrRecoverFromError_ : State -> Step State State
 finalizeOrRecoverFromError_ state =
     if List.isEmpty state.stack then
         Done state
-
-    else if stackIsReducible state.stack then
-        Loop (Block.Library.finalize state)
+        --else if stackIsReducible state.stack then
+        --    Loop (Block.Library.finalize state)
 
     else
         Loop (Block.Library.recoverFromError state)

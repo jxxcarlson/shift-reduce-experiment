@@ -23,7 +23,11 @@ import Render.MathMacro
 
 finalize : State -> State
 finalize state =
-    state |> dumpStack |> reverseCommitted |> debugMagenta "FINALIZE"
+    state
+        |> finalizeBlockStatusOfStack
+        |> dumpStack
+        |> reverseCommitted
+        |> debugBlue "FINALIZE"
 
 
 insertErrorMessage : State -> State
@@ -84,20 +88,20 @@ processLine language state =
         BeginBlock _ _ ->
             let
                 _ =
-                    deBUG4 "BeginBlock (IN)" state
+                    debugIn "BeginBlock (IN)" state
             in
-            createBlock state |> deBUG1 "BeginBlock (OUT)"
+            createBlock state |> debugOut "BeginBlock (OUT)"
 
         BeginVerbatimBlock mark ->
             let
                 _ =
-                    deBUG4 "BeginVerbatimBlock (IN)" state
+                    debugIn "BeginVerbatimBlock (IN)" state
             in
             if Just mark == Maybe.map getBlockName (stackTop state) && (mark == "math" || mark == "code") then
                 state |> endBlock mark
 
             else
-                createBlock state |> deBUG4 "BeginVerbatimBlock (OUT)"
+                createBlock state |> debugOut "BeginVerbatimBlock (OUT)"
 
         EndBlock name ->
             endBlock name state
@@ -108,7 +112,7 @@ processLine language state =
         OrdinaryLine ->
             (let
                 _ =
-                    deBUG4 "OrdinaryLine (IN)" state
+                    debugIn "OrdinaryLine (IN)" state
              in
              if state.previousLineData.lineType == BlankLine then
                 state |> finalizeBlockStatusOfStackTop |> simpleCommit |> createBlock
@@ -118,7 +122,7 @@ processLine language state =
                     EQ ->
                         case stackTop state of
                             Nothing ->
-                                state |> debugRed "TROUBLE HERE? (6)"
+                                state |> createBlock |> debugRed "TROUBLE HERE? (6)"
 
                             Just topBlock ->
                                 case topBlock of
@@ -152,12 +156,12 @@ processLine language state =
                         else
                             state |> commitBlock |> createBlock |> debugRed "TROUBLE HERE? (1)"
             )
-                |> deBUG1 "OrdinaryLine (OUT)"
+                |> debugOut "OrdinaryLine (OUT)"
 
         VerbatimLine ->
             (let
                 _ =
-                    deBUG4 "VerbatimLine (IN)" state
+                    debugIn "VerbatimLine (IN)" state
              in
              if state.previousLineData.lineType == VerbatimLine then
                 addLineToCurrentBlock state
@@ -178,64 +182,41 @@ processLine language state =
                         else
                             state |> commitBlock |> createBlock
             )
-                |> deBUG4 "VerbatimLine (OUT)"
+                |> debugOut "VerbatimLine (OUT)"
 
         BlankLine ->
             (let
                 _ =
-                    deBUG4 "BlankLine (IN)" state
+                    debugIn "BlankLine (IN)" state
              in
              if state.previousLineData.lineType == BlankLine then
-                state
+                state |> debugYellow "BlankLine 0"
 
              else
                 case compare (level state.currentLineData.indent) (levelOfCurrentBlock state) of
                     EQ ->
-                        let
-                            _ =
-                                debugYellow "BlankLine" 1
-                        in
-                        addLineToCurrentBlock state
+                        addLineToCurrentBlock state |> debugYellow "BlankLine 1"
 
                     GT ->
-                        let
-                            _ =
-                                debugYellow "BlankLine" 2
-                        in
-                        createBlock state
+                        createBlock state |> debugYellow "BlankLine 2"
 
                     LT ->
                         case stackTop state of
                             Nothing ->
-                                let
-                                    _ =
-                                        debugYellow "BlankLine" 3
-                                in
-                                commitBlock state
+                                commitBlock state |> debugYellow "BlankLine 3"
 
                             Just block ->
                                 if state.lang == MiniLaTeX then
-                                    let
-                                        _ =
-                                            debugYellow "BlankLine" 4
-                                    in
                                     state
                                         |> commitBlock
+                                        |> debugYellow "BlankLine 4"
 
                                 else
-                                    let
-                                        _ =
-                                            debugYellow "BlankLine" 5
-                                    in
-                                    state |> commitBlock
+                                    state |> commitBlock |> debugYellow "BlankLine 5"
             )
-                |> deBUG1 "BlankLine (OUT)"
+                |> debugOut "BlankLine (OUT)"
 
         Problem _ ->
-            let
-                _ =
-                    deBUG4 "Problem" state
-            in
             state
 
 
@@ -245,7 +226,7 @@ endBlock name state =
             debugYellow "EndBlock, name" name
 
         _ =
-            deBUG4 "EndBlock (IN)" state
+            debugIn "EndBlock (IN)" state
      in
      case nameOfStackTop state of
         Nothing ->
@@ -258,10 +239,10 @@ endBlock name state =
             else
                 state |> changeStatusOfTopOfStack (MismatchedTags stackTopName name) |> simpleCommit
     )
-        |> deBUG4 "EndBlock (OUT)"
+        |> debugOut "EndBlock (OUT)"
 
 
-deBUG4 label state =
+debugSpare label state =
     let
         n =
             String.fromInt state.index ++ ". "
@@ -278,13 +259,27 @@ deBUG4 label state =
     state
 
 
-deBUG1 label state =
+debugIn label state =
     let
         n =
             String.fromInt state.index ++ ". "
 
         _ =
-            debugMagenta (n ++ label ++ ": line") state.currentLineData
+            debugBlue (n ++ label ++ ": line") state.currentLineData
+
+        _ =
+            debugYellow (n ++ label ++ ": stack") (state.stack |> List.map Markup.Simplify.sblock)
+
+        _ =
+            debugRed (n ++ label ++ ": committed") (state.committed |> List.map Markup.Simplify.sblock)
+    in
+    state
+
+
+debugOut label state =
+    let
+        n =
+            String.fromInt state.index ++ ". "
 
         _ =
             debugYellow (n ++ label ++ ": stack") (state.stack |> List.map Markup.Simplify.sblock)
@@ -306,6 +301,10 @@ postErrorMessage red blue state =
 
 reduce : State -> State
 reduce state =
+    let
+        finalize_ =
+            reverseContents >> finalizeBlockStatus
+    in
     case state.stack of
         block1 :: ((SBlock name blocks meta) as block2) :: rest ->
             if levelOfBlock block1 > levelOfBlock block2 then
@@ -315,12 +314,12 @@ reduce state =
 
             else
                 -- TODO: is this correct?
-                reduce { state | committed = block1 :: block2 :: state.committed, stack = List.drop 2 state.stack }
+                reduce { state | committed = finalize_ block1 :: finalize_ block2 :: state.committed, stack = List.drop 2 state.stack }
 
         block :: [] ->
             -- Only one block remains on the stack, so commit it.
             -- TODO: do we need to consider error handling
-            { state | committed = reverseContents block :: state.committed, stack = [] }
+            { state | committed = finalize_ block :: state.committed, stack = [] }
 
         _ ->
             -- TODO. This ignores many cases.  Probably wrong.
@@ -355,12 +354,7 @@ createBlockPhase1 state =
                     commitBlock state
 
                 Just _ ->
-                    let
-                        -- TODO: think about this
-                        errorMessage_ =
-                            debugBlue "createBlockPhase1 (EQ)" (Just { red = "You need to terminate this block (2)", blue = "??2" })
-                    in
-                    simpleCommit state |> debugRed "TROUBLE HERE? (3)"
+                    state |> finalizeBlockStatusOfStackTop |> simpleCommit |> debugRed "TROUBLE HERE? (3)"
 
         GT ->
             state |> debugRed "TROUBLE HERE? (4)"
@@ -509,11 +503,16 @@ addLineToCurrentBlock state =
         _ ->
             state
     )
-        |> deBUG1 "addLineToCurrentBlock"
+        |> debugSpare "addLineToCurrentBlock"
 
 
 
 -- HELPERS
+
+
+finalizeBlockStatusOfStack : State -> State
+finalizeBlockStatusOfStack state =
+    { state | stack = List.map finalizeBlockStatus state.stack }
 
 
 finalizeBlockStatusOfStackTop : State -> State
@@ -539,16 +538,21 @@ finalizeBlockStatus : SBlock -> SBlock
 finalizeBlockStatus block =
     case block of
         SParagraph strings meta ->
-            SParagraph strings { meta | status = finalizeBlockStatus_ (BlockTools.getSBlockMeta block |> .status) }
+            SParagraph strings { meta | status = finalizeBlockStatus_ (getStatus block) }
 
         SBlock name blocks meta ->
-            SBlock name blocks { meta | status = finalizeBlockStatus_ (BlockTools.getSBlockMeta block |> .status) }
+            SBlock name blocks { meta | status = finalizeBlockStatus_ (getStatus block) }
 
         SVerbatimBlock name strings meta ->
-            SVerbatimBlock name strings { meta | status = finalizeBlockStatus_ (BlockTools.getSBlockMeta block |> .status) }
+            SVerbatimBlock name strings { meta | status = finalizeBlockStatus_ (getStatus block) }
 
         _ ->
             block
+
+
+getStatus : SBlock -> BlockStatus
+getStatus block =
+    BlockTools.getSBlockMeta block |> .status
 
 
 reverseCommitted : State -> State
@@ -656,8 +660,7 @@ classify language inVerbatimBlock verbatimBlockInitialIndent str =
             lineType (String.dropLeft leadingSpaces str) |> debugCyan "provisionalLineType"
 
         lineType_ =
-            (-- if inVerbatimBlock && provisionalLineType == Block..BlankLine then
-             if inVerbatimBlock && leadingSpaces >= (verbatimBlockInitialIndent |> debugCyan "verbatimBlockInitialIndent") then
+            (if inVerbatimBlock && leadingSpaces >= (verbatimBlockInitialIndent |> debugCyan "verbatimBlockInitialIndent") then
                 Block.Line.VerbatimLine
 
              else
