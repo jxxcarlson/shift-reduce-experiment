@@ -1,4 +1,13 @@
-module Block.BlockTools exposing (..)
+module Block.BlockTools exposing
+    ( getMeta
+    , getSBlockMeta
+    , make
+    , map
+    , mapMeta
+    , name
+    , sblockName
+    , stringValueOfBlockList
+    )
 
 import Block.Block as Block exposing (Block(..), BlockStatus(..), ExprM(..), Meta, SBlock(..))
 import Expression.AST exposing (Expr(..))
@@ -52,6 +61,22 @@ sblockName sblock =
 
         SError _ ->
             Nothing
+
+
+getSBlockMeta : SBlock -> Meta
+getSBlockMeta sblock =
+    case sblock of
+        SParagraph _ meta ->
+            meta
+
+        SVerbatimBlock name_ _ meta ->
+            meta
+
+        SBlock name_ _ meta ->
+            meta
+
+        SError meta ->
+            Block.dummyMeta
 
 
 exprMToExpr : ExprM -> Expr

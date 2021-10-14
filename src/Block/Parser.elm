@@ -15,6 +15,7 @@ import Markup.Debugger exposing (debugCyan, debugYellow)
 run : Lang -> Int -> List String -> State
 run language generation input =
     loop (Block.State.init language generation input |> debugYellow "INITIAL STATE") (nextStep language)
+        |> (\state -> { state | committed = List.reverse state.committed })
 
 
 {-|
