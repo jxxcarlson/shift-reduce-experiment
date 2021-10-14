@@ -113,10 +113,6 @@ processLine language state =
         EndBlock name ->
             endBlock name state
 
-        --{ state
-        --    --| errorMessage =
-        --     --   Just { red = "Oops, the begin and end tags must match", blue = currentlockName ++ " ≠ " ++ name }
-        --}
         EndVerbatimBlock name ->
             endBlock name state
 
@@ -303,6 +299,8 @@ reduce state =
     case state.stack of
         block1 :: ((SBlock name blocks meta) as block2) :: rest ->
             if levelOfBlock block1 > levelOfBlock block2 then
+                -- incorporate block1 into the block just below it in the stack
+                -- then reduce again
                 reduce { state | stack = SBlock name (block1 :: blocks) meta :: rest }
 
             else
@@ -310,9 +308,12 @@ reduce state =
                 reduce { state | committed = block1 :: block2 :: state.committed, stack = List.drop 2 state.stack }
 
         block :: [] ->
+            -- Only one block remains on the stack, so commit it.
+            -- TODO: do we need to consider error handling
             { state | committed = reverseContents block :: state.committed, stack = [] }
 
         _ ->
+            -- TODO. This ignores many cases.  Probably wrong.
             state
 
 

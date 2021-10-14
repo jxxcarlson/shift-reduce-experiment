@@ -24,7 +24,7 @@ suiteMarkdown =
         [ test "(1) foo" <|
             \_ ->
                 run Markdown "foo"
-                    |> Expect.equal { committed = [ Text "foo" (loc 0 2) ], count = 2, end = 3, scanPointer = 3, sourceText = "foo", stack = [] }
+                    |> Expect.equal { committed = [ Text "foo" { begin = 0, end = 2 } ], count = 2, end = 3, scanPointer = 3, sourceText = "foo", stack = [] }
         , test "(2) BOLD" <|
             \_ ->
                 run Markdown "*foo*"
@@ -46,7 +46,9 @@ suiteMiniLaTeX =
         , test "(2) \\foo" <|
             \_ ->
                 run MiniLaTeX "\\foo"
-                    |> Expect.equal { committed = [ Expr "foo" [] (loc 0 3) ], count = 2, end = 4, scanPointer = 4, sourceText = "\\foo", stack = [] }
+                    |> .committed
+                    |> Simplify.expressions
+                    |> Expect.equal [ ExprS "blue" [ TextS "\\foo" ], ExprS "errorHighlight" [ ExprS "red" [ TextS "{??}" ] ] ]
         , test "(3) \\foo{1}" <|
             \_ ->
                 run MiniLaTeX "\\foo{1}"
