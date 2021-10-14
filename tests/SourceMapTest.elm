@@ -21,7 +21,7 @@ block2 =
 
 
 blocks =
-    [ block1, block2 ] |> debug1 "BLOCKS"
+    [ block1, block2 ] |> debugMagenta "BLOCKS"
 
 
 source =

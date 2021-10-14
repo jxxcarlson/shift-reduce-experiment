@@ -48,7 +48,7 @@ parseToBlock lang id firstLine str =
 -}
 run : Lang -> String -> State
 run lang input =
-    loop (init input) (nextState lang) |> debug2 "FINAL STATE"
+    loop (init input) (nextState lang) |> debugCyan "FINAL STATE"
 
 
 init : String -> State
@@ -97,7 +97,7 @@ nextState lang state_ =
 nextState_ : Lang -> State -> Step State State
 nextState_ lang state =
     if state.scanPointer >= state.end then
-        finalize lang (reduceFinal lang state |> debug1 "reduceFinal (APPL)")
+        finalize lang (reduceFinal lang state |> debugMagenta "reduceFinal (APPL)")
 
     else
         processToken lang state
@@ -106,10 +106,10 @@ nextState_ lang state =
 finalize : Lang -> State -> Step State State
 finalize lang state =
     if state.stack == [] then
-        Done (state |> (\st -> { st | committed = List.reverse st.committed })) |> debug2 "ReduceFinal (1)"
+        Done (state |> (\st -> { st | committed = List.reverse st.committed })) |> debugCyan "ReduceFinal (1)"
 
     else
-        recoverFromError lang state |> debug2 "ReduceFinal (2, recoverFromErrors)"
+        recoverFromError lang state |> debugCyan "ReduceFinal (2, recoverFromErrors)"
 
 
 processToken : Lang -> State -> Step State State
@@ -118,19 +118,19 @@ processToken lang state =
         TokenError errorData meta ->
             let
                 ( row, col ) =
-                    List.map (\item -> ( item.row, item.col )) errorData |> List.Extra.last |> Maybe.withDefault ( 1, 1 ) |> debug4 "(row, col)"
+                    List.map (\item -> ( item.row, item.col )) errorData |> List.Extra.last |> Maybe.withDefault ( 1, 1 ) |> debugBlue "(row, col)"
 
                 firstLines =
-                    List.take (row - 1) (String.lines (String.dropLeft state.scanPointer state.sourceText)) |> debug4 "first lines"
+                    List.take (row - 1) (String.lines (String.dropLeft state.scanPointer state.sourceText)) |> debugBlue "first lines"
 
                 lastLine =
-                    List.drop (row - 1) (String.lines (String.dropLeft state.scanPointer state.sourceText)) |> String.join "" |> String.left col |> debug4 "last line"
+                    List.drop (row - 1) (String.lines (String.dropLeft state.scanPointer state.sourceText)) |> String.join "" |> String.left col |> debugBlue "last line"
 
                 unprocessedText =
-                    String.join "\n" firstLines ++ lastLine |> debug4 "unprocessedText"
+                    String.join "\n" firstLines ++ lastLine |> debugBlue "unprocessedText"
 
                 tokenLength =
-                    String.length unprocessedText |> debug4 "tokenLength"
+                    String.length unprocessedText |> debugBlue "tokenLength"
             in
             -- Oops, exit
             Loop { state | committed = errorValue state errorData :: state.committed, scanPointer = state.scanPointer + tokenLength + 1 }

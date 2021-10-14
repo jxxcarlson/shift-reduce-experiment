@@ -14,7 +14,7 @@ import Lang.Lang exposing (Lang(..))
 import Lang.LineType.L1
 import Lang.LineType.Markdown
 import Lang.LineType.MiniLaTeX
-import Markup.Debugger exposing (debug1, debug2, debug3, debug4)
+import Markup.Debugger exposing (debugBlue, debugCyan, debugMagenta, debugRed, debugYellow)
 import Markup.ParserTools
 import Markup.Simplify
 import Parser.Advanced
@@ -23,7 +23,7 @@ import Render.MathMacro
 
 finalize : State -> State
 finalize state =
-    state |> dumpStack |> reverseCommitted |> debug1 "FINALIZE"
+    state |> dumpStack |> reverseCommitted |> debugMagenta "FINALIZE"
 
 
 insertErrorMessage : State -> State
@@ -65,7 +65,7 @@ renderErrorMessage lang msg =
 
 recoverFromError : State -> State
 recoverFromError state =
-    { state | stack = [] } |> debug4 "recoverFromError "
+    { state | stack = [] } |> debugBlue "recoverFromError "
 
 
 {-|
@@ -140,7 +140,7 @@ processLine language state =
                                         state
 
                     GT ->
-                        state |> addLineToCurrentBlock |> debug2 "Add ordinary line to current block (GT)"
+                        state |> addLineToCurrentBlock |> debugCyan "Add ordinary line to current block (GT)"
 
                     LT ->
                         if state.verbatimBlockInitialIndent == state.previousLineData.indent then
@@ -191,14 +191,14 @@ processLine language state =
                     EQ ->
                         let
                             _ =
-                                debug3 "BlankLine" 1
+                                debugYellow "BlankLine" 1
                         in
                         addLineToCurrentBlock state
 
                     GT ->
                         let
                             _ =
-                                debug3 "BlankLine" 2
+                                debugYellow "BlankLine" 2
                         in
                         createBlock state
 
@@ -207,7 +207,7 @@ processLine language state =
                             Nothing ->
                                 let
                                     _ =
-                                        debug3 "BlankLine" 3
+                                        debugYellow "BlankLine" 3
                                 in
                                 commitBlock state
 
@@ -215,7 +215,7 @@ processLine language state =
                                 if state.lang == MiniLaTeX then
                                     let
                                         _ =
-                                            debug3 "BlankLine" 4
+                                            debugYellow "BlankLine" 4
                                     in
                                     state
                                         |> commitBlock
@@ -223,7 +223,7 @@ processLine language state =
                                 else
                                     let
                                         _ =
-                                            debug3 "BlankLine" 5
+                                            debugYellow "BlankLine" 5
                                     in
                                     state |> commitBlock
             )
@@ -240,7 +240,7 @@ processLine language state =
 endBlock name state =
     (let
         _ =
-            debug3 "EndBlock, name" name
+            debugYellow "EndBlock, name" name
 
         _ =
             deBUG4 "EndBlock (IN)" state
@@ -265,13 +265,13 @@ deBUG4 label state =
             String.fromInt state.blockCount ++ ". "
 
         _ =
-            debug4 (n ++ label ++ ": line") state.currentLineData
+            debugBlue (n ++ label ++ ": line") state.currentLineData
 
         _ =
-            debug3 (n ++ label ++ ": stack") (state.stack |> List.map Markup.Simplify.sblock)
+            debugYellow (n ++ label ++ ": stack") (state.stack |> List.map Markup.Simplify.sblock)
 
         _ =
-            debug4 (n ++ label ++ ": committed") (state.committed |> List.map Markup.Simplify.sblock)
+            debugRed (n ++ label ++ ": committed") (state.committed |> List.map Markup.Simplify.sblock)
     in
     state
 
@@ -282,13 +282,13 @@ deBUG1 label state =
             String.fromInt state.blockCount ++ ". "
 
         _ =
-            debug1 (n ++ label ++ ": line") state.currentLineData
+            debugMagenta (n ++ label ++ ": line") state.currentLineData
 
         _ =
-            debug3 (n ++ label ++ ": stack") (state.stack |> List.map Markup.Simplify.sblock)
+            debugYellow (n ++ label ++ ": stack") (state.stack |> List.map Markup.Simplify.sblock)
 
         _ =
-            debug1 (n ++ label ++ ": committed") (state.committed |> List.map Markup.Simplify.sblock)
+            debugRed (n ++ label ++ ": committed") (state.committed |> List.map Markup.Simplify.sblock)
     in
     state
 
@@ -336,13 +336,13 @@ createBlockPhase1 state =
         LT ->
             case stackTop state of
                 Nothing ->
-                    commitBlock state
+                    commitBlock state |> debugBlue "createBlockPhase1 (LT, NOTHING)"
 
                 Just _ ->
                     let
                         -- TODO: think about this
                         errorMessage_ =
-                            debug4 "createBlockPhase1 (LT)" (Just { red = "You need to terminate this block (1)", blue = "??" })
+                            debugBlue "createBlockPhase1 (LT)" (Just { red = "You need to terminate this block (1)", blue = "??" })
                     in
                     commitBlock state
 
@@ -355,12 +355,12 @@ createBlockPhase1 state =
                     let
                         -- TODO: think about this
                         errorMessage_ =
-                            debug4 "createBlockPhase1 (EQ)" (Just { red = "You need to terminate this block (2)", blue = "??2" })
+                            debugBlue "createBlockPhase1 (EQ)" (Just { red = "You need to terminate this block (2)", blue = "??2" })
                     in
-                    commitBlock state
+                    simpleCommit state
 
         GT ->
-            state
+            state |> debugBlue "createBlockPhase1 (GT)"
 
 
 createBlockPhase2 : State -> State
@@ -416,7 +416,7 @@ createBlockPhase2 state =
         _ ->
             state
     )
-        |> debug2 "createBlock "
+        |> debugCyan "createBlock "
 
 
 commitBlock : State -> State
@@ -431,18 +431,18 @@ commitBlock_ state =
             state
 
         top :: [] ->
-            { state | committed = reverseContents top :: state.committed, accumulator = updateAccumulator top state.accumulator } |> debug2 "commitBlock (1)"
+            { state | committed = reverseContents top :: state.committed, accumulator = updateAccumulator top state.accumulator } |> debugCyan "commitBlock (1)"
 
         top :: next :: rest ->
             case compare (levelOfBlock top) (levelOfBlock next) of
                 GT ->
-                    shiftBlock top state |> debug2 "commitBlock (2)"
+                    shiftBlock top state |> debugCyan "commitBlock (2)"
 
                 EQ ->
-                    { state | committed = top :: next :: state.committed, stack = List.drop 1 state.stack } |> debug1 "commitBlock (3)"
+                    { state | committed = top :: next :: state.committed, stack = List.drop 1 state.stack } |> debugMagenta "commitBlock (3)"
 
                 LT ->
-                    { state | committed = top :: next :: state.committed, stack = List.drop 1 state.stack } |> debug1 "commitBlock (3)"
+                    { state | committed = top :: next :: state.committed, stack = List.drop 1 state.stack } |> debugMagenta "commitBlock (3)"
 
 
 updateAccumulator : SBlock -> Accumulator -> Accumulator
@@ -607,17 +607,17 @@ classify language inVerbatimBlock verbatimBlockInitialIndent str =
             Block.Line.countLeadingSpaces str
 
         provisionalLineType =
-            lineType (String.dropLeft leadingSpaces str) |> debug2 "provisionalLineType"
+            lineType (String.dropLeft leadingSpaces str) |> debugCyan "provisionalLineType"
 
         lineType_ =
             (-- if inVerbatimBlock && provisionalLineType == Block..BlankLine then
-             if inVerbatimBlock && leadingSpaces >= (verbatimBlockInitialIndent |> debug2 "verbatimBlockInitialIndent") then
+             if inVerbatimBlock && leadingSpaces >= (verbatimBlockInitialIndent |> debugCyan "verbatimBlockInitialIndent") then
                 Block.Line.VerbatimLine
 
              else
                 provisionalLineType
             )
-                |> debug2 "FINAL LINE TYPE"
+                |> debugCyan "FINAL LINE TYPE"
     in
     { indent = leadingSpaces, lineType = lineType_, content = str }
 

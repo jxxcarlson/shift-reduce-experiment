@@ -43,3 +43,12 @@ t5 =
    4
    5 
 """
+
+
+t6 =
+    """abc def
+ghi jkl
+
+one two three
+four five six
+"""

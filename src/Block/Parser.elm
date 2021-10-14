@@ -4,7 +4,7 @@ import Block.Library
 import Block.State exposing (State)
 import Lang.Lang exposing (Lang)
 import List.Extra
-import Markup.Debugger exposing (debug2, debug3)
+import Markup.Debugger exposing (debugCyan, debugYellow)
 
 
 
@@ -14,7 +14,7 @@ import Markup.Debugger exposing (debug2, debug3)
 {-| -}
 run : Lang -> Int -> List String -> State
 run language generation input =
-    loop (Block.State.init language generation input |> debug3 "INITIAL STATE") (nextStep language)
+    loop (Block.State.init language generation input |> debugYellow "INITIAL STATE") (nextStep language)
 
 
 {-|
@@ -55,7 +55,7 @@ getLine language state =
                 (List.Extra.getAt state.index state.input
                     |> Maybe.withDefault "??"
                 )
-                |> debug2 ("LINE DATA " ++ String.fromInt state.index)
+                |> debugCyan ("LINE DATA " ++ String.fromInt state.index)
     }
 
 

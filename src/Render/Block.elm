@@ -7,7 +7,7 @@ import Dict exposing (Dict)
 import Element exposing (..)
 import Element.Background as Background
 import Element.Font as Font
-import Markup.Debugger exposing (debug1, debug3)
+import Markup.Debugger exposing (debugMagenta, debugYellow)
 import Render.Math
 import Render.MathMacro
 import Render.Settings exposing (Settings)
@@ -28,7 +28,7 @@ renderBlock : Int -> Settings -> Block.State.Accumulator -> Block -> Element msg
 renderBlock generation settings accumulator block =
     let
         _ =
-            debug1 "renderBlock, block status" (Block.getMeta block |> .status)
+            debugMagenta "renderBlock, block status" (Block.getMeta block |> .status)
     in
     case block of
         Paragraph textList _ ->
@@ -237,7 +237,7 @@ quotationBlock generation settings accumulator blocks =
     column
         [ paddingEach { left = 18, right = 0, top = 0, bottom = 8 }
         ]
-        (List.map (renderBlock generation settings accumulator) (debug3 "XX, block in quotation" blocks))
+        (List.map (renderBlock generation settings accumulator) (debugYellow "XX, block in quotation" blocks))
 
 
 item : Int -> Settings -> Block.State.Accumulator -> List Block -> Element msg

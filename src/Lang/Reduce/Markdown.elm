@@ -5,20 +5,20 @@ import Expression.AST as AST exposing (Expr(..))
 import Expression.State exposing (State)
 import Expression.Token as Token exposing (Token(..))
 import Markup.Common exposing (Step(..))
-import Markup.Debugger exposing (debug1)
+import Markup.Debugger exposing (debugMagenta)
 
 
 reduceFinal : State -> State
 reduceFinal state =
     case state.stack of
         (Right (AST.Expr name args loc)) :: [] ->
-            { state | committed = AST.Expr name (List.reverse args) loc :: state.committed, stack = [] } |> debug1 "FINAL RULE 1"
+            { state | committed = AST.Expr name (List.reverse args) loc :: state.committed, stack = [] } |> debugMagenta "FINAL RULE 1"
 
         --
         --(Left (MarkedText "strong" str _)) :: [] ->
         --    { state | committed = Expr "strong" [ AST.Text str ] :: state.committed, stack = [] } |> debug1 "FINAL RULE 2"
         _ ->
-            state |> debug1 "FINAL RULE LAST"
+            state |> debugMagenta "FINAL RULE LAST"
 
 
 {-|
@@ -31,7 +31,7 @@ reduce : State -> State
 reduce state =
     case state.stack of
         (Left (Token.Text str loc)) :: [] ->
-            reduceAux (AST.Text str loc) [] state |> debug1 "RULE 1"
+            reduceAux (AST.Text str loc) [] state |> debugMagenta "RULE 1"
 
         (Left (MarkedText "boldItalic" str loc)) :: [] ->
             reduceAux (Expr "boldItalic" [ AST.Text str loc ] loc) [] state
