@@ -60,7 +60,18 @@ renderErrorMessage lang msg =
             "@red[" ++ msg.red ++ "] @blue[" ++ msg.blue ++ "]"
 
         MiniLaTeX ->
-            "\\red{" ++ msg.red ++ "} \\skip{10} \\blue{" ++ msg.blue ++ "}"
+            case ( msg.red, msg.blue ) of
+                ( "", "" ) ->
+                    ""
+
+                ( red, "" ) ->
+                    "\\red{" ++ red ++ "}"
+
+                ( "", blue ) ->
+                    "\\skip{10} \\blue{" ++ blue ++ "}"
+
+                ( red, blue ) ->
+                    "\\red{" ++ red ++ "} \\skip{10} \\blue{" ++ blue ++ "}"
 
 
 recoverFromError : State -> State
@@ -131,14 +142,12 @@ processLine language state =
 
                                     SBlock _ _ _ ->
                                         state
-                                            |> postErrorMessage "Error, current line has same level as the current block. I'll go ahead and add it to your block"
-                                                "Hmmmm..."
+                                            |> postErrorMessage "" "Indent lines of following block"
                                             |> addLineToCurrentBlock
 
                                     SVerbatimBlock _ _ _ ->
                                         state
-                                            |> postErrorMessage "Error, current line has same level as the current block. I'll go ahead and add it to your block"
-                                                "Hmmmm......."
+                                            |> postErrorMessage "" "Indent lines of following block"
                                             |> addLineToCurrentBlock
 
                                     SError _ ->
