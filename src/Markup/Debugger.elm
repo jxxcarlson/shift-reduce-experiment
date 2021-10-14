@@ -10,11 +10,11 @@ import Console
 
 
 magentaSwitch =
-    True
+    False
 
 
 cyanSwitch =
-    True
+    False
 
 
 yellowSwitch =
@@ -22,7 +22,7 @@ yellowSwitch =
 
 
 blueSwitch =
-    True
+    False
 
 
 redSwitch =

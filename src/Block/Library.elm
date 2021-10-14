@@ -111,7 +111,8 @@ processLine language state =
                     deBUG4 "OrdinaryLine (IN)" state
              in
              if state.previousLineData.lineType == BlankLine then
-                createBlock state |> debugRed "TROUBLE HERE? (7)"
+                -- createBlock state |> debugRed "TROUBLE HERE? (7)"
+                state |> finalizeBlockStatusOfStackTop |> simpleCommit |> createBlock
 
              else
                 case compare (level state.currentLineData.indent) (levelOfCurrentBlock state) of
@@ -514,6 +515,16 @@ addLineToCurrentBlock state =
 
 
 -- HELPERS
+
+
+finalizeBlockStatusOfStackTop : State -> State
+finalizeBlockStatusOfStackTop state =
+    case List.head state.stack of
+        Nothing ->
+            state
+
+        Just top ->
+            { state | stack = finalizeBlockStatus top :: List.drop 1 state.stack }
 
 
 finalizeBlockStatus_ : BlockStatus -> BlockStatus
