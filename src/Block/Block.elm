@@ -1,10 +1,12 @@
 module Block.Block exposing
     ( Block(..)
     , BlockStatus(..)
+    , BlockType(..)
     , ExprM(..)
     , Meta
     , SBlock(..)
     , dummyMeta
+    , typeOfSBlock
     )
 
 import Markup.Meta exposing (ExpressionMeta)
@@ -37,6 +39,13 @@ type BlockStatus
     | BlockComplete
 
 
+type BlockType
+    = P
+    | V
+    | B
+    | E
+
+
 type ExprM
     = TextM String ExpressionMeta
     | VerbatimM String String ExpressionMeta
@@ -49,3 +58,19 @@ type SBlock
     | SVerbatimBlock String (List String) Meta
     | SBlock String (List SBlock) Meta
     | SError String
+
+
+typeOfSBlock : SBlock -> BlockType
+typeOfSBlock block =
+    case block of
+        SParagraph _ _ ->
+            P
+
+        SVerbatimBlock _ _ _ ->
+            V
+
+        SBlock _ _ _ ->
+            B
+
+        SError _ ->
+            E

@@ -3,7 +3,7 @@ module Block.Library exposing
     , processLine
     )
 
-import Block.Block exposing (BlockStatus(..), SBlock(..))
+import Block.Block as Block exposing (BlockStatus(..), SBlock(..))
 import Block.BlockTools as BlockTools
 import Block.Function as Function
 import Block.Line exposing (BlockOption(..), LineData, LineType(..))
@@ -98,16 +98,18 @@ processLine language state =
                         in
                         case compare (Function.level state.currentLineData.indent) (Function.levelOfCurrentBlock state) of
                             EQ ->
-                                -- The current line and the block on top of the stack have the same level
-                                case Function.stackTop state of
-                                    Nothing ->
-                                        -- There is nothing on the stack, so create a new paragraph
-                                        -- TODO. Hmmm, this case should not happen
-                                        state |> Function.pushBlock (SParagraph [ state.currentLineData.content ] (newMeta state))
+                                -- If the block on top of the stack is a paragraph, add the
+                                -- current line to it.
+                                if Block.typeOfSBlock top == Block.P then
+                                    Function.pushLineOntoStack state.index state.currentLineData.content state
 
-                                    Just _ ->
-                                        -- Add the current line to the block on top of the stack
-                                        Function.pushLineOntoStack state.index state.currentLineData.content state
+                                else
+                                    -- Otherwise, commit the top block and create
+                                    -- a new paragraph with the current line
+                                    state
+                                        |> Function.liftBlockFunctiontoStateFunction Function.finalizeBlockStatus
+                                        |> Function.simpleCommit
+                                        |> Function.pushBlock (SParagraph [ state.currentLineData.content ] (newMeta state))
 
                             GT ->
                                 -- The line has greater level than the block on top of the stack, so add it to the block
@@ -118,7 +120,7 @@ processLine language state =
                                 -- If the block on top of the stack is a verbatim block and the indentation
                                 -- of the current line is less than the indentation level of the block,
                                 -- then signal an error but add it to the block anyway.  Otherwise, commit
-                                -- the current block and creat a new one.
+                                -- the current block and create a new one.
                                 -- TODO. In fact, in the else clause, we should reduce the stack, then create the block.
                                 if state.verbatimBlockInitialIndent == Function.levelOfCurrentBlock state then
                                     addLineToStackTop
@@ -127,9 +129,13 @@ processLine language state =
 
                                 else
                                     state
+                                        |> debugOut "OrdinaryLine, ELSE clause (1)"
                                         |> Function.liftBlockFunctiontoStateFunction (Function.finalizeBlockStatus >> Function.reverseContents)
+                                        |> debugOut "OrdinaryLine, ELSE clause (2)"
                                         |> Function.simpleCommit
+                                        |> debugOut "OrdinaryLine, ELSE clause (3)"
                                         |> Function.pushLineOntoStack state.index state.currentLineData.content
+                                        |> debugOut "OrdinaryLine, ELSE clause (4)"
                     )
                         |> debugOut "OrdinaryLine (OUT)"
 
