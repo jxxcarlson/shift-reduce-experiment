@@ -49,18 +49,22 @@ processLine language state =
 
         OrdinaryLine ->
             (if state.previousLineData.lineType == BlankLine then
+                -- A non-blank line followed a blank one, so create a new paragraph
                 state
                     |> Function.finalizeBlockStatusOfStackTop
                     |> Function.simpleCommit
-                    -- |> createBlock
                     |> Function.pushBlock (SParagraph [ state.currentLineData.content ] (newMeta state))
 
              else
+                -- Handle the case of a non-blank line following a non-blank line.
+                -- The action depends on the indentation of the current line as compared to
+                -- the level of the current block (top of the stack)
                 case compare (Function.level state.currentLineData.indent) (Function.levelOfCurrentBlock state) of
                     EQ ->
                         case Function.stackTop state of
                             Nothing ->
-                                state |> createBlock |> debugRed "TROUBLE HERE? (6)"
+                                -- state |> createBlock |> debugRed "TROUBLE HERE? (6)"
+                                state |> Function.pushBlock (SParagraph [ state.currentLineData.content ] (newMeta state))
 
                             Just _ ->
                                 Function.pushLineOntoStack state.index state.currentLineData.content state
