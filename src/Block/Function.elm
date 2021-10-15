@@ -12,7 +12,10 @@ module Block.Function exposing
     , level
     , levelOfBlock
     , levelOfCurrentBlock
+    , liftBlockFunctiontoStateFunction
+    , mapStack
     , nameOfStackTop
+    , postErrorMessage
     , pushBlock
     , pushLineIntoBlock
     , pushLineOntoStack
@@ -35,6 +38,26 @@ import Block.Line exposing (LineData)
 import Block.State exposing (State)
 import Lang.Lang exposing (Lang(..))
 import Markup.Debugger exposing (debugBlue)
+
+
+postErrorMessage : String -> String -> State -> State
+postErrorMessage red blue state =
+    { state | errorMessage = Just { red = red, blue = blue } }
+
+
+liftBlockFunctiontoStateFunction : (SBlock -> SBlock) -> State -> State
+liftBlockFunctiontoStateFunction f state =
+    { state | stack = mapStack f state.stack }
+
+
+mapStack : (SBlock -> SBlock) -> List SBlock -> List SBlock
+mapStack f stack =
+    case List.head stack of
+        Nothing ->
+            stack
+
+        Just top ->
+            f top :: List.drop 1 stack
 
 
 finalize : State -> State

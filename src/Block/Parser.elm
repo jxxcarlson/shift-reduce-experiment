@@ -5,7 +5,8 @@ import Block.Library
 import Block.State exposing (State)
 import Lang.Lang exposing (Lang)
 import List.Extra
-import Markup.Debugger exposing (debugCyan, debugRed, debugYellow)
+import Markup.Debugger exposing (debugBlue, debugCyan, debugGreen, debugMagenta, debugRed, debugYellow)
+import Markup.Simplify as Simplify
 
 
 
@@ -63,7 +64,30 @@ getLine language state =
 
 finalizeOrRecoverFromError : State -> Step State State
 finalizeOrRecoverFromError state =
-    state |> Function.reduce |> finalizeOrRecoverFromError_
+    state
+        |> debug "finalizeOrRecoverFromError, reduce, IN"
+        |> Function.reduce
+        |> debug "finalizeOrRecoverFromError, reduce, OUT"
+        |> finalizeOrRecoverFromError_
+
+
+debugPrefix label state =
+    let
+        n =
+            String.fromInt state.index ++ ". "
+    in
+    n ++ "(" ++ label ++ ") "
+
+
+debug label state =
+    let
+        _ =
+            debugGreen (debugPrefix label state ++ ", STACK") (state.stack |> List.map Simplify.sblock)
+
+        _ =
+            debugGreen (debugPrefix label state ++ ", COMM.") (state.committed |> List.map Simplify.sblock)
+    in
+    state
 
 
 finalizeOrRecoverFromError_ : State -> Step State State

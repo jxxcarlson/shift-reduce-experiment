@@ -37,12 +37,11 @@ suiteL1BlockParser =
                 run MiniLaTeX "\\begin{foo}\n   abc\n   def\n\\end{oof}"
                     |> Expect.equal
                         [ SBlockS "foo" [ SParagraphS [ "   abc", "   def" ] BlockComplete ] (MismatchedTags "foo" "oof") ]
-        , Test.skip <|
-            test "(5) An unclosed block" <|
-                \_ ->
-                    run MiniLaTeX "\\begin{foo}\n   abc\n   def"
-                        |> Expect.notEqual
-                            [ SBlockS "foo" [ SParagraphS [ "   abc", "   def" ] BlockComplete ] BlockComplete ]
+        , test "(5) An unclosed block" <|
+            \_ ->
+                run MiniLaTeX "\\begin{foo}\n   abc\n   def"
+                    |> Expect.notEqual
+                        [ SBlockS "foo" [ SParagraphS [ "   abc", "   def" ] BlockComplete ] BlockComplete ]
         , test "(6) Two blocks in succession of the same level" <|
             \_ ->
                 run MiniLaTeX "\\begin{foo}\n   abc\n   def\n\\end{foo}\n\\begin{bar}\n   xyz\n\\end{bar}"
@@ -73,4 +72,16 @@ suiteL1BlockParser =
                         , SParagraphS [ "yada", "nada", "" ] BlockComplete
                         , SVerbatimBlockS "math" [ "   xyz" ] BlockComplete
                         ]
+        , test "(10) A verbatim block followed by a blank line and a non-blank line" <|
+            \_ ->
+                run MiniLaTeX "\\begin{code}\n   abc\n   def\n\\end{code}\n\nyada yada"
+                    |> Expect.equal
+                        [ SVerbatimBlockS "code" [ "   abc", "   def" ] BlockComplete
+                        , SParagraphS [ "yada yada" ] BlockComplete
+                        ]
+        , test "(11) A verbatim block followed by a non-blank line" <|
+            \_ ->
+                run MiniLaTeX "\\begin{code}\n   abc\n   def\n\\end{code}\nyada yada"
+                    |> Expect.equal
+                        [ SVerbatimBlockS "code" [ "   abc", "   def" ] BlockComplete, SParagraphS [ "yada yada" ] BlockComplete ]
         ]

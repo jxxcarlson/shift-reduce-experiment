@@ -2,7 +2,9 @@ module Markup.Debugger exposing
     ( debug3
     , debugBlue
     , debugCyan
+    , debugGreen
     , debugMagenta
+    , debugNull
     , debugRed
     , debugYellow
     )
@@ -18,6 +20,10 @@ cyanSwitch =
     False
 
 
+greenSwitch =
+    True
+
+
 yellowSwitch =
     True
 
@@ -28,6 +34,10 @@ blueSwitch =
 
 redSwitch =
     True
+
+
+debugNull label =
+    identity
 
 
 debug3 label =
@@ -45,6 +55,14 @@ debugMagenta label =
 debugCyan label =
     if cyanSwitch then
         Debug.log (Console.black (Console.bgCyan (" " ++ label ++ " ")))
+
+    else
+        identity
+
+
+debugGreen label =
+    if greenSwitch then
+        Debug.log (Console.black (Console.bgGreen (" " ++ label ++ " ")))
 
     else
         identity
