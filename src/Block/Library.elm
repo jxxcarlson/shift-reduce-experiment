@@ -74,18 +74,18 @@ processLine language state =
                             Just topBlock ->
                                 case topBlock of
                                     SParagraph lines meta ->
-                                        state |> addLineToCurrentBlock |> debugRed "TROUBLE HERE? (5)"
+                                        state |> addLineToStackTop |> debugRed "TROUBLE HERE? (5)"
 
                                     SBlock _ _ _ ->
                                         state
                                             |> postErrorMessage "" "Indent lines of following block"
-                                            |> addLineToCurrentBlock
+                                            |> addLineToStackTop
                                             |> debugRed "TROUBLE HERE? (4)"
 
                                     SVerbatimBlock _ _ _ ->
                                         state
                                             |> postErrorMessage "" "Indent lines of following block"
-                                            |> addLineToCurrentBlock
+                                            |> addLineToStackTop
                                             |> debugRed "TROUBLE HERE? (3) !!!!"
 
                                     SError _ ->
@@ -93,11 +93,11 @@ processLine language state =
                                         state
 
                     GT ->
-                        state |> addLineToCurrentBlock |> debugRed "TROUBLE HERE? (2) — Add ordinary line to current block (GT)"
+                        state |> addLineToStackTop |> debugRed "TROUBLE HERE? (2) — Add ordinary line to current block (GT)"
 
                     LT ->
                         if state.verbatimBlockInitialIndent == Function.levelOfCurrentBlock state then
-                            addLineToCurrentBlock { state | errorMessage = Just { red = "Below: you forgot to indent the math text. This is needed for all blocks.  Also, remember the trailing dollar signs", blue = "" } }
+                            addLineToStackTop { state | errorMessage = Just { red = "Below: you forgot to indent the math text. This is needed for all blocks.  Also, remember the trailing dollar signs", blue = "" } }
                                 |> Function.insertErrorMessage
 
                         else
@@ -111,19 +111,19 @@ processLine language state =
                     debugIn "VerbatimLine (IN)" state
              in
              if state.previousLineData.lineType == VerbatimLine then
-                addLineToCurrentBlock state
+                addLineToStackTop state
 
              else
                 case compare (Function.level state.currentLineData.indent) (Function.levelOfCurrentBlock state) of
                     EQ ->
-                        addLineToCurrentBlock state
+                        addLineToStackTop state
 
                     GT ->
-                        addLineToCurrentBlock state
+                        addLineToStackTop state
 
                     LT ->
                         if state.verbatimBlockInitialIndent == Function.levelOfCurrentBlock state then
-                            addLineToCurrentBlock { state | errorMessage = Just { red = "Below: you forgot to indent the math text. This is needed for all blocks.  Also, remember the trailing dollar signs", blue = "" } }
+                            addLineToStackTop { state | errorMessage = Just { red = "Below: you forgot to indent the math text. This is needed for all blocks.  Also, remember the trailing dollar signs", blue = "" } }
                                 |> Function.insertErrorMessage
 
                         else
@@ -142,7 +142,7 @@ processLine language state =
              else
                 case compare (Function.level state.currentLineData.indent) (Function.levelOfCurrentBlock state) of
                     EQ ->
-                        addLineToCurrentBlock state |> debugYellow "BlankLine 1"
+                        addLineToStackTop state |> debugYellow "BlankLine 1"
 
                     GT ->
                         createBlock state |> debugYellow "BlankLine 2"
@@ -167,83 +167,54 @@ processLine language state =
             state
 
 
-endBlock name state =
-    (let
-        _ =
-            debugYellow "EndBlock, name" name
 
-        _ =
-            debugIn "EndBlock (IN)" state
-     in
-     case Function.nameOfStackTop state of
-        Nothing ->
-            state |> Function.changeStatusOfTopOfStack (MismatchedTags "anonymous" name) |> Function.simpleCommit
-
-        Just stackTopName ->
-            if name == stackTopName then
-                state |> Function.changeStatusOfTopOfStack BlockComplete |> Function.simpleCommit
-
-            else
-                state |> Function.changeStatusOfTopOfStack (MismatchedTags stackTopName name) |> Function.simpleCommit
-    )
-        |> debugOut "EndBlock (OUT)"
+-- CLASSIFY LINE
 
 
-debugSpare label state =
+classify : Lang -> Bool -> Int -> String -> LineData
+classify language inVerbatimBlock verbatimBlockInitialIndent str =
     let
-        n =
-            String.fromInt state.index ++ ". "
+        lineType =
+            getLineTypeParser language
 
-        _ =
-            debugBlue (n ++ label ++ ": line") state.currentLineData
+        leadingSpaces =
+            Block.Line.countLeadingSpaces str
 
-        _ =
-            debugYellow (n ++ label ++ ": stack") (state.stack |> List.map Markup.Simplify.sblock)
+        provisionalLineType =
+            lineType (String.dropLeft leadingSpaces str) |> debugCyan "provisionalLineType"
 
-        _ =
-            debugRed (n ++ label ++ ": committed") (state.committed |> List.map Markup.Simplify.sblock)
+        lineType_ =
+            (if inVerbatimBlock && leadingSpaces >= (verbatimBlockInitialIndent |> debugCyan "verbatimBlockInitialIndent") then
+                Block.Line.VerbatimLine
+
+             else
+                provisionalLineType
+            )
+                |> debugCyan "FINAL LINE TYPE"
     in
-    state
+    { indent = leadingSpaces, lineType = lineType_, content = str }
 
 
-debugIn label state =
-    let
-        n =
-            String.fromInt state.index ++ ". "
+getLineTypeParser : Lang -> String -> Block.Line.LineType
+getLineTypeParser language =
+    case language of
+        L1 ->
+            Lang.LineType.L1.lineType
 
-        _ =
-            debugBlue (n ++ label ++ ": line") state.currentLineData
+        Markdown ->
+            Lang.LineType.Markdown.lineType
 
-        _ =
-            debugYellow (n ++ label ++ ": stack") (state.stack |> List.map Markup.Simplify.sblock)
-
-        _ =
-            debugRed (n ++ label ++ ": committed") (state.committed |> List.map Markup.Simplify.sblock)
-    in
-    state
+        MiniLaTeX ->
+            Lang.LineType.MiniLaTeX.lineType
 
 
-debugOut label state =
-    let
-        n =
-            String.fromInt state.index ++ ". "
 
-        _ =
-            debugYellow (n ++ label ++ ": stack") (state.stack |> List.map Markup.Simplify.sblock)
-
-        _ =
-            debugRed (n ++ label ++ ": committed") (state.committed |> List.map Markup.Simplify.sblock)
-    in
-    state
+-- CREATE BLOCK
 
 
-getBlockName sblock =
-    BlockTools.sblockName sblock |> Maybe.withDefault "UNNAMED"
-
-
-postErrorMessage : String -> String -> State -> State
-postErrorMessage red blue state =
-    { state | errorMessage = Just { red = red, blue = blue } }
+createBlock : State -> State
+createBlock state =
+    state |> createBlockPhase1 |> createBlockPhase2
 
 
 createBlockPhase1 : State -> State
@@ -296,7 +267,7 @@ createBlockPhase2 state =
         BeginBlock AcceptFirstLine _ ->
             let
                 newBlock =
-                    SBlock (nibble state.currentLineData.content |> transformHeading)
+                    SBlock (nibble state.currentLineData.content |> transformMarkdownHeading)
                         [ SParagraph [ deleteSpaceDelimitedPrefix state.currentLineData.content ] { status = BlockStarted, begin = state.index, end = state.index, id = String.fromInt state.blockCount, indent = state.currentLineData.indent } ]
                         { begin = state.index, end = state.index, status = BlockStarted, id = String.fromInt state.blockCount, indent = state.currentLineData.indent }
             in
@@ -330,6 +301,82 @@ createBlockPhase2 state =
             state
     )
         |> debugCyan "createBlock "
+
+
+
+-- ADD LINE TO BLOCK
+
+
+addLineToStackTop : State -> State
+addLineToStackTop state =
+    (case Function.stackTop state of
+        Nothing ->
+            state
+
+        Just (SParagraph lines meta) ->
+            Function.pushLineOntoStack state.index state.currentLineData.content state
+
+        Just (SBlock mark blocks meta) ->
+            let
+                top =
+                    SBlock mark (addLineToBlocks state.index state.currentLineData blocks) { meta | end = state.index }
+            in
+            { state | stack = top :: List.drop 1 state.stack }
+
+        Just (SVerbatimBlock mark lines meta) ->
+            Function.pushLineOntoStack state.index state.currentLineData.content state
+
+        _ ->
+            state
+    )
+        |> debugSpare "addLineToCurrentBlock"
+
+
+addLineToBlocks : Int -> LineData -> List SBlock -> List SBlock
+addLineToBlocks index lineData blocks =
+    case blocks of
+        (SParagraph lines meta) :: rest ->
+            -- there was a leading paragraph, so we can prepend the line lineData.content
+            SParagraph (lineData.content :: lines) { meta | end = index } :: rest
+
+        rest ->
+            -- TODO: the id field is questionable
+            -- otherwise we prepend a paragraph with the given line
+            SParagraph [ lineData.content ] { status = BlockComplete, begin = index, end = index, id = String.fromInt index, indent = lineData.indent } :: rest
+
+
+
+-- END BLOCK
+
+
+endBlock name state =
+    (let
+        _ =
+            debugYellow "EndBlock, name" name
+
+        _ =
+            debugIn "EndBlock (IN)" state
+     in
+     case Function.nameOfStackTop state of
+        Nothing ->
+            -- the block is a paragraph, hence has no name
+            state |> Function.changeStatusOfTopOfStack (MismatchedTags "anonymous" name) |> Function.simpleCommit
+
+        Just stackTopName ->
+            -- the begin and end tags match, so the block is complete; we commit it
+            if name == stackTopName then
+                state |> Function.changeStatusOfTopOfStack BlockComplete |> Function.simpleCommit
+
+            else
+                -- the tags don't match. We note that fact for the benefit of the renderer (or the error handler),
+                -- and we commit the block
+                state |> Function.changeStatusOfTopOfStack (MismatchedTags stackTopName name) |> Function.simpleCommit
+    )
+        |> debugOut "EndBlock (OUT)"
+
+
+
+-- COMMIT
 
 
 commitBlock : State -> State
@@ -377,6 +424,16 @@ commitBlock_ state =
                     { state | committed = top_ :: next_ :: state.committed, stack = List.drop 1 state.stack } |> debugMagenta "commitBlock (4)"
 
 
+
+-- ACCUMULATOR
+
+
+{-|
+
+    This function post data to the accumulator field of State as the parser
+    runs its loop.  That information is used downstream by the renderer.
+
+-}
 updateAccumulator : SBlock -> Accumulator -> Accumulator
 updateAccumulator sblock1 accumulator =
     case sblock1 of
@@ -391,107 +448,15 @@ updateAccumulator sblock1 accumulator =
             accumulator
 
 
-addLineToCurrentBlock : State -> State
-addLineToCurrentBlock state =
-    (case Function.stackTop state of
-        Nothing ->
-            state
 
-        Just (SParagraph lines meta) ->
-            Function.pushLineOntoStack state.index state.currentLineData.content state
-
-        Just (SBlock mark blocks meta) ->
-            let
-                top =
-                    SBlock mark (addLineToBlocks state.index state.currentLineData blocks) { meta | end = state.index }
-            in
-            { state | stack = top :: List.drop 1 state.stack }
-
-        Just (SVerbatimBlock mark lines meta) ->
-            Function.pushLineOntoStack state.index state.currentLineData.content state
-
-        _ ->
-            state
-    )
-        |> debugSpare "addLineToCurrentBlock"
+-- AST TRANSFORMATIONS
 
 
-
--- HELPERS
-
-
-addLineToBlocks : Int -> LineData -> List SBlock -> List SBlock
-addLineToBlocks index lineData blocks =
-    case blocks of
-        (SParagraph lines meta) :: rest ->
-            -- there was a leading paragraph, so we can prepend the line lineData.content
-            SParagraph (lineData.content :: lines) { meta | end = index } :: rest
-
-        rest ->
-            -- TODO: the id field is questionable
-            -- otherwise we prepend a paragraph with the given line
-            SParagraph [ lineData.content ] { status = BlockComplete, begin = index, end = index, id = String.fromInt index, indent = lineData.indent } :: rest
-
-
-classify : Lang -> Bool -> Int -> String -> LineData
-classify language inVerbatimBlock verbatimBlockInitialIndent str =
-    let
-        lineType =
-            getLineTypeParser language
-
-        leadingSpaces =
-            Block.Line.countLeadingSpaces str
-
-        provisionalLineType =
-            lineType (String.dropLeft leadingSpaces str) |> debugCyan "provisionalLineType"
-
-        lineType_ =
-            (if inVerbatimBlock && leadingSpaces >= (verbatimBlockInitialIndent |> debugCyan "verbatimBlockInitialIndent") then
-                Block.Line.VerbatimLine
-
-             else
-                provisionalLineType
-            )
-                |> debugCyan "FINAL LINE TYPE"
-    in
-    { indent = leadingSpaces, lineType = lineType_, content = str }
-
-
-getLineTypeParser : Lang -> String -> Block.Line.LineType
-getLineTypeParser language =
-    case language of
-        L1 ->
-            Lang.LineType.L1.lineType
-
-        Markdown ->
-            Lang.LineType.Markdown.lineType
-
-        MiniLaTeX ->
-            Lang.LineType.MiniLaTeX.lineType
-
-
-createBlock : State -> State
-createBlock state =
-    state |> createBlockPhase1 |> createBlockPhase2
-
-
-nibble : String -> String
-nibble str =
-    case Parser.Advanced.run (Markup.ParserTools.text (\c_ -> c_ /= ' ') (\c_ -> c_ /= ' ')) str of
-        Ok stringData ->
-            stringData.content
-
-        Err _ ->
-            ""
-
-
-deleteSpaceDelimitedPrefix : String -> String
-deleteSpaceDelimitedPrefix str =
-    String.replace (nibble str ++ " ") "" str
-
-
-transformHeading : String -> String
-transformHeading str =
+{-| transformHeading is used for Markdown so that we can have a single, simple AST
+for all markup languages handled by the system -
+-}
+transformMarkdownHeading : String -> String
+transformMarkdownHeading str =
     case str of
         "#" ->
             "title"
@@ -510,3 +475,87 @@ transformHeading str =
 
         _ ->
             str
+
+
+
+-- ERROR HANDLING
+
+
+postErrorMessage : String -> String -> State -> State
+postErrorMessage red blue state =
+    { state | errorMessage = Just { red = red, blue = blue } }
+
+
+
+-- HELPERS
+
+
+getBlockName sblock =
+    BlockTools.sblockName sblock |> Maybe.withDefault "UNNAMED"
+
+
+nibble : String -> String
+nibble str =
+    case Parser.Advanced.run (Markup.ParserTools.text (\c_ -> c_ /= ' ') (\c_ -> c_ /= ' ')) str of
+        Ok stringData ->
+            stringData.content
+
+        Err _ ->
+            ""
+
+
+deleteSpaceDelimitedPrefix : String -> String
+deleteSpaceDelimitedPrefix str =
+    String.replace (nibble str ++ " ") "" str
+
+
+
+-- DEBUG FUNCTIONS
+
+
+debugSpare label state =
+    let
+        n =
+            String.fromInt state.index ++ ". "
+
+        _ =
+            debugBlue (n ++ label ++ ": line") state.currentLineData
+
+        _ =
+            debugYellow (n ++ label ++ ": stack") (state.stack |> List.map Markup.Simplify.sblock)
+
+        _ =
+            debugRed (n ++ label ++ ": committed") (state.committed |> List.map Markup.Simplify.sblock)
+    in
+    state
+
+
+debugIn label state =
+    let
+        n =
+            String.fromInt state.index ++ ". "
+
+        _ =
+            debugBlue (n ++ label ++ ": line") state.currentLineData
+
+        _ =
+            debugYellow (n ++ label ++ ": stack") (state.stack |> List.map Markup.Simplify.sblock)
+
+        _ =
+            debugRed (n ++ label ++ ": committed") (state.committed |> List.map Markup.Simplify.sblock)
+    in
+    state
+
+
+debugOut label state =
+    let
+        n =
+            String.fromInt state.index ++ ". "
+
+        _ =
+            debugYellow (n ++ label ++ ": stack") (state.stack |> List.map Markup.Simplify.sblock)
+
+        _ =
+            debugRed (n ++ label ++ ": committed") (state.committed |> List.map Markup.Simplify.sblock)
+    in
+    state
