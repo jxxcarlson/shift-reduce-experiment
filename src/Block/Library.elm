@@ -213,7 +213,7 @@ createBlockPhase1 state =
 
 createBlockPhase2 : State -> State
 createBlockPhase2 state =
-    -- create a ne block
+    -- create a new block
     (case state.currentLineData.lineType of
         OrdinaryLine ->
             let
@@ -366,7 +366,7 @@ commitBlock_ state =
             in
             { state
                 | committed = top_ :: state.committed
-                , accumulator = updateAccumulator top_ state.accumulator
+                , accumulator = updateAccumulatorWithBlock top_ state.accumulator
             }
                 |> debugCyan "commitBlock (1)"
 
@@ -393,14 +393,19 @@ commitBlock_ state =
 -- ACCUMULATOR
 
 
+updateAccummulatorInStateWithBlock : SBlock -> State -> State
+updateAccummulatorInStateWithBlock block state =
+    { state | accumulator = updateAccumulatorWithBlock block state.accumulator }
+
+
 {-|
 
     This function post data to the accumulator field of State as the parser
     runs its loop.  That information is used downstream by the renderer.
 
 -}
-updateAccumulator : SBlock -> Accumulator -> Accumulator
-updateAccumulator sblock1 accumulator =
+updateAccumulatorWithBlock : SBlock -> Accumulator -> Accumulator
+updateAccumulatorWithBlock sblock1 accumulator =
     case sblock1 of
         SVerbatimBlock name contentList _ ->
             if name == "mathmacro" then
