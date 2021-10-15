@@ -7,9 +7,9 @@ import Dict exposing (Dict)
 import Element exposing (..)
 import Element.Background as Background
 import Element.Font as Font
+import LaTeX.MathMacro
 import Markup.Debugger exposing (debugYellow)
 import Render.Math
-import Render.MathMacro
 import Render.Settings exposing (Settings)
 import Render.Text
 import Utility
@@ -202,7 +202,7 @@ codeBlock generation settings accumulator textList =
 
 mathBlock : Int -> Settings -> Block.State.Accumulator -> List String -> Element msg
 mathBlock generation settings accumulator textList =
-    Render.Math.mathText generation Render.Math.DisplayMathMode (String.join "\n" textList |> Render.MathMacro.evalStr accumulator.macroDict)
+    Render.Math.mathText generation Render.Math.DisplayMathMode (String.join "\n" textList |> LaTeX.MathMacro.evalStr accumulator.macroDict)
 
 
 
@@ -214,7 +214,7 @@ prepareMathLines accumulator stringList =
     stringList
         |> List.filter (\line -> String.left 6 (String.trimLeft line) /= "\\label")
         |> String.join "\n"
-        |> Render.MathMacro.evalStr accumulator.macroDict
+        |> LaTeX.MathMacro.evalStr accumulator.macroDict
 
 
 equation : Int -> Settings -> Block.State.Accumulator -> List String -> Element msg
@@ -225,7 +225,7 @@ equation generation settings accumulator textList =
 
 aligned : Int -> Settings -> Block.State.Accumulator -> List String -> Element msg
 aligned generation settings accumulator textList =
-    Render.Math.mathText generation Render.Math.DisplayMathMode ("\\begin{aligned}\n" ++ (String.join "\n" textList |> Render.MathMacro.evalStr accumulator.macroDict) ++ "\n\\end{aligned}")
+    Render.Math.mathText generation Render.Math.DisplayMathMode ("\\begin{aligned}\n" ++ (String.join "\n" textList |> LaTeX.MathMacro.evalStr accumulator.macroDict) ++ "\n\\end{aligned}")
 
 
 quotationBlock : Int -> Settings -> Block.State.Accumulator -> List Block -> Element msg

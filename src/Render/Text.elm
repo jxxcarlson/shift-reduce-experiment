@@ -6,14 +6,14 @@ import Element exposing (Element, alignLeft, alignRight, centerX, column, el, ne
 import Element.Background as Background
 import Element.Font as Font
 import Expression.ASTTools as ASTTools
+import LaTeX.MathMacro
 import Render.Math
-import Render.MathMacro
 import Render.Settings exposing (Settings)
 import Utility
 
 
 type alias Accumulator =
-    { macroDict : Render.MathMacro.MathMacroDict }
+    { macroDict : LaTeX.MathMacro.MathMacroDict }
 
 
 render : Int -> Settings -> Accumulator -> ExprM -> Element msg
@@ -257,7 +257,7 @@ codeStyle =
 
 mathElement : Int -> Settings -> Accumulator -> String -> Element msg
 mathElement generation settings accumulator str =
-    Render.Math.mathText generation Render.Math.InlineMathMode (Render.MathMacro.evalStr accumulator.macroDict str)
+    Render.Math.mathText generation Render.Math.InlineMathMode (LaTeX.MathMacro.evalStr accumulator.macroDict str)
 
 
 codeColor =

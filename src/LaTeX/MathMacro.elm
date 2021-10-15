@@ -1,4 +1,4 @@
-module Render.MathMacro exposing (MathMacroDict, evalList, evalMacro, evalStr, makeMacroDict, newCommand2, parse, parseMany)
+module LaTeX.MathMacro exposing (MathMacroDict, evalList, evalMacro, evalStr, makeMacroDict, newCommand2, parse, parseMany)
 
 import Dict exposing (Dict)
 import List.Extra

@@ -3,8 +3,8 @@ module Block.State exposing (Accumulator, State, init)
 import Block.Block exposing (SBlock)
 import Block.Line
 import Dict
+import LaTeX.MathMacro
 import Lang.Lang exposing (Lang)
-import Render.MathMacro
 
 
 
@@ -31,7 +31,7 @@ type alias State =
 
 
 type alias Accumulator =
-    { macroDict : Render.MathMacro.MathMacroDict }
+    { macroDict : LaTeX.MathMacro.MathMacroDict }
 
 
 

@@ -8,6 +8,7 @@ import Block.BlockTools as BlockTools
 import Block.Function as Function
 import Block.Line exposing (BlockOption(..), LineData, LineType(..))
 import Block.State exposing (Accumulator, State)
+import LaTeX.MathMacro
 import Lang.Lang exposing (Lang(..))
 import Lang.LineType.L1
 import Lang.LineType.Markdown
@@ -15,7 +16,6 @@ import Lang.LineType.MiniLaTeX
 import Markup.Debugger exposing (debug3, debugBlue, debugCyan, debugMagenta, debugRed, debugYellow)
 import Markup.ParserTools
 import Parser.Advanced
-import Render.MathMacro
 
 
 {-|
@@ -404,7 +404,7 @@ updateAccumulator sblock1 accumulator =
     case sblock1 of
         SVerbatimBlock name contentList _ ->
             if name == "mathmacro" then
-                { accumulator | macroDict = Render.MathMacro.makeMacroDict (String.join "\n" (List.map String.trimLeft contentList)) } |> debug3 "Accumulator (1)"
+                { accumulator | macroDict = LaTeX.MathMacro.makeMacroDict (String.join "\n" (List.map String.trimLeft contentList)) } |> debug3 "Accumulator (1)"
 
             else
                 accumulator |> debug3 "Accumlator (2)"
