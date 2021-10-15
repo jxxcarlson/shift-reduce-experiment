@@ -324,23 +324,39 @@ addLineToBlocks index lineData blocks =
 -- END BLOCK
 
 
+endBlock : String -> State -> State
 endBlock name state =
-    (case Function.nameOfStackTop state of
+    -- TODO: This function will have to be revisited: the block ending may arrive with the matching
+    -- block deep in the stack.
+    -- updateAccummulatorInStateWithBlock
+    case List.head state.stack of
         Nothing ->
-            -- the block is a paragraph, hence has no name
-            state |> Function.changeStatusOfTopOfStack (MismatchedTags "anonymous" name) |> Function.simpleCommit
+            state
 
-        Just stackTopName ->
-            -- the begin and end tags match, so the block is complete; we commit it
-            if name == stackTopName then
-                state |> Function.changeStatusOfTopOfStack BlockComplete |> Function.simpleCommit
+        -- This is an error, to (TODO) we need to figure out what to do.
+        Just top ->
+            (case Function.nameOfStackTop state of
+                Nothing ->
+                    -- the block is a paragraph, hence has no name
+                    state |> Function.changeStatusOfTopOfStack (MismatchedTags "anonymous" name) |> Function.simpleCommit
 
-            else
-                -- the tags don't match. We note that fact for the benefit of the renderer (or the error handler),
-                -- and we commit the block
-                state |> Function.changeStatusOfTopOfStack (MismatchedTags stackTopName name) |> Function.simpleCommit
-    )
-        |> debugOut "EndBlock (OUT)"
+                Just stackTopName ->
+                    -- the begin and end tags match, so the block is complete; we commit it
+                    if name == stackTopName then
+                        state
+                            |> updateAccummulatorInStateWithBlock top
+                            |> Function.changeStatusOfTopOfStack BlockComplete
+                            |> Function.simpleCommit
+
+                    else
+                        -- the tags don't match. We note that fact for the benefit of the renderer (or the error handler),
+                        -- and we commit the block
+                        state
+                            |> updateAccummulatorInStateWithBlock top
+                            |> Function.changeStatusOfTopOfStack (MismatchedTags stackTopName name)
+                            |> Function.simpleCommit
+            )
+                |> debugOut "EndBlock (OUT)"
 
 
 
