@@ -3,4 +3,7 @@ scripts:
 
    cloc: cloc --by-file src
    cloc-block : cloc --by-file src/Block
+   cloc-expr : cloc --by-file src/Expression
+   cloc-lang : cloc --by-file src/Lang
    cloc-markup : cloc --by-file src/Markup
+   cloc-render : cloc --by-file src/Render

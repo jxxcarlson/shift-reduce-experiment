@@ -8,14 +8,12 @@ import Block.BlockTools as BlockTools
 import Block.Function as Function
 import Block.Line exposing (BlockOption(..), LineData, LineType(..))
 import Block.State exposing (Accumulator, State)
-import Console exposing (..)
 import Lang.Lang exposing (Lang(..))
 import Lang.LineType.L1
 import Lang.LineType.Markdown
 import Lang.LineType.MiniLaTeX
 import Markup.Debugger exposing (debug3, debugBlue, debugCyan, debugMagenta, debugRed, debugYellow)
 import Markup.ParserTools
-import Markup.Simplify
 import Parser.Advanced
 import Render.MathMacro
 
@@ -34,17 +32,9 @@ processLine : Lang -> State -> State
 processLine language state =
     case state.currentLineData.lineType of
         BeginBlock _ _ ->
-            let
-                _ =
-                    debugIn "BeginBlock (IN)" state
-            in
             createBlock state |> debugOut "BeginBlock (OUT)"
 
         BeginVerbatimBlock mark ->
-            let
-                _ =
-                    debugIn "BeginVerbatimBlock (IN)" state
-            in
             if Just mark == Maybe.map getBlockName (Function.stackTop state) && (mark == "math" || mark == "code") then
                 state |> endBlock mark
 
@@ -58,11 +48,7 @@ processLine language state =
             endBlock name state
 
         OrdinaryLine ->
-            (let
-                _ =
-                    debugIn "OrdinaryLine (IN)" state
-             in
-             if state.previousLineData.lineType == BlankLine then
+            (if state.previousLineData.lineType == BlankLine then
                 state |> Function.finalizeBlockStatusOfStackTop |> Function.simpleCommit |> createBlock
 
              else
@@ -89,11 +75,7 @@ processLine language state =
                 |> debugOut "OrdinaryLine (OUT)"
 
         VerbatimLine ->
-            (let
-                _ =
-                    debugIn "VerbatimLine (IN)" state
-             in
-             if state.previousLineData.lineType == VerbatimLine then
+            (if state.previousLineData.lineType == VerbatimLine then
                 addLineToStackTop state
 
              else
@@ -116,11 +98,7 @@ processLine language state =
                 |> debugOut "VerbatimLine (OUT)"
 
         BlankLine ->
-            (let
-                _ =
-                    debugIn "BlankLine (IN)" state
-             in
-             if state.previousLineData.lineType == BlankLine then
+            (if state.previousLineData.lineType == BlankLine then
                 -- ignore the repeated blank line
                 state |> debugYellow "BlankLine 0"
 
@@ -144,7 +122,7 @@ processLine language state =
                             Nothing ->
                                 commitBlock state |> debugYellow "BlankLine 3"
 
-                            Just block ->
+                            Just _ ->
                                 if state.lang == MiniLaTeX then
                                     state
                                         |> commitBlock
@@ -307,7 +285,7 @@ addLineToStackTop state =
         Nothing ->
             state
 
-        Just (SParagraph lines meta) ->
+        Just (SParagraph _ _) ->
             Function.pushLineOntoStack state.index state.currentLineData.content state
 
         Just (SBlock mark blocks meta) ->
@@ -317,7 +295,7 @@ addLineToStackTop state =
             in
             { state | stack = top :: List.drop 1 state.stack }
 
-        Just (SVerbatimBlock mark lines meta) ->
+        Just (SVerbatimBlock _ _ _) ->
             Function.pushLineOntoStack state.index state.currentLineData.content state
 
         _ ->
@@ -344,11 +322,7 @@ addLineToBlocks index lineData blocks =
 
 
 endBlock name state =
-    (let
-        _ =
-            debugIn "EndBlock (IN)" state
-     in
-     case Function.nameOfStackTop state of
+    (case Function.nameOfStackTop state of
         Nothing ->
             -- the block is a paragraph, hence has no name
             state |> Function.changeStatusOfTopOfStack (MismatchedTags "anonymous" name) |> Function.simpleCommit
@@ -396,7 +370,7 @@ commitBlock_ state =
             }
                 |> debugCyan "commitBlock (1)"
 
-        top :: next :: rest ->
+        top :: next :: _ ->
             let
                 top_ =
                     finalize_ top
@@ -470,14 +444,6 @@ transformMarkdownHeading str =
 
 
 -- ERROR HANDLING
-
-
-postErrorMessage : String -> String -> State -> State
-postErrorMessage red blue state =
-    { state | errorMessage = Just { red = red, blue = blue } }
-
-
-
 -- HELPERS
 
 
@@ -505,48 +471,8 @@ deleteSpaceDelimitedPrefix str =
 
 
 debugSpare label state =
-    let
-        n =
-            String.fromInt state.index ++ ". "
-
-        _ =
-            debugBlue (n ++ label ++ ": line") state.currentLineData
-
-        _ =
-            debugYellow (n ++ label ++ ": stack") (state.stack |> List.map Markup.Simplify.sblock)
-
-        _ =
-            debugRed (n ++ label ++ ": committed") (state.committed |> List.map Markup.Simplify.sblock)
-    in
-    state
-
-
-debugIn label state =
-    let
-        n =
-            String.fromInt state.index ++ ". "
-
-        _ =
-            debugBlue (n ++ label ++ ": line") state.currentLineData
-
-        _ =
-            debugYellow (n ++ label ++ ": stack") (state.stack |> List.map Markup.Simplify.sblock)
-
-        _ =
-            debugRed (n ++ label ++ ": committed") (state.committed |> List.map Markup.Simplify.sblock)
-    in
     state
 
 
 debugOut label state =
-    let
-        n =
-            String.fromInt state.index ++ ". "
-
-        _ =
-            debugYellow (n ++ label ++ ": stack") (state.stack |> List.map Markup.Simplify.sblock)
-
-        _ =
-            debugRed (n ++ label ++ ": committed") (state.committed |> List.map Markup.Simplify.sblock)
-    in
     state

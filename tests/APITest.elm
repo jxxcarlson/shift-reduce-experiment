@@ -6,7 +6,6 @@ import Dict
 import Expect
 import Lang.Lang exposing (Lang(..))
 import Markup.API as API
-import Markup.Simplify as Simplify
 import Test exposing (..)
 
 

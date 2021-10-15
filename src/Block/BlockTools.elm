@@ -37,10 +37,10 @@ getMeta block =
         Paragraph _ meta ->
             meta
 
-        VerbatimBlock name_ _ _ meta ->
+        VerbatimBlock _ _ _ meta ->
             meta
 
-        Block name_ _ meta ->
+        Block _ _ meta ->
             meta
 
         BError _ ->
@@ -69,30 +69,14 @@ getSBlockMeta sblock =
         SParagraph _ meta ->
             meta
 
-        SVerbatimBlock name_ _ meta ->
+        SVerbatimBlock _ _ meta ->
             meta
 
-        SBlock name_ _ meta ->
+        SBlock _ _ meta ->
             meta
 
-        SError meta ->
+        SError _ ->
             Block.dummyMeta
-
-
-exprMToExpr : ExprM -> Expr
-exprMToExpr exprM =
-    case exprM of
-        TextM str _ ->
-            Text str { begin = 0, end = 0 }
-
-        VerbatimM str1 str2 _ ->
-            Verbatim str1 str2 { begin = 0, end = 0 }
-
-        ArgM exprMList _ ->
-            Arg (List.map exprMToExpr exprMList) { begin = 0, end = 0 }
-
-        ExprM str exprMList _ ->
-            Expr str (List.map exprMToExpr exprMList) { begin = 0, end = 0 }
 
 
 mapMeta : (Meta -> Meta) -> SBlock -> SBlock

@@ -1,6 +1,6 @@
 module Markup.API exposing (Settings, compile, defaultSettings, getTitle, p, parse, prepareForExport, render, renderFancy, rl, tableOfContents)
 
-import Block.Block as Block exposing (Block)
+import Block.Block exposing (Block)
 import Block.BlockTools
 import Block.Parser
 import Block.State

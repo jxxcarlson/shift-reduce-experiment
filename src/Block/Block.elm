@@ -7,7 +7,7 @@ module Block.Block exposing
     , dummyMeta
     )
 
-import Markup.Meta as Meta exposing (ExpressionMeta)
+import Markup.Meta exposing (ExpressionMeta)
 
 
 type alias Meta =

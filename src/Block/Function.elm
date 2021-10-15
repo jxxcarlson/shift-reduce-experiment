@@ -1,11 +1,11 @@
-module Block.Function exposing (..)
+module Block.Function exposing (changeStatusOfTopOfStack, dumpStack, finalize, finalizeBlockStatus, finalizeBlockStatusOfStack, finalizeBlockStatusOfStackTop, finalizeBlockStatus_, getStatus, incrementLevel, insertErrorMessage, level, levelOfBlock, levelOfCurrentBlock, nameOfStackTop, pushBlock, pushLineIntoBlock, pushLineOntoStack, pushLineOntoStack_, quantumOfIndentation, recoverFromError, reduce, renderErrorMessage, reverseCommitted, reverseContents, setBlockStatus, shiftBlock, simpleCommit, stackTop)
 
 import Block.Block exposing (BlockStatus(..), SBlock(..))
 import Block.BlockTools as BlockTools
 import Block.Line exposing (LineData)
-import Block.State exposing (Accumulator, State)
+import Block.State exposing (State)
 import Lang.Lang exposing (Lang(..))
-import Markup.Debugger exposing (debugBlue, debugCyan, debugMagenta, debugRed, debugYellow)
+import Markup.Debugger exposing (debugBlue)
 
 
 finalize : State -> State

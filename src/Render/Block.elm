@@ -7,7 +7,7 @@ import Dict exposing (Dict)
 import Element exposing (..)
 import Element.Background as Background
 import Element.Font as Font
-import Markup.Debugger exposing (debugMagenta, debugYellow)
+import Markup.Debugger exposing (debugYellow)
 import Render.Math
 import Render.MathMacro
 import Render.Settings exposing (Settings)
@@ -26,10 +26,6 @@ render generation settings accumulator blocks =
 
 renderBlock : Int -> Settings -> Block.State.Accumulator -> Block -> Element msg
 renderBlock generation settings accumulator block =
-    let
-        _ =
-            debugMagenta "renderBlock, block status" (Block.getMeta block |> .status)
-    in
     case block of
         Paragraph textList _ ->
             paragraph

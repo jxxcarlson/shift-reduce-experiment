@@ -1,6 +1,6 @@
 module ParserTests exposing (suiteL1, suiteMarkdown, suiteMiniLaTeX)
 
-import Block.Block exposing (Block(..), BlockStatus(..))
+import Block.Block exposing (BlockStatus(..))
 import Expect
 import Expression.AST exposing (Expr(..))
 import Expression.Parser exposing (run)

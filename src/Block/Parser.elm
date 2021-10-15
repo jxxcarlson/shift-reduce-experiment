@@ -77,10 +77,6 @@ finalizeOrRecoverFromError_ state =
         Loop (Function.recoverFromError state)
 
 
-stackIsReducible stack =
-    True
-
-
 
 -- HELPERS
 
