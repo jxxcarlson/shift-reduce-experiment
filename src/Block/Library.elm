@@ -71,26 +71,8 @@ processLine language state =
                             Nothing ->
                                 state |> createBlock |> debugRed "TROUBLE HERE? (6)"
 
-                            Just topBlock ->
-                                case topBlock of
-                                    SParagraph lines meta ->
-                                        state |> addLineToStackTop |> debugRed "TROUBLE HERE? (5)"
-
-                                    SBlock _ _ _ ->
-                                        state
-                                            |> postErrorMessage "" "Indent lines of following block"
-                                            |> addLineToStackTop
-                                            |> debugRed "TROUBLE HERE? (4)"
-
-                                    SVerbatimBlock _ _ _ ->
-                                        state
-                                            |> postErrorMessage "" "Indent lines of following block"
-                                            |> addLineToStackTop
-                                            |> debugRed "TROUBLE HERE? (3) !!!!"
-
-                                    SError _ ->
-                                        -- TODO: what should we do here?
-                                        state
+                            Just _ ->
+                                Function.pushLineOntoStack state.index state.currentLineData.content state
 
                     GT ->
                         state |> addLineToStackTop |> debugRed "TROUBLE HERE? (2) — Add ordinary line to current block (GT)"
