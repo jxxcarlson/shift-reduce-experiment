@@ -32,14 +32,14 @@ suiteL1BlockParser =
             \_ ->
                 run2 L1 "ABC\nDEF\n\nXYZ"
                     |> Expect.equal
-                        [ SParagraphS [ "ABC", "DEF", "" ] BlockComplete
+                        [ SParagraphS [ "ABC", "DEF" ] BlockComplete
                         , SParagraphS [ "XYZ" ] BlockComplete
                         ]
         , test "(4) " <|
             \_ ->
                 run2 L1 "ABC\nDEF\n\n\nXYZ"
                     |> Expect.equal
-                        [ SParagraphS [ "ABC", "DEF", "" ] BlockComplete
+                        [ SParagraphS [ "ABC", "DEF" ] BlockComplete
                         , SParagraphS [ "XYZ" ] BlockComplete
                         ]
         , test "(5) " <|
@@ -57,7 +57,7 @@ suiteL1BlockParser =
             \_ ->
                 run L1 "|| code\n   a[i] = 0\n      b[i] = 1\n\nabc"
                     |> Expect.equal
-                        [ SVerbatimBlock "code" [ "   a[i] = 0", "      b[i] = 1", "" ] { begin = 0, end = 3, id = "0", indent = 0, status = BlockComplete }
+                        [ SVerbatimBlock "code" [ "   a[i] = 0", "      b[i] = 1" ] { begin = 0, end = 2, id = "0", indent = 0, status = BlockComplete }
                         , SParagraph [ "abc" ] { begin = 4, end = 4, id = "2", indent = 0, status = BlockComplete }
                         ]
         , test

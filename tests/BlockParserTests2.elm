@@ -24,7 +24,7 @@ suiteL1BlockParser =
             \_ ->
                 run MiniLaTeX "foo1\nbar1\n\nfoo2\nbar2"
                     |> Expect.equal
-                        [ SParagraphS [ "foo1", "bar1", "" ] BlockComplete
+                        [ SParagraphS [ "foo1", "bar1" ] BlockComplete
                         , SParagraphS [ "foo2", "bar2" ] BlockComplete
                         ]
         , test "(3) A block" <|
@@ -63,7 +63,7 @@ suiteL1BlockParser =
                 run MiniLaTeX "\\begin{foo}\n   abc\n   def\n\\end{foo}\n\nyada\nnada\n\n\\begin{bar}\n   xyz\n\\end{bar}"
                     |> Expect.equal
                         [ SBlockS "foo" [ SParagraphS [ "   abc", "   def" ] BlockComplete ] BlockComplete
-                        , SParagraphS [ "yada", "nada", "" ] BlockComplete
+                        , SParagraphS [ "yada", "nada" ] BlockComplete
                         , SBlockS "bar" [ SParagraphS [ "   xyz" ] BlockComplete ] BlockComplete
                         ]
         , test "(9) Two verbatim blocks in succession of the same level separated by a paragraph" <|
