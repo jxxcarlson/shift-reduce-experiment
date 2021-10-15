@@ -42,14 +42,13 @@ suiteL1BlockParser =
                         [ SParagraphS [ "ABC", "DEF", "" ] BlockComplete
                         , SParagraphS [ "XYZ" ] BlockComplete
                         ]
-        , Test.only <|
-            test "(5) " <|
-                \_ ->
-                    run2 L1 "| indent\n   abc\n   def\nxyz"
-                        |> Expect.equal
-                            [ SBlockS "indent" [ SParagraphS [ "   abc", "   def" ] BlockComplete ] BlockComplete
-                            , SParagraphS [ "xyz" ] BlockComplete
-                            ]
+        , test "(5) " <|
+            \_ ->
+                run2 L1 "| indent\n   abc\n   def\nxyz"
+                    |> Expect.equal
+                        [ SBlockS "indent" [ SParagraphS [ "   abc", "   def" ] BlockComplete ] BlockComplete
+                        , SParagraphS [ "xyz" ] BlockComplete
+                        ]
 
         --[ SBlock "indent"
         --    [ SParagraph [ "   abc", "   def" ] { status = BlockComplete, begin = 1, end = 2, id = "1", indent = 3 } ]

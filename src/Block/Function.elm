@@ -125,15 +125,31 @@ reduce state =
                 reduce { state | stack = SBlock name (block1 :: blocks) meta :: rest }
 
             else
+                let
+                    _ =
+                        debugBlue "reduce" 1
+                in
                 -- TODO: is this correct?
                 reduce { state | committed = finalize_ block1 :: finalize_ block2 :: state.committed, stack = List.drop 2 state.stack }
 
         block :: [] ->
+            let
+                _ =
+                    debugBlue "reduce" 2
+            in
             -- Only one block remains on the stack, so commit it.
             -- TODO: do we need to consider error handling
-            { state | committed = finalize_ block :: state.committed, stack = [] }
+            if Block.Block.typeOfSBlock block == Block.Block.P then
+                { state | committed = setBlockStatus BlockComplete block :: state.committed, stack = [] }
+
+            else
+                { state | committed = setBlockStatus BlockStarted block :: state.committed, stack = [] }
 
         _ ->
+            let
+                _ =
+                    debugBlue "reduce" 3
+            in
             -- TODO. This ignores many cases.  Probably wrong.
             state
 

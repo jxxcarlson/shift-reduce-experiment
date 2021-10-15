@@ -14,7 +14,7 @@ run lang str =
 
 suiteL1BlockParser : Test
 suiteL1BlockParser =
-    describe "parsing L1 blocks"
+    describe "parsing MiniLaTeX blocks"
         [ test "(1) Two-line paragraph" <|
             \_ ->
                 run MiniLaTeX "foo\nbar"
@@ -40,8 +40,10 @@ suiteL1BlockParser =
         , test "(5) An unclosed block" <|
             \_ ->
                 run MiniLaTeX "\\begin{foo}\n   abc\n   def"
-                    |> Expect.notEqual
-                        [ SBlockS "foo" [ SParagraphS [ "   abc", "   def" ] BlockComplete ] BlockComplete ]
+                    |> Expect.equal
+                        [ SBlockS "foo" [ SParagraphS [ "   def", "   abc" ] BlockComplete ] BlockStarted ]
+
+        --[ SBlockS "foo" [ SParagraphS [ "   abc", "   def" ] BlockComplete ] BlockComplete ]
         , test "(6) Two blocks in succession of the same level" <|
             \_ ->
                 run MiniLaTeX "\\begin{foo}\n   abc\n   def\n\\end{foo}\n\\begin{bar}\n   xyz\n\\end{bar}"
