@@ -104,6 +104,7 @@ processLine language state =
                         addLineToStackTop state
 
                     LT ->
+                        -- TODO: is this OK?
                         if state.verbatimBlockInitialIndent == Function.levelOfCurrentBlock state then
                             addLineToStackTop { state | errorMessage = Just { red = "Below: you forgot to indent the math text. This is needed for all blocks.  Also, remember the trailing dollar signs", blue = "" } }
                                 |> Function.insertErrorMessage
@@ -119,17 +120,25 @@ processLine language state =
                     debugIn "BlankLine (IN)" state
              in
              if state.previousLineData.lineType == BlankLine then
+                -- ignore the repeated blank line
                 state |> debugYellow "BlankLine 0"
 
              else
+                -- TODO.  Examine with care. I think this can all be reduced to index str state or commitBlock
                 case compare (Function.level state.currentLineData.indent) (Function.levelOfCurrentBlock state) of
                     EQ ->
+                        -- As long as the line is of level greater than or equal to
+                        -- the level of the current verbatim block on top of the stack,
+                        -- stuff those lines into the block
                         addLineToStackTop state |> debugYellow "BlankLine 1"
 
                     GT ->
-                        createBlock state |> debugYellow "BlankLine 2"
+                        -- as in the previous case
+                        -- createBlock state |> debugYellow "BlankLine 2"
+                        addLineToStackTop state |> debugYellow "BlankLine 1"
 
                     LT ->
+                        -- TODO.   Can't this all be reduced to commitBlock?
                         case Function.stackTop state of
                             Nothing ->
                                 commitBlock state |> debugYellow "BlankLine 3"
@@ -209,11 +218,6 @@ createBlockPhase1 state =
                     commitBlock state |> debugBlue "createBlockPhase1 (LT, NOTHING)" |> debugRed "TROUBLE HERE? (1)"
 
                 Just _ ->
-                    let
-                        -- TODO: think about this
-                        errorMessage_ =
-                            debugBlue "createBlockPhase1 (LT)" (Just { red = "You need to terminate this block (1)", blue = "??" })
-                    in
                     commitBlock state |> debugRed "TROUBLE HERE? (2)"
 
         EQ ->
@@ -225,7 +229,7 @@ createBlockPhase1 state =
                     state |> Function.finalizeBlockStatusOfStackTop |> Function.simpleCommit |> debugRed "TROUBLE HERE? (3)"
 
         GT ->
-            state |> debugRed "TROUBLE HERE? (4)"
+            state
 
 
 createBlockPhase2 : State -> State
@@ -235,14 +239,14 @@ createBlockPhase2 state =
         OrdinaryLine ->
             let
                 newBlock =
-                    SParagraph [ state.currentLineData.content ] { begin = state.index, end = state.index, status = BlockStarted, id = String.fromInt state.blockCount, indent = state.currentLineData.indent }
+                    SParagraph [ state.currentLineData.content ] (newMeta state)
             in
             Function.pushBlock newBlock state
 
         BeginBlock RejectFirstLine mark ->
             let
                 newBlock =
-                    SBlock mark [] { begin = state.index, end = state.index, status = BlockStarted, id = String.fromInt state.blockCount, indent = state.currentLineData.indent }
+                    SBlock mark [] (newMeta state)
             in
             Function.pushBlock newBlock state
 
@@ -250,8 +254,8 @@ createBlockPhase2 state =
             let
                 newBlock =
                     SBlock (nibble state.currentLineData.content |> transformMarkdownHeading)
-                        [ SParagraph [ deleteSpaceDelimitedPrefix state.currentLineData.content ] { status = BlockStarted, begin = state.index, end = state.index, id = String.fromInt state.blockCount, indent = state.currentLineData.indent } ]
-                        { begin = state.index, end = state.index, status = BlockStarted, id = String.fromInt state.blockCount, indent = state.currentLineData.indent }
+                        [ SParagraph [ deleteSpaceDelimitedPrefix state.currentLineData.content ] (newMeta state) ]
+                        (newMeta state)
             in
             Function.pushBlock newBlock state
 
@@ -259,17 +263,15 @@ createBlockPhase2 state =
             let
                 newBlock =
                     SBlock kind
-                        [ SParagraph [ deleteSpaceDelimitedPrefix state.currentLineData.content ] { status = BlockStarted, begin = state.index, end = state.index, id = String.fromInt state.blockCount, indent = state.currentLineData.indent } ]
-                        { begin = state.index, end = state.index, status = BlockStarted, id = String.fromInt state.blockCount, indent = state.currentLineData.indent }
+                        [ SParagraph [ deleteSpaceDelimitedPrefix state.currentLineData.content ] (newMeta state) ]
+                        (newMeta state)
             in
             Function.pushBlock newBlock state
 
         BeginVerbatimBlock mark ->
             let
                 newBlock =
-                    SVerbatimBlock mark
-                        []
-                        { begin = state.index, end = state.index, status = BlockStarted, id = String.fromInt state.blockCount, indent = state.currentLineData.indent }
+                    SVerbatimBlock mark [] (newMeta state)
             in
             { state
                 | currentLineData = Function.incrementLevel state.currentLineData -- do this because a block expects subsequent lines to be indented
@@ -283,6 +285,15 @@ createBlockPhase2 state =
             state
     )
         |> debugCyan "createBlock "
+
+
+newMeta state =
+    { begin = state.index
+    , end = state.index
+    , status = BlockStarted
+    , id = String.fromInt state.blockCount
+    , indent = state.currentLineData.indent
+    }
 
 
 
@@ -333,9 +344,6 @@ addLineToBlocks index lineData blocks =
 
 endBlock name state =
     (let
-        _ =
-            debugYellow "EndBlock, name" name
-
         _ =
             debugIn "EndBlock (IN)" state
      in
