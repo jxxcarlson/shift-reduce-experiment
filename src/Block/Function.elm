@@ -1,4 +1,33 @@
-module Block.Function exposing (changeStatusOfTopOfStack, dumpStack, finalize, finalizeBlockStatus, finalizeBlockStatusOfStack, finalizeBlockStatusOfStackTop, finalizeBlockStatus_, getStatus, incrementLevel, insertErrorMessage, level, levelOfBlock, levelOfCurrentBlock, nameOfStackTop, pushBlock, pushLineIntoBlock, pushLineOntoStack, pushLineOntoStack_, quantumOfIndentation, recoverFromError, reduce, renderErrorMessage, reverseCommitted, reverseContents, setBlockStatus, shiftBlock, simpleCommit, stackTop)
+module Block.Function exposing
+    ( changeStatusOfTopOfStack
+    , dumpStack
+    , finalize
+    , finalizeBlockStatus
+    , finalizeBlockStatusOfStack
+    , finalizeBlockStatusOfStackTop
+    , finalizeBlockStatus_
+    , getStatus
+    , incrementLevel
+    , insertErrorMessage
+    , level
+    , levelOfBlock
+    , levelOfCurrentBlock
+    , nameOfStackTop
+    , pushBlock
+    , pushLineIntoBlock
+    , pushLineOntoStack
+    , pushLineOntoStack_
+    , quantumOfIndentation
+    , recoverFromError
+    , reduce
+    , renderErrorMessage
+    , reverseCommitted
+    , reverseContents
+    , setBlockStatus
+    , shiftBlock
+    , simpleCommit
+    , stackTop
+    )
 
 import Block.Block exposing (BlockStatus(..), SBlock(..))
 import Block.BlockTools as BlockTools

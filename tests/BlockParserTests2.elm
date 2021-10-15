@@ -57,7 +57,7 @@ suiteL1BlockParser =
                         [ SBlockS "foo" [ SParagraphS [ "   abc", "   def" ] BlockComplete ] BlockComplete
                         , SBlockS "bar" [ SParagraphS [ "   xyz" ] BlockComplete ] BlockComplete
                         ]
-        , test "(7) Two blocks in succession of the same level separated by a paragraph" <|
+        , test "(8) Two blocks in succession of the same level separated by a paragraph" <|
             \_ ->
                 run MiniLaTeX "\\begin{foo}\n   abc\n   def\n\\end{foo}\n\nyada\nnada\n\n\\begin{bar}\n   xyz\n\\end{bar}"
                     |> Expect.equal
@@ -65,7 +65,7 @@ suiteL1BlockParser =
                         , SParagraphS [ "yada", "nada", "" ] BlockComplete
                         , SBlockS "bar" [ SParagraphS [ "   xyz" ] BlockComplete ] BlockComplete
                         ]
-        , test "(7) Two verbatim blocks in succession of the same level separated by a paragraph" <|
+        , test "(9) Two verbatim blocks in succession of the same level separated by a paragraph" <|
             \_ ->
                 run MiniLaTeX "\\begin{code}\n   abc\n   def\n\\end{code}\n\nyada\nnada\n\n\\begin{math}\n   xyz\n\\end{math}"
                     |> Expect.equal

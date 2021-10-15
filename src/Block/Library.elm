@@ -49,7 +49,11 @@ processLine language state =
 
         OrdinaryLine ->
             (if state.previousLineData.lineType == BlankLine then
-                state |> Function.finalizeBlockStatusOfStackTop |> Function.simpleCommit |> createBlock
+                state
+                    |> Function.finalizeBlockStatusOfStackTop
+                    |> Function.simpleCommit
+                    -- |> createBlock
+                    |> Function.pushBlock (SParagraph [ state.currentLineData.content ] (newMeta state))
 
              else
                 case compare (Function.level state.currentLineData.indent) (Function.levelOfCurrentBlock state) of
@@ -184,6 +188,8 @@ getLineTypeParser language =
 
 createBlock : State -> State
 createBlock state =
+    -- The phase 1 function is necessary. Test (7, 8) in  BlockParserTests2 will fails
+    -- otherwise with out-of-order output
     state |> createBlockPhase1 |> createBlockPhase2
 
 
@@ -194,7 +200,7 @@ createBlockPhase1 state =
         LT ->
             case Function.stackTop state of
                 Nothing ->
-                    commitBlock state |> debugBlue "createBlockPhase1 (LT, NOTHING)" |> debugRed "TROUBLE HERE? (1)"
+                    state
 
                 Just _ ->
                     commitBlock state |> debugRed "TROUBLE HERE? (2)"
@@ -213,14 +219,11 @@ createBlockPhase1 state =
 
 createBlockPhase2 : State -> State
 createBlockPhase2 state =
-    -- create a new block
+    -- create a new block.  This function is straigthforward.  Given the data on
+    -- hand, create  new block and push it onto the stack.
     (case state.currentLineData.lineType of
         OrdinaryLine ->
-            let
-                newBlock =
-                    SParagraph [ state.currentLineData.content ] (newMeta state)
-            in
-            Function.pushBlock newBlock state
+            Function.pushBlock (SParagraph [ state.currentLineData.content ] (newMeta state)) state
 
         BeginBlock RejectFirstLine mark ->
             let
