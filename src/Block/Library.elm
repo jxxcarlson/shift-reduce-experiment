@@ -8,11 +8,12 @@ import Block.BlockTools as BlockTools
 import Block.Function as Function
 import Block.Line exposing (BlockOption(..), LineData, LineType(..))
 import Block.State exposing (Accumulator, State)
+import Console exposing (..)
 import Lang.Lang exposing (Lang(..))
 import Lang.LineType.L1
 import Lang.LineType.Markdown
 import Lang.LineType.MiniLaTeX
-import Markup.Debugger exposing (debugBlue, debugCyan, debugMagenta, debugRed, debugYellow)
+import Markup.Debugger exposing (debug3, debugBlue, debugCyan, debugMagenta, debugRed, debugYellow)
 import Markup.ParserTools
 import Markup.Simplify
 import Parser.Advanced
@@ -429,13 +430,13 @@ updateAccumulator sblock1 accumulator =
     case sblock1 of
         SVerbatimBlock name contentList _ ->
             if name == "mathmacro" then
-                { accumulator | macroDict = Render.MathMacro.makeMacroDict (String.join "\n" (List.map String.trimLeft contentList)) }
+                { accumulator | macroDict = Render.MathMacro.makeMacroDict (String.join "\n" (List.map String.trimLeft contentList)) } |> debug3 "Accumulator (1)"
 
             else
-                accumulator
+                accumulator |> debug3 "Accumlator (2)"
 
         _ ->
-            accumulator
+            accumulator |> debug3 "Accumulator (NADA)"
 
 
 

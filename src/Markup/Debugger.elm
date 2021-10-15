@@ -1,5 +1,6 @@
 module Markup.Debugger exposing
-    ( debugBlue
+    ( debug3
+    , debugBlue
     , debugCyan
     , debugMagenta
     , debugRed
@@ -27,6 +28,10 @@ blueSwitch =
 
 redSwitch =
     True
+
+
+debug3 label =
+    Debug.log (Console.black (Console.bgYellow (" " ++ label ++ " ")))
 
 
 debugMagenta label =
