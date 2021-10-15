@@ -58,7 +58,7 @@ suiteL1BlockParser =
                 run L1 "|| code\n   a[i] = 0\n      b[i] = 1\n\nabc"
                     |> Expect.equal
                         [ SVerbatimBlock "code" [ "   a[i] = 0", "      b[i] = 1" ] { begin = 0, end = 2, id = "0", indent = 0, status = BlockComplete }
-                        , SParagraph [ "abc" ] { begin = 4, end = 4, id = "2", indent = 0, status = BlockComplete }
+                        , SParagraph [ "abc" ] { begin = 4, end = 4, id = "1", indent = 0, status = BlockComplete }
                         ]
         , test
             "(8) Nested blocks"

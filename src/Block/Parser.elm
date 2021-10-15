@@ -71,25 +71,6 @@ finalizeOrRecoverFromError state =
         |> finalizeOrRecoverFromError_
 
 
-debugPrefix label state =
-    let
-        n =
-            String.fromInt state.index ++ ". "
-    in
-    n ++ "(" ++ label ++ ") "
-
-
-debug label state =
-    let
-        _ =
-            debugGreen (debugPrefix label state ++ ", STACK") (state.stack |> List.map Simplify.sblock)
-
-        _ =
-            debugGreen (debugPrefix label state ++ ", COMM.") (state.committed |> List.map Simplify.sblock)
-    in
-    state
-
-
 finalizeOrRecoverFromError_ : State -> Step State State
 finalizeOrRecoverFromError_ state =
     if List.isEmpty state.stack then
@@ -118,3 +99,26 @@ loop s f =
 
         Done b ->
             b
+
+
+
+-- DEBUG
+
+
+debugPrefix label state =
+    let
+        n =
+            String.fromInt state.index ++ ". "
+    in
+    n ++ "(" ++ label ++ ") "
+
+
+debug label state =
+    let
+        _ =
+            debugGreen (debugPrefix label state ++ ", STACK") (state.stack |> List.map Simplify.sblock)
+
+        _ =
+            debugGreen (debugPrefix label state ++ ", COMM.") (state.committed |> List.map Simplify.sblock)
+    in
+    state

@@ -17,6 +17,7 @@ module Block.Function exposing
     , nameOfStackTop
     , postErrorMessage
     , pushBlock
+    , pushBlockOnState
     , pushLineIntoBlock
     , pushLineOntoStack
     , pushLineOntoStack_
@@ -34,11 +35,100 @@ module Block.Function exposing
 
 import Block.Block exposing (BlockStatus(..), SBlock(..))
 import Block.BlockTools as BlockTools
-import Block.Line exposing (LineData)
+import Block.Line exposing (BlockOption(..), LineData, LineType(..))
 import Block.State exposing (State)
 import Lang.Lang exposing (Lang(..))
 import Markup.Debugger exposing (debugBlue, debugMagenta)
+import Markup.ParserTools
 import Markup.Simplify as Simplify
+import Parser.Advanced
+
+
+pushBlockOnState : State -> State
+pushBlockOnState state =
+    case makeBlock state of
+        Nothing ->
+            state
+
+        Just block ->
+            pushBlock block state
+
+
+makeBlock : State -> Maybe SBlock
+makeBlock state =
+    case state.currentLineData.lineType of
+        OrdinaryLine ->
+            SParagraph [ state.currentLineData.content ] (newMeta state) |> Just
+
+        BeginBlock RejectFirstLine mark ->
+            SBlock mark [] (newMeta state) |> Just
+
+        BeginBlock AcceptFirstLine _ ->
+            SBlock (nibble state.currentLineData.content |> transformMarkdownHeading)
+                [ SParagraph [ deleteSpaceDelimitedPrefix state.currentLineData.content ] (newMeta state) ]
+                (newMeta state)
+                |> Just
+
+        BeginBlock AcceptNibbledFirstLine kind ->
+            SBlock kind
+                [ SParagraph [ deleteSpaceDelimitedPrefix state.currentLineData.content ] (newMeta state) ]
+                (newMeta state)
+                |> Just
+
+        BeginVerbatimBlock mark ->
+            SVerbatimBlock mark [] (newMeta state) |> Just
+
+        _ ->
+            Nothing
+
+
+{-| transformHeading is used for Markdown so that we can have a single, simple AST
+for all markup languages handled by the system -
+-}
+transformMarkdownHeading : String -> String
+transformMarkdownHeading str =
+    case str of
+        "#" ->
+            "title"
+
+        "##" ->
+            "heading2"
+
+        "###" ->
+            "heading3"
+
+        "####" ->
+            "heading4"
+
+        "#####" ->
+            "heading5"
+
+        _ ->
+            str
+
+
+nibble : String -> String
+nibble str =
+    case Parser.Advanced.run (Markup.ParserTools.text (\c_ -> c_ /= ' ') (\c_ -> c_ /= ' ')) str of
+        Ok stringData ->
+            stringData.content
+
+        Err _ ->
+            ""
+
+
+newMeta state =
+    { begin = state.index
+    , end = state.index
+    , status = BlockStarted
+    , id = String.fromInt state.blockCount
+    , indent = state.currentLineData.indent
+    }
+
+
+deleteSpaceDelimitedPrefix : String -> String
+deleteSpaceDelimitedPrefix str =
+    String.replace (nibble str ++ " ") "" str
 
 
 postErrorMessage : String -> String -> State -> State

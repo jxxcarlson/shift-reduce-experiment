@@ -35,7 +35,7 @@ processLine language state =
         BeginBlock _ _ ->
             state
                 |> debugIn "BeginBlock"
-                |> createBlock
+                |> Function.pushBlockOnState
                 |> debugOut "BeginBlock (OUT)"
 
         BeginVerbatimBlock mark ->
@@ -47,7 +47,7 @@ processLine language state =
                 state |> endBlock mark
 
              else
-                createBlock state
+                Function.pushBlockOnState state
             )
                 |> debugOut "BeginVerbatimBlock (OUT)"
 
@@ -280,6 +280,7 @@ getLineTypeParser language =
 
 createBlock : State -> State
 createBlock state =
+    -- TODO: Now just three call sites. Eliminate them all!!
     -- The phase 1 function is necessary. Test (7, 8) in  BlockParserTests2 will fails
     -- otherwise with out-of-order output
     state |> createBlockPhase1 |> createBlockPhase2
