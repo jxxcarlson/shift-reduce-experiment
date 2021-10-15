@@ -71,7 +71,7 @@ suiteL1BlockParser =
                 run MiniLaTeX "\\begin{code}\n   abc\n   def\n\\end{code}\n\nyada\nnada\n\n\\begin{math}\n   xyz\n\\end{math}"
                     |> Expect.equal
                         [ SVerbatimBlockS "code" [ "   abc", "   def" ] BlockComplete
-                        , SParagraphS [ "yada", "nada", "" ] BlockComplete
+                        , SParagraphS [ "yada", "nada" ] BlockComplete
                         , SVerbatimBlockS "math" [ "   xyz" ] BlockComplete
                         ]
         , test "(10) A verbatim block followed by a blank line and a non-blank line" <|

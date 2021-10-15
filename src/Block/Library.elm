@@ -187,12 +187,12 @@ processLine language state =
                 -- TODO.  Examine with care. I think this can all be reduced to index str state or commitBlock
                 let
                     _ =
-                        debugRed "(i, j)" ( Function.level state.currentLineData.indent, Function.levelOfCurrentBlock state )
+                        debugRed "(i, j)" ( Function.level state.currentLineData.indent, Function.levelOfCurrentBlock state + 1 )
 
                     _ =
                         debugRed "STACK TOP" (List.head state.stack)
                 in
-                case compare (Function.level state.currentLineData.indent) (Function.levelOfCurrentBlock state) of
+                case compare (Function.level state.currentLineData.indent) (Function.levelOfCurrentBlock state + 1) of
                     EQ ->
                         -- As long as the line is of level greater than or equal to
                         -- the level of the current verbatim block on top of the stack,
@@ -213,7 +213,8 @@ processLine language state =
                             Just _ ->
                                 if state.lang == MiniLaTeX then
                                     state
-                                        |> commitBlock
+                                        |> Function.finalizeBlockStatusOfStackTop
+                                        |> Function.simpleCommit
                                         |> debugYellow "BlankLine 4"
 
                                 else

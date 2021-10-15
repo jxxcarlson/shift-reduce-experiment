@@ -6,12 +6,7 @@ l1 =
 
 
 m1 =
-    """
-$$
-   \\int_0^1
-
-## Code
-"""
+    "\\begin{code}\n   abc\n   def\n\\end{code}\n\nyada\nnada\n\n\\begin{math}\n   xyz\n\\end{math}"
 
 
 t1 =

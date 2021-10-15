@@ -168,7 +168,7 @@ levelOfCurrentBlock : State -> Int
 levelOfCurrentBlock state =
     case stackTop state of
         Nothing ->
-            -1
+            0
 
         Just block ->
             levelOfBlock block
@@ -315,9 +315,17 @@ pushBlock block state =
     -- then push the block onto it.
     case state.stack of
         [] ->
+            let
+                _ =
+                    debugBlue "Running PUSHBLOCK" 1
+            in
             { state | stack = block :: [], blockCount = state.blockCount + 1 }
 
         next :: rest ->
+            let
+                _ =
+                    debugBlue "Running PUSHBLOCK" 2
+            in
             { state | stack = block :: setBlockStatus BlockComplete next :: rest, blockCount = state.blockCount + 1 }
 
 
