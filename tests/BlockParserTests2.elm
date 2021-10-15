@@ -22,10 +22,10 @@ suiteL1BlockParser =
                         [ SParagraphS [ "foo", "bar" ] BlockComplete ]
         , test "(2) Two-line paragraph, twice" <|
             \_ ->
-                run MiniLaTeX "foo\nbar\n\nfoo\nbar"
+                run MiniLaTeX "foo1\nbar1\n\nfoo2\nbar2"
                     |> Expect.equal
-                        [ SParagraphS [ "foo", "bar", "" ] BlockComplete
-                        , SParagraphS [ "foo", "bar" ] BlockComplete
+                        [ SParagraphS [ "foo1", "bar1", "" ] BlockComplete
+                        , SParagraphS [ "foo2", "bar2" ] BlockComplete
                         ]
         , test "(3) A block" <|
             \_ ->
@@ -41,7 +41,7 @@ suiteL1BlockParser =
             \_ ->
                 run MiniLaTeX "\\begin{foo}\n   abc\n   def"
                     |> Expect.equal
-                        [ SBlockS "foo" [ SParagraphS [ "   def", "   abc" ] BlockComplete ] BlockStarted ]
+                        [ SBlockS "foo" [ SParagraphS [ "   abc", "   def" ] BlockComplete ] BlockStarted ]
 
         --[ SBlockS "foo" [ SParagraphS [ "   abc", "   def" ] BlockComplete ] BlockComplete ]
         , test "(6) Two blocks in succession of the same level" <|

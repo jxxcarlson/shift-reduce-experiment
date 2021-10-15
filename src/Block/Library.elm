@@ -185,6 +185,13 @@ processLine language state =
 
              else
                 -- TODO.  Examine with care. I think this can all be reduced to index str state or commitBlock
+                let
+                    _ =
+                        debugRed "(i, j)" ( Function.level state.currentLineData.indent, Function.levelOfCurrentBlock state )
+
+                    _ =
+                        debugRed "STACK TOP" (List.head state.stack)
+                in
                 case compare (Function.level state.currentLineData.indent) (Function.levelOfCurrentBlock state) of
                     EQ ->
                         -- As long as the line is of level greater than or equal to
@@ -210,7 +217,10 @@ processLine language state =
                                         |> debugYellow "BlankLine 4"
 
                                 else
-                                    state |> commitBlock |> debugYellow "BlankLine 5"
+                                    state
+                                        |> Function.finalizeBlockStatusOfStackTop
+                                        |> Function.simpleCommit
+                                        |> debugYellow "BlankLine 5"
             )
                 |> debugOut "BlankLine (OUT)"
 

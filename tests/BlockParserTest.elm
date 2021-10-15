@@ -49,13 +49,6 @@ suiteL1BlockParser =
                         [ SBlockS "indent" [ SParagraphS [ "   abc", "   def" ] BlockComplete ] BlockComplete
                         , SParagraphS [ "xyz" ] BlockComplete
                         ]
-
-        --[ SBlock "indent"
-        --    [ SParagraph [ "   abc", "   def" ] { status = BlockComplete, begin = 1, end = 2, id = "1", indent = 3 } ]
-        --    { status = BlockComplete, begin = 0, end = 2, id = "0", indent = 0 }
-        --, SParagraph [ "xyz" ]
-        --    { status = BlockComplete, begin = 3, end = 3, id = "1", indent = 0 }
-        --]
         , test "(6) " <|
             \_ ->
                 run L1 "|| code\n   a[i] = 0"
@@ -64,36 +57,30 @@ suiteL1BlockParser =
             \_ ->
                 run L1 "|| code\n   a[i] = 0\n      b[i] = 1\n\nabc"
                     |> Expect.equal
-                        [ SVerbatimBlock "code" [ "   a[i] = 0", "      b[i] = 1" ] { status = BlockComplete, begin = 0, end = 2, id = "0", indent = 0 }
-                        , SParagraph [ "abc" ]
-                            { status = BlockComplete, begin = 4, end = 4, id = "1", indent = 0 }
+                        [ SVerbatimBlock "code" [ "   a[i] = 0", "      b[i] = 1", "" ] { begin = 0, end = 3, id = "0", indent = 0, status = BlockComplete }
+                        , SParagraph [ "abc" ] { begin = 4, end = 4, id = "2", indent = 0, status = BlockComplete }
                         ]
         , test
             "(8) Nested blocks"
           <|
             \_ ->
-                run L1 "| foo\n   a\n   b\n   | bar\n      c\n      d"
+                run2 L1 "| foo\n   a\n   b\n   | bar\n      c\n      d\n"
                     |> Expect.equal
-                        [ SBlock "foo"
-                            [ SParagraph [ "   a", "   b" ] { status = BlockComplete, begin = 1, end = 2, id = "1", indent = 3 } ]
-                            { status = BlockComplete, begin = 0, end = 2, id = "0", indent = 0 }
-                        , SBlock "bar"
-                            [ SParagraph [ "      c", "      d" ]
-                                { status = BlockComplete, begin = 4, end = 5, id = "4", indent = 6 }
-                            ]
-                            { status = BlockComplete, begin = 3, end = 5, id = "1", indent = 3 }
+                        [ SBlockS "bar" [ SParagraphS [ "      c", "      d" ] BlockComplete ] BlockComplete
+                        , SBlockS "foo" [ SParagraphS [ "   a", "   b" ] BlockComplete ] BlockComplete
                         ]
         , test
-            "(9) Nested blocks"
+            "(9) Incomplete block (note the absence of a trailing newline)"
           <|
             \_ ->
-                run L1 "| foo\n   AAA\n      PQR"
+                run2 L1 "| foo\n   AAA\n      PQR"
                     |> Expect.equal
-                        [ SBlock "foo"
-                            [ SParagraph [ "   AAA" ] { status = BlockComplete, begin = 1, end = 1, id = "1", indent = 3 }
-                            , SParagraph [ "      PQR" ]
-                                { status = BlockComplete, begin = 2, end = 2, id = "1", indent = 6 }
-                            ]
-                            { status = BlockComplete, begin = 0, end = 1, id = "0", indent = 0 }
-                        ]
+                        [ SBlockS "foo" [ SParagraphS [ "   AAA", "      PQR" ] BlockComplete ] BlockStarted ]
+        , test
+            "(9) Complete block (note the trailing newline)"
+          <|
+            \_ ->
+                run2 L1 "| foo\n   AAA\n      PQR\n"
+                    |> Expect.equal
+                        [ SBlockS "foo" [ SParagraphS [ "   AAA", "      PQR" ] BlockComplete ] BlockComplete ]
         ]

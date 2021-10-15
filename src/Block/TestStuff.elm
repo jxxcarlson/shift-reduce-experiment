@@ -1,4 +1,8 @@
-module Block.TestStuff exposing (m1, t1, t2, t3, t4, t5, t6)
+module Block.TestStuff exposing (l1, m1, t1, t2, t3, t4, t5, t6)
+
+
+l1 =
+    "| foo\n   a\n   b\n   | bar\n      c\n      d"
 
 
 m1 =
