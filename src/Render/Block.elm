@@ -103,6 +103,7 @@ renderLinesIncomplete name status lines =
             , Font.monospace
             ]
         , Font.color (Element.rgb 0 0 200)
+        , Background.color (Element.rgb255 230 233 250)
         , spacing 8
         ]
         (message name status :: List.map (\t -> el [] (text t)) lines)
