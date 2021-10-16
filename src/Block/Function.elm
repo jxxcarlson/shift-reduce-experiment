@@ -235,7 +235,11 @@ reduce state =
             -- Only one block remains on the stack, so commit it.
             -- TODO: do we need to consider error handling
             if List.member (Block.Block.typeOfSBlock block) [ Block.Block.P, Block.Block.V ] then
-                { state | committed = reverseContents (setBlockStatus BlockComplete block) :: state.committed, stack = [] } |> debugOut "REDUCE 2a, OUT"
+                if nameOfStackTop state == Just "math" then
+                    { state | committed = reverseContents block :: state.committed, stack = [] } |> debugOut "REDUCE 2a, OUT"
+
+                else
+                    { state | committed = reverseContents (setBlockStatus BlockComplete block) :: state.committed, stack = [] } |> debugOut "REDUCE 2a, OUT"
 
             else
                 --- { state | committed = reverseContents (fbefinalizeBlockStatus block) :: state.committed, stack = [] } |> debugOut "REDUCE 2b, OUT"

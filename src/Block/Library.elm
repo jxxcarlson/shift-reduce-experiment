@@ -211,7 +211,12 @@ processLine language state =
                                 commitBlock state |> debugYellow "BlankLine 3"
 
                             Just _ ->
-                                if state.lang == MiniLaTeX then
+                                if Function.nameOfStackTop state == Just "math" then
+                                    state
+                                        |> Function.simpleCommit
+                                        |> debugYellow "BlankLine 4B"
+
+                                else if state.lang == MiniLaTeX then
                                     state
                                         |> Function.finalizeBlockStatusOfStackTop
                                         |> Function.simpleCommit
@@ -447,36 +452,6 @@ updateAccumulatorWithBlock sblock1 accumulator =
 
 
 
--- AST TRANSFORMATIONS
-
-
-{-| transformHeading is used for Markdown so that we can have a single, simple AST
-for all markup languages handled by the system -
--}
-transformMarkdownHeading : String -> String
-transformMarkdownHeading str =
-    case str of
-        "#" ->
-            "title"
-
-        "##" ->
-            "heading2"
-
-        "###" ->
-            "heading3"
-
-        "####" ->
-            "heading4"
-
-        "#####" ->
-            "heading5"
-
-        _ ->
-            str
-
-
-
--- ERROR HANDLING
 -- HELPERS
 
 
