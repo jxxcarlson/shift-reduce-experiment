@@ -6,6 +6,7 @@ module Block.Function exposing
     , finalizeBlockStatusOfStack
     , finalizeBlockStatusOfStackTop
     , finalizeBlockStatus_
+    , fixMarkdownHeadingBlock
     , getStatus
     , incrementLevel
     , insertErrorMessage
@@ -33,12 +34,14 @@ module Block.Function exposing
     , stackTop
     )
 
-import Block.Block exposing (BlockStatus(..), SBlock(..))
+import Block.Block as Block exposing (Block(..), BlockStatus(..), ExprM(..), SBlock(..))
 import Block.BlockTools as BlockTools
 import Block.Line exposing (BlockOption(..), LineData, LineType(..))
 import Block.State exposing (State)
+import Expression.Token exposing (Token(..))
 import Lang.Lang exposing (Lang(..))
 import Markup.Debugger exposing (debugBlue, debugMagenta)
+import Markup.Meta
 import Markup.ParserTools
 import Markup.Simplify as Simplify
 import Parser.Advanced
@@ -141,7 +144,7 @@ liftBlockFunctiontoStateFunction f state =
     { state | stack = mapStack f state.stack }
 
 
-mapStack : (SBlock -> SBlock) -> List SBlock -> List SBlock
+mapStack : (a -> a) -> List a -> List a
 mapStack f stack =
     case List.head stack of
         Nothing ->
@@ -149,6 +152,39 @@ mapStack f stack =
 
         Just top ->
             f top :: List.drop 1 stack
+
+
+fixMarkdownHeadingBlock : Block -> Block
+fixMarkdownHeadingBlock block =
+    let
+        metaToExprMeta meta =
+            let
+                dummy =
+                    Markup.Meta.dummy
+            in
+            { dummy | id = meta.id }
+    in
+    case block of
+        Block "title" [ Paragraph [ Block.TextM str meta ] meta2 ] meta3 ->
+            Paragraph [ ExprM "title" [ Block.TextM (String.trim str) meta ] (metaToExprMeta meta2) ] meta3
+
+        Block "heading1" [ Paragraph [ Block.TextM str meta ] meta2 ] meta3 ->
+            Paragraph [ ExprM "heading1" [ Block.TextM (String.trim str) meta ] (metaToExprMeta meta2) ] meta3
+
+        Block "heading2" [ Paragraph [ Block.TextM str meta ] meta2 ] meta3 ->
+            Paragraph [ ExprM "heading2" [ Block.TextM (String.trim str) meta ] (metaToExprMeta meta2) ] meta3
+
+        Block "heading3" [ Paragraph [ Block.TextM str meta ] meta2 ] meta3 ->
+            Paragraph [ ExprM "heading3" [ Block.TextM (String.trim str) meta ] (metaToExprMeta meta2) ] meta3
+
+        Block "heading4" [ Paragraph [ Block.TextM str meta ] meta2 ] meta3 ->
+            Paragraph [ ExprM "heading4" [ Block.TextM (String.trim str) meta ] (metaToExprMeta meta2) ] meta3
+
+        Block "heading5" [ Paragraph [ Block.TextM str meta ] meta2 ] meta3 ->
+            Paragraph [ ExprM "heading5" [ Block.TextM (String.trim str) meta ] (metaToExprMeta meta2) ] meta3
+
+        _ ->
+            block
 
 
 finalize : State -> State
@@ -234,7 +270,7 @@ reduce state =
             in
             -- Only one block remains on the stack, so commit it.
             -- TODO: do we need to consider error handling
-            if List.member (Block.Block.typeOfSBlock block) [ Block.Block.P, Block.Block.V ] then
+            if List.member (Block.typeOfSBlock block) [ Block.P, Block.V ] then
                 if nameOfStackTop state == Just "math" then
                     { state | committed = reverseContents block :: state.committed, stack = [] } |> debugOut "REDUCE 2a, OUT"
 

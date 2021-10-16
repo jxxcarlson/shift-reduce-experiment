@@ -108,4 +108,6 @@ preamble title =
 
 \\maketitle
 
+\\tableofcontents
+
 """

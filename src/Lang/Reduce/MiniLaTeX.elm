@@ -71,16 +71,16 @@ transformMacroNames : String -> String
 transformMacroNames str =
     case str of
         "section" ->
-            "heading2"
+            "heading1"
 
         "subsection" ->
-            "heading3"
+            "heading2"
 
         "susubsection" ->
-            "heading4"
+            "heading3"
 
         "subheading" ->
-            "heading5"
+            "heading4"
 
         _ ->
             str

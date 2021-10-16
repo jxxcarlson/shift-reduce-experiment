@@ -1,16 +1,9 @@
 module Data.MiniLaTeXTest exposing (text)
 
 
-text1 =
-    """
-\\begin{foo}
-abc
-\\end{foo}
-"""
-
-
 text =
     """
+
 \\title{Notes on Quantum Field Theory}
 
 
@@ -77,8 +70,8 @@ This is the resolution of the identity in the case of continuous spectrum.
 Let $f(x) = e^{-\\lambda x}$ for $x > 0$, $f(x) = 0$ for $x < 0$.  This is a sudden but exponentially decaying pulse. Then
 
 \\begin{align}
-   \\hat f(k) &= \\frac{1}{\\sqrt{2\\pi}}\\int_0^\\infty e^{-\\lambda x} e^{ikx} dx \\\\
-   &= \\frac{1}{\\sqrt{2\\pi}} \\frac{-1}{ik + \\lambda}\\Big\\vert_0^\\infty \\\\
+   \\hat f(k) &= \\frac{1}{\\sqrt{2\\pi}}\\int_0^\\infty e^{-\\lambda x} e^{ikx} dx \\
+   &= \\frac{1}{\\sqrt{2\\pi}} \\frac{-1}{ik + \\lambda}\\Big\\vert_0^\\infty \\
     &= \\frac{1}{\\sqrt{2\\pi}(ik + \\lambda)}
 \\end{align}
 
@@ -99,8 +92,8 @@ where the average is the average of the function on an interval of width $a$ wit
 
 \\begin{align}
    \\frac{1}{a}\\int_{-a/2}^{a/2} e^{-ikx} dx
-   &= \\frac{1}{-ika} e^{-ikx} \\Big\\vert_{x=-a/2}^{x=a/2} \\\\
-   &= (2/ka)\\sin ka/2 \\\\
+   &= \\frac{1}{-ika} e^{-ikx} \\Big\\vert_{x=-a/2}^{x=a/2} \\
+   &= (2/ka)\\sin ka/2 \\
    &= \\text{sinc}(ka/2)
 \\end{align}
 
@@ -116,7 +109,7 @@ Consider now the limit
    \\lim_{a \\to 0}\\int_{-\\infty}^\\infty r_a(x-\\xi) f(x) dx = \\lim_{a\\to 0} av_{a,\\xi} f = f(\\xi)
 \\end{equation}
 
-We ask: \\emph{can we pass the limit under the integral sign, and if so, what is that limit?} The answer is yes, provided that we view convergence in the sense of convergence for linear functionals, the functional being
+We ask: can we pass the limit under the integral sign, and if so, what is that limit? The answer is yes, provided that we view convergence in the sense of convergence for linear functionals, the functional being
 
 \\begin{equation}
    f \\mapsto \\int_{-\\infty}^\\infty r_a(x-\\xi) f(x) dx 
@@ -138,7 +131,7 @@ It is characterized by its action on functions:
 
 
 
-We ask next: \\emph{what is the Fourier transform of $\\delta$?}
+We ask next:  what is the Fourier transform of $\\delta$?
 A tentative answer is that it is the limit of the Fourier transforms of the rectangular pulses $r_a(x)$.  Therefore let us think about the limit of the functions $\\text{sinc}(ak/2)$ as $a$ tends to zero.  The first node to the right of the origin occurs at $k = 2\\pi/a$.  Thus the width of the principal lobe of the sinc function, which has height 1, increases without bound as $a$ tends to zero.  In other words, 
 
 \\begin{equation}
@@ -158,7 +151,7 @@ where equality is equality of distributions.
 The Fourier transform satisfies a plethora of beautiful and useful identities.  We discuss just a few of these here, then give an application to solving ODE's with constant coefficients.  First, the Fourier transform of a derivative:
 
 \\begin{align}
-   \\caF(f')(k) &= \\frac{1}{\\sqrt{2\\pi}}\\int_{\\infty}^{\\infty} f'(x) e^{-ikx}dx \\\\
+   \\caF(f')(k) &= \\frac{1}{\\sqrt{2\\pi}}\\int_{\\infty}^{\\infty} f'(x) e^{-ikx}dx \\
    &= -ik\\frac{1}{\\sqrt{2\\pi}}\\int_{\\infty}^{\\infty} f'(x) e^{-ikx}dx
 \\end{align}
 
@@ -196,10 +189,10 @@ Solving for $\\hat u$, we have
 Applying the inverse Fourier transform, we have
 
 \\begin{align}
-   u(x) &= \\caF^{-1}\\frac{-\\hat f}{ik + \\lambda} \\\\
-   &= \\frac{-1}{\\sqrt{2\\pi}} \\int_{-\\infty}^{\\infty} \\frac{ \\hat f(k) }{ik + \\lambda}e^{ikx} dk \\\\
+   u(x) &= \\caF^{-1}\\frac{-\\hat f}{ik + \\lambda} \\
+   &= \\frac{-1}{\\sqrt{2\\pi}} \\int_{-\\infty}^{\\infty} \\frac{ \\hat f(k) }{ik + \\lambda}e^{ikx} dk \\
    &= \\frac{-1}{2\\pi} \\int_{-\\infty}^{\\infty} \\left[  \\int_{-\\infty}^{\\infty} f(x')e^{-ikx} dx' \\right] 
-   \\frac{e^{ikx}}{ik + \\lambda}dk \\\\
+   \\frac{e^{ikx}}{ik + \\lambda}dk \\
    &=  \\frac{-1}{2\\pi} \\int_{-\\infty}^{\\infty} \\left[  \\int_{-\\infty}^{\\infty} \\frac{e^{ik(x-x')}} {ik + \\lambda} dk \\right] f(x')dx'
 \\end{align}
 
@@ -234,8 +227,8 @@ The function $G(x)$ in \\eqref{green1} is called the \\term{Green's function}.  
 There is more to say about the Green's function.  First, note what happens when we differentiate a convolution:
 
 \\begin{align}
-   (f*g)'(x) &= \\frac{d}{dx} \\int_{-\\infty}^{\\infty} f(x-y)g(y)dy \\\\
-   &= \\int_{-\\infty}^{\\infty} \\frac{d}{dx}  f(x-y)g(y)dy \\\\
+   (f*g)'(x) &= \\frac{d}{dx} \\int_{-\\infty}^{\\infty} f(x-y)g(y)dy \\
+   &= \\int_{-\\infty}^{\\infty} \\frac{d}{dx}  f(x-y)g(y)dy \\
 \\end{align}
 
 so that 
@@ -252,7 +245,7 @@ This identity holds more generally for any differential operator with constant c
 
 Returning to our equation $Lu = f$, where $Lu  = u' -\\lambda u$, we have $u = G*f$ as general solution.  Substitute back into the ODE to obtain $L(G*f) = f$.  
 Apply the above identity to write this as $LG*f = f$.
-Here $f$ is abitrary (within reason) and so $LG$ reveals itself as the identity element for the operation of convolution.  The question is: \\emph{is there such an object?}
+Here $f$ is abitrary (within reason) and so $LG$ reveals itself as the identity element for the operation of convolution.  The question is: is there such an object?
 There is  a hint in equation  \\eqref{diracdelta1}, which looks almost like a convolution.  Now the delta function is (among other things) the limit of a sequence of even functions, and therefore is itself even: $\\delta(-x) = \\delta(x)$.  Thus we may write \\eqref{diracdelta1}as
 
 \\begin{equation}
@@ -266,7 +259,7 @@ In other words,
     \\delta*f = f.
 \\end{equation}
 
-If $(LG)* f = f$ for all $f$, then $LG = \\delta$.  We conclude that \\emph{the Green's function for $Lu = f$ is a solution of $LG = \\delta$}.  This solution (which is not be unique if $L$ has a null space), is called the \\term{fundamental solution}.  From it, all other solutions are deduced by convolution.
+If $(LG)* f = f$ for all $f$, then $LG = \\delta$.  We conclude that the Green's function for $Lu = f$ is a solution of $LG = \\delta$.  This solution (which is not be unique if $L$ has a null space), is called the \\term{fundamental solution}.  From it, all other solutions are deduced by convolution.
 
 
 \\subsection{More about convolution}
@@ -275,7 +268,7 @@ The operation of convolution satisfies many pleasant and useful properties.  One
 To illustrate this, let $f = r_a$ be  rectangular pulse of unit area supported on $[-a/2, a/2]$ considered above.  For any even function $f$, we have 
 
 \\begin{align}
-   (f*g)(x) &= \\int_{-\\infty}^\\infty  f(x - y) g(y) dy \\\\
+   (f*g)(x) &= \\int_{-\\infty}^\\infty  f(x - y) g(y) dy \\
     &= \\int_{-\\infty}^\\infty  f(y -x) g(y) dy
 \\end{align}
 
@@ -308,6 +301,8 @@ where $ \\overline{g_a}(x) $ is the average of $g(x)$ on $[x - a/2, x + a/2]$.  
 \\href{http://www.physics.rutgers.edu/~steves/501/Lectures_Final/Lec06_Propagator.pdf}{Olver notes, Free particle propagator}
 
 \\href{http://www.reed.edu/physics/faculty/wheeler/documents/Miscellaneous%20Math/Delta%20Functions/Simplified%20Dirac%20Delta.pdf}{Delta function} -- Reed college notes
+
+
 
 
 

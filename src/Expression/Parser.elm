@@ -2,6 +2,7 @@ module Expression.Parser exposing (parseExpr, parseToBlock, run)
 
 import Block.Block exposing (Block)
 import Block.BlockTools
+import Block.Function as Function
 import Either
 import Expression.AST as AST exposing (Expr)
 import Expression.Error exposing (ErrorData, Problem(..))

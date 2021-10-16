@@ -44,10 +44,6 @@ postProcess state =
     { state | previousLineData = state.currentLineData, index = state.index + 1 }
 
 
-
--- |> debug3 ("postProcess " ++ String.fromInt state.index)
-
-
 getLine : Lang -> State -> State
 getLine language state =
     { state
