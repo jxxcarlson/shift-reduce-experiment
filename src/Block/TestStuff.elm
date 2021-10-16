@@ -1,4 +1,4 @@
-module Block.TestStuff exposing (l1, m1, t1, t2, t3, t4, t5, t6)
+module Block.TestStuff exposing (l1, m1, m2, m3, t1, t2, t3, t4, t5, t6)
 
 
 l1 =
@@ -7,6 +7,26 @@ l1 =
 
 m1 =
     "\\begin{code}\n   abc\n   def\n\\end{code}\n\nyada\nnada\n\n\\begin{math}\n   xyz\n\\end{math}"
+
+
+m2 =
+    """
+\\begin{itemize}
+   item Apples
+   
+   item Oranges
+\\end{itemize}
+"""
+
+
+m3 =
+    """
+\\begin{itemize}
+   \\item Apples
+   
+   \\item Oranges
+\\end{itemize}
+"""
 
 
 t1 =
