@@ -1,82 +1,30 @@
-module Block.TestStuff exposing (l1, m1, m2, m3, t1, t2, t3, t4, t5, t6)
+module Block.TestStuff exposing (..)
+
+import Block.Parser
+import Lang.Lang exposing (Lang(..))
+import Markup.API
+import Markup.Simplify exposing (BlockS(..), ExprS(..))
 
 
-l1 =
-    "| foo\n   a\n   b\n   | bar\n      c\n      d"
+ami str =
+    Markup.API.p MiniLaTeX str
 
 
-m1 =
-    "\\begin{code}\n   abc\n   def\n\\end{code}\n\nyada\nnada\n\n\\begin{math}\n   xyz\n\\end{math}"
+ama str =
+    Markup.API.p Markdown str
 
 
-m2 =
-    """
-\\begin{itemize}
-   item Apples
-   
-   item Oranges
-\\end{itemize}
-"""
+al str =
+    Markup.API.p L1 str
 
 
-m3 =
-    """
-\\begin{itemize}
-   \\item Apples
-   
-   \\item Oranges
-\\end{itemize}
-"""
+ma str =
+    Block.Parser.run Markdown 0 (String.lines str) |> .committed |> List.map Markup.Simplify.sblock
 
 
-t1 =
-    """
-one two three
-four five six
-"""
+mi str =
+    Block.Parser.run MiniLaTeX 0 (String.lines str) |> .committed |> List.map Markup.Simplify.sblock
 
 
-t2 =
-    """
-> Regular languages are rather inexpressive,
-   but they work great for lexers. On the opposite 
-   side of expressivity spectrum are Turing machines. 
-"""
-
-
-t3 =
-    """
-one two three
-four five six
-    
-> Regular languages are rather inexpressive,
-   but they work great for lexers. On the opposite 
-   side of expressivity spectrum are Turing machines. 
-"""
-
-
-t4 =
-    """1
-
-2
-"""
-
-
-t5 =
-    """
-1
-2
-    
->  3
-   4
-   5 
-"""
-
-
-t6 =
-    """abc def
-ghi jkl
-
-one two three
-four five six
-"""
+ll str =
+    Block.Parser.run L1 0 (String.lines str) |> .committed |> List.map Markup.Simplify.sblock

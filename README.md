@@ -1,5 +1,23 @@
 # A Versatile Markup-to-Html Compiler
 
+
+```
+"\\section{Birds}" =>
+[SParagraphS ["\\section{Birds}"] BlockComplete] =>
+[ParagraphS [ExprS "heading2" [TextS "Birds"],TextS "\n"] BlockComplete]
+
+"## Birds" =>
+[SBlockS "heading2" [SParagraphS ["Birds"] BlockStarted] BlockStarted] =>
+[BlockS "heading2" [ParagraphS [TextS "Birds\n"] BlockStarted] BlockStarted]
+ 
+ So we need the following
+ 
+ [SBlockS "heading2" [SParagraphS ["Birds"] BlockStarted] BlockStarted] =>
+ [ParagraphS [ExprS "heading2" [TextS "Birds"],TextS "\n"] BlockComplete]
+
+in the Block parser
+```
+
 This document describes compiler that transforms markup languages to HTML.  It has the following characteristics:
 
 - The parser is fast enough to operate in real time in an interactive editing environment.  By this, we mean that documents of reasonable size can be re-parsed and re-rendered on each keystroke without noticeable lag to the user.

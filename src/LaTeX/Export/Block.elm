@@ -3,16 +3,23 @@ module LaTeX.Export.Block exposing (render)
 import Block.Block exposing (Block(..), BlockStatus(..))
 import Element exposing (..)
 import Element.Background as Background
+import LaTeX.Export.Export
 import LaTeX.Export.Text
 
 
 render : List Block -> String
 render blocks =
-    List.map renderBlock blocks |> String.join "\n"
+    LaTeX.Export.Export.preamble "TITLE"
+        ++ (List.map renderBlock blocks |> String.join "\n")
+        ++ "\n\\end{document}"
 
 
 renderVerbatimEnvironment name body =
-    "\\begin{" ++ name ++ "}\n" ++ body ++ "\n\\end{" ++ name ++ "} "
+    if name == "mathmacro" then
+        "%% User's macros\n" ++ body ++ "\n"
+
+    else
+        "\\begin{" ++ name ++ "}\n" ++ body ++ "\n\\end{" ++ name ++ "}\n"
 
 
 renderEnvironment name blocks =

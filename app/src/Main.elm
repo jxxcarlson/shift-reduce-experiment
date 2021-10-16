@@ -1,7 +1,6 @@
 module Main exposing (main)
 
 import Browser
-import Data.Article2
 import Data.L1Test
 import Data.MarkdownTest
 import Data.MiniLaTeXTest
@@ -9,9 +8,9 @@ import Element exposing (..)
 import Element.Background as Background
 import Element.Font as Font
 import Element.Input as Input
-import Expression.ASTTools as ASTTools
 import File.Download as Download
 import Html exposing (Html)
+import LaTeX.Export.Block
 import Lang.Lang exposing (Lang(..))
 import Markup.API as API
 import Process
@@ -34,7 +33,23 @@ type alias Model =
     , count : Int
     , windowHeight : Int
     , windowWidth : Int
+    , viewMode : ViewMode
     }
+
+
+type ViewMode
+    = StandardView
+    | LaTeXSource
+
+
+viewModeToString : ViewMode -> String
+viewModeToString mode =
+    case mode of
+        StandardView ->
+            "Standard view"
+
+        LaTeXSource ->
+            "LaTeX"
 
 
 type Msg
@@ -43,6 +58,7 @@ type Msg
     | ClearText
     | LoadDocumentText Lang String
     | IncrementCounter
+    | SetViewMode ViewMode
 
 
 identifierToLanguage : String -> Lang
@@ -76,6 +92,7 @@ init flags =
       , count = 0
       , windowHeight = flags.height
       , windowWidth = flags.width
+      , viewMode = StandardView
       }
     , Process.sleep 100 |> Task.perform (always IncrementCounter)
     )
@@ -97,6 +114,9 @@ update msg model =
     case msg of
         NoOp ->
             ( model, Cmd.none )
+
+        SetViewMode viewMode ->
+            ( { model | viewMode = viewMode }, Cmd.none )
 
         InputText str ->
             ( { model
@@ -188,8 +208,18 @@ rhs model =
             , moveUp 9
             , Font.size 14
             ]
-            [ dummyButton, text ("generation: " ++ String.fromInt model.count), wordCountElement model.sourceText ]
-        , renderedText model
+            [ dummyButton
+            , text ("generation: " ++ String.fromInt model.count)
+            , wordCountElement model.sourceText
+            , setViewMode model StandardView
+            , setViewMode model LaTeXSource
+            ]
+        , case model.viewMode of
+            StandardView ->
+                renderedText model
+
+            LaTeXSource ->
+                latexSourceView model
         ]
 
 
@@ -212,11 +242,35 @@ renderedText model =
         , height (px (panelHeight_ model))
         , scrollbarY
         , moveUp 9
-        , Font.size 12
+        , Font.size 14
         , alignTop
         , Background.color (Element.rgb255 255 255 255)
         ]
         (render model.language model.count model.sourceText)
+
+
+latexSourceView : Model -> Element Msg
+latexSourceView model =
+    let
+        laTeXText =
+            model.sourceText
+                |> String.lines
+                |> API.parse model.language 0
+                |> .ast
+                |> LaTeX.Export.Block.render
+    in
+    column
+        [ spacing 8
+        , paddingXY 24 36
+        , width (px panelWidth_)
+        , height (px (panelHeight_ model))
+        , scrollbarY
+        , moveUp 9
+        , Font.size 14
+        , alignTop
+        , Background.color (Element.rgb255 255 255 255)
+        ]
+        [ Element.text laTeXText ]
 
 
 render : Lang -> Int -> String -> List (Element msg)
@@ -284,6 +338,14 @@ miniLaTeXDocButton language =
     Input.button (activeButtonStyle (language == MiniLaTeX))
         { onPress = Just (LoadDocumentText MiniLaTeX Data.MiniLaTeXTest.text)
         , label = el [ centerX, centerY, Font.size 14 ] (text "MiniLaTeX")
+        }
+
+
+setViewMode : Model -> ViewMode -> Element Msg
+setViewMode model viewMode =
+    Input.button (activeButtonStyle (viewMode == model.viewMode))
+        { onPress = Just (SetViewMode viewMode)
+        , label = el [ centerX, centerY, Font.size 14 ] (text (viewModeToString viewMode))
         }
 
 

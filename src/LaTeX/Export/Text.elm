@@ -1,6 +1,7 @@
 module LaTeX.Export.Text exposing (render)
 
 import Block.Block exposing (ExprM(..))
+import Dict exposing (Dict)
 
 
 render : ExprM -> String
@@ -10,10 +11,14 @@ render expr =
             string
 
         ExprM name expressions _ ->
-            renderMarked name expressions
+            renderNamedExpression name expressions
 
         VerbatimM name str _ ->
-            "\\" ++ name ++ encloseWithBraces str
+            if name == "math" then
+                "$" ++ str ++ "$"
+
+            else
+                "\\" ++ name ++ encloseWithBraces str
 
         ArgM str _ ->
             encloseWithBraces (render expr)
@@ -23,14 +28,35 @@ errorText index str =
     "(" ++ String.fromInt index ++ ") not implemented: " ++ str
 
 
-renderMarked : String -> List ExprM -> String
-renderMarked name args =
-    "\\" ++ name ++ renderArgs args
+nameDict : Dict String String
+nameDict =
+    Dict.fromList
+        [ ( "heading1", "section" )
+        , ( "heading2", "subsection" )
+        , ( "heading3", "subsubsection" )
+        , ( "heading4", "subsubsubsection" )
+        , ( "heading5", "subheading" )
+        ]
+
+
+translateName : String -> String
+translateName str =
+    case Dict.get str nameDict of
+        Nothing ->
+            str
+
+        Just name ->
+            name
+
+
+renderNamedExpression : String -> List ExprM -> String
+renderNamedExpression name args =
+    "\\" ++ translateName name ++ renderArgs args
 
 
 renderArgs : List ExprM -> String
 renderArgs expressions =
-    List.map renderExpression expressions |> String.join ""
+    List.map (renderExpression >> encloseWithBraces) expressions |> String.join ""
 
 
 renderExpression : ExprM -> String
@@ -46,7 +72,7 @@ renderExpression expr =
             str
 
         ExprM name expressions _ ->
-            renderMarked name expressions
+            renderNamedExpression name expressions
 
 
 encloseWithBraces : String -> String
