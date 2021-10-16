@@ -18,6 +18,9 @@ renderVerbatimEnvironment name body =
     if name == "mathmacro" then
         "%% User's macros\n" ++ body ++ "\n"
 
+    else if name == "math" then
+        "$$\n" ++ body ++ "\n$$"
+
     else
         "\\begin{" ++ name ++ "}\n" ++ body ++ "\n\\end{" ++ name ++ "}\n"
 
