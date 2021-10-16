@@ -28,6 +28,7 @@ type TokenS
     | FunctionNameST String
     | MarkedTextST String String
     | AnnotatedTextST String String String
+    | SpecialST String String
     | TokenErrorST ErrorData
 
 
@@ -61,6 +62,9 @@ simplifyToken token =
 
         Token.AnnotatedText str1 str2 str3 _ ->
             AnnotatedTextST str1 str2 str3
+
+        Token.Special str1 str2 _ ->
+            SpecialST str1 str2
 
         Token.TokenError errorData _ ->
             TokenErrorST errorData

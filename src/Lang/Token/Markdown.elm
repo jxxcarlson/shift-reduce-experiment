@@ -45,6 +45,19 @@ linkParser start =
         |= Parser.getOffset
 
 
+functionParser : Int -> TokenParser
+functionParser start =
+    Parser.succeed (\begin annotation arg end -> AnnotatedText "link" annotation.content arg.content { begin = start + begin, end = start + end })
+        |= Parser.getOffset
+        |. Parser.symbol (Parser.Token "[" (ExpectingSymbol "["))
+        |= ParserTools.text (\c -> c /= '[') (\c -> c /= ']')
+        |. Parser.symbol (Parser.Token "]" (ExpectingSymbol "]"))
+        |. Parser.symbol (Parser.Token "(" (ExpectingSymbol "("))
+        |= ParserTools.text (\c -> c /= '(') (\c -> c /= ')')
+        |. Parser.symbol (Parser.Token ")" (ExpectingSymbol ")"))
+        |= Parser.getOffset
+
+
 imageParser : Int -> TokenParser
 imageParser start =
     Parser.succeed (\begin annotation arg end -> AnnotatedText "image" annotation.content arg.content { begin = start + begin, end = start + end })

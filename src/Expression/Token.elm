@@ -18,6 +18,7 @@ type Token
     | FunctionName String Loc
     | MarkedText String String Loc
     | AnnotatedText String String String Loc
+    | Special String String Loc -- eg, for @title[The Greatest Book Ever!]
     | TokenError ErrorData Loc
 
 
@@ -40,6 +41,9 @@ stringValue token =
             str
 
         AnnotatedText _ _ str _ ->
+            str
+
+        Special _ str _ ->
             str
 
         TokenError _ _ ->
@@ -85,6 +89,9 @@ startPositionOf token =
         AnnotatedText _ _ _ loc ->
             loc.begin
 
+        Special _ _ loc ->
+            loc.begin
+
         TokenError _ loc ->
             loc.begin
 
@@ -108,6 +115,9 @@ length token =
             loc.end - loc.begin
 
         AnnotatedText _ _ _ loc ->
+            loc.end - loc.begin
+
+        Special _ _ loc ->
             loc.end - loc.begin
 
         TokenError _ loc ->
