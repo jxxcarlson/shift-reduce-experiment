@@ -89,7 +89,7 @@ message name blockStatus =
             Element.el [ Font.color (Element.rgb 180 0 0) ] (Element.text <| "Mismatched tags: " ++ first ++ " ≠ " ++ second)
 
         BlockStarted ->
-            Element.el [ Font.color (Element.rgb 180 0 0) ] (Element.text <| "Unterminated block: " ++ name)
+            Element.el [ Font.color (Element.rgb 180 0 0) ] (Element.text <| "Unfinished " ++ name ++ " block")
 
         BlockUnimplemented ->
             Element.el [ Font.color (Element.rgb 180 0 0) ] (Element.text <| "Unimplemented block: " ++ name)
