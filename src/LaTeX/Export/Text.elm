@@ -17,6 +17,9 @@ render expr =
             if name == "math" then
                 "$" ++ str ++ "$"
 
+            else if name == "code" then
+                "\\verb!" ++ str ++ "!"
+
             else
                 "\\" ++ name ++ encloseWithBraces str
 

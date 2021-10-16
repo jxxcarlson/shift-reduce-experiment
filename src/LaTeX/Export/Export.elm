@@ -28,6 +28,7 @@ preamble title =
 }
 \\usepackage{xcolor}
 \\usepackage{soul}
+\\usepackage{fancyvrb}
 
 
 %% Commands
