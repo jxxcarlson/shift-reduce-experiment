@@ -7,11 +7,25 @@ import LaTeX.Export.Export
 import LaTeX.Export.Text
 
 
-render : List Block -> String
-render blocks =
-    LaTeX.Export.Export.preamble "TITLE"
-        ++ (List.map renderBlock blocks |> String.join "\n")
+render : String -> List Block -> String
+render title blocks =
+    LaTeX.Export.Export.preamble title
+        ++ (List.map renderBlock (excludeTitle blocks) |> String.join "\n")
         ++ "\n\\end{document}"
+
+
+excludeTitle : List Block -> List Block
+excludeTitle blocks =
+    List.filter isNotTitleBlock blocks
+
+
+isNotTitleBlock block =
+    case block of
+        Paragraph ((Block.Block.ExprM name _ _) :: rest2) _ ->
+            name /= "title"
+
+        _ ->
+            True
 
 
 renderVerbatimEnvironment name body =

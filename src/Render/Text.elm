@@ -372,7 +372,8 @@ makeId textList =
 
 title : Settings -> String -> Element msg
 title s titleText =
-    el [ Font.size s.titleSize, Utility.elementAttribute "id" titleText ] (Element.text titleText)
+    -- el [ Font.size s.titleSize, Utility.elementAttribute "id" titleText ] (Element.text titleText)
+    Element.none
 
 
 verticalPadding top bottom =

@@ -8,6 +8,7 @@ import Element exposing (..)
 import Element.Background as Background
 import Element.Font as Font
 import Element.Input as Input
+import Expression.ASTTools as ASTTools
 import File.Download as Download
 import Html exposing (Html)
 import LaTeX.Export.Block
@@ -252,12 +253,17 @@ renderedText model =
 latexSourceView : Model -> Element Msg
 latexSourceView model =
     let
-        laTeXText =
+        ast =
             model.sourceText
                 |> String.lines
                 |> API.parse model.language 0
                 |> .ast
-                |> LaTeX.Export.Block.render
+
+        titleString =
+            ASTTools.getTitle ast |> Maybe.withDefault "Untitled"
+
+        laTeXText =
+            ast |> LaTeX.Export.Block.render titleString
     in
     column
         [ spacing 8
