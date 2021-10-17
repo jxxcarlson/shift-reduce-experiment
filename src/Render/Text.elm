@@ -178,7 +178,7 @@ link_ : String -> String -> Element msg
 link_ url label =
     newTabLink []
         { url = url
-        , label = el [ Font.color linkColor, Font.italic ] (Element.text label)
+        , label = el [ Font.color linkColor ] (Element.text label)
         }
 
 
