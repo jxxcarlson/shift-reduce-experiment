@@ -68,6 +68,9 @@ getText text =
         VerbatimM _ str _ ->
             Just (String.replace "`" "" str)
 
+        ExprM _ expressions _ ->
+            List.map getText expressions |> Maybe.Extra.values |> String.join " " |> Just
+
         _ ->
             Nothing
 

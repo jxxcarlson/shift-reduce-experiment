@@ -1,9 +1,11 @@
-module LaTeX.Export.API exposing (..)
+module LaTeX.Export.API exposing (export, parepareForExportWithImages)
 
+import Block.Block exposing (Block(..), ExprM(..))
 import Expression.ASTTools
 import LaTeX.Export.Block
 import Lang.Lang exposing (Lang)
 import Markup.API
+import Markup.Meta as Meta
 import Maybe.Extra
 
 
@@ -22,30 +24,29 @@ export language sourceText =
     ast |> LaTeX.Export.Block.render titleString
 
 
-imageUrlList ast =
-    ast
-        |> List.map (macroValue_ "image")
+parepareForExportWithImages : Lang -> String -> { source : String, imageUrls : List String }
+parepareForExportWithImages language sourceText =
+    let
+        ast =
+            sourceText
+                |> String.lines
+                |> Markup.API.parse language 0
+                |> .ast
+
+        titleString =
+            Expression.ASTTools.getTitle ast |> Maybe.withDefault "Untitled"
+
+        source =
+            ast |> LaTeX.Export.Block.render titleString
+
+        imageUrls =
+            getImageURLs ast
+    in
+    { source = source, imageUrls = imageUrls }
+
+
+getImageURLs : List Block -> List String
+getImageURLs blocks =
+    Expression.ASTTools.filter Expression.ASTTools.Contains "heading" blocks
+        |> List.map Expression.ASTTools.getText
         |> Maybe.Extra.values
-
-
-
---macroValue_ : String -> List LatexExpression -> Maybe String
---macroValue_ macroName list =
---    list
---        |> filterMacro macroName
---        |> List.head
---        |> Maybe.map getMacroArgs2
---        |> Maybe.andThen List.head
---        |> Maybe.andThen List.head
---        |> Maybe.map getString
---
---
---getMacroArgs2 : LatexExpression -> List (List LatexExpression)
---getMacroArgs2 latexExpression =
---    case latexExpression of
---        Macro name optArgs args ->
---            args
---                |> List.map latexList2List
---
---        _ ->
---            []
