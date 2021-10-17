@@ -1,4 +1,4 @@
-module LaTeX.Export.Export exposing (preamble)
+module LaTeX.Export.Data exposing (preamble)
 
 {-| A standard preamble
 -}

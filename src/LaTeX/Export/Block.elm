@@ -3,13 +3,13 @@ module LaTeX.Export.Block exposing (render)
 import Block.Block exposing (Block(..), BlockStatus(..))
 import Element exposing (..)
 import Element.Background as Background
-import LaTeX.Export.Export
+import LaTeX.Export.Data
 import LaTeX.Export.Text
 
 
 render : String -> List Block -> String
 render title blocks =
-    LaTeX.Export.Export.preamble title
+    LaTeX.Export.Data.preamble title
         ++ (List.map renderBlock (excludeTitle blocks) |> String.join "\n")
         ++ "\n\\end{document}"
 
