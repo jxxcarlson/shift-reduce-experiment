@@ -1,4 +1,4 @@
-module Lang.Token.Markdown exposing (tokenParser)
+module Lang.Token.Markdown exposing (specialParser, tokenParser)
 
 import Expression.Error exposing (..)
 import Expression.Token exposing (Token(..))
@@ -34,7 +34,14 @@ markedTextParser start mark begin end =
 
 linkParser : Int -> TokenParser
 linkParser start =
-    Parser.succeed (\begin annotation arg end -> AnnotatedText "link" annotation.content arg.content { begin = start + begin, end = start + end })
+    Parser.succeed
+        (\begin annotation arg end ->
+            if String.left 1 annotation.content == "!" then
+                Special (String.trim <| String.dropLeft 1 annotation.content) arg.content { begin = start + begin, end = start + end }
+
+            else
+                AnnotatedText "link" annotation.content arg.content { begin = start + begin, end = start + end }
+        )
         |= Parser.getOffset
         |. Parser.symbol (Parser.Token "[" (ExpectingSymbol "["))
         |= ParserTools.text (\c -> c /= '[') (\c -> c /= ']')
@@ -45,16 +52,15 @@ linkParser start =
         |= Parser.getOffset
 
 
-functionParser : Int -> TokenParser
-functionParser start =
-    Parser.succeed (\begin annotation arg end -> AnnotatedText "link" annotation.content arg.content { begin = start + begin, end = start + end })
+specialParser : Int -> TokenParser
+specialParser start =
+    Parser.succeed (\begin name argString end -> Special name.content argString.content { begin = start + begin, end = start + end })
         |= Parser.getOffset
+        |. Parser.symbol (Parser.Token "@@ " (ExpectingSymbol "@"))
+        |= ParserTools.text (\c -> c /= '[') (\c -> c /= '[')
         |. Parser.symbol (Parser.Token "[" (ExpectingSymbol "["))
-        |= ParserTools.text (\c -> c /= '[') (\c -> c /= ']')
+        |= ParserTools.text (\c -> c /= ']') (\c -> c /= ']')
         |. Parser.symbol (Parser.Token "]" (ExpectingSymbol "]"))
-        |. Parser.symbol (Parser.Token "(" (ExpectingSymbol "("))
-        |= ParserTools.text (\c -> c /= '(') (\c -> c /= ')')
-        |. Parser.symbol (Parser.Token ")" (ExpectingSymbol ")"))
         |= Parser.getOffset
 
 

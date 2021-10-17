@@ -3,11 +3,11 @@ module Data.MarkdownTest exposing (text)
 
 text =
     """
-# Markdown test
+[! title](Markdown Test)
 
 _The L3 project provides a real-time, fault-tolerant compiler to HTML for three markup languages: L1, with a Lisp-like syntax, Markdown (a flavor thereof), and MiniLaTeX, a subset-variant of LaTeX._
 
-## Introduction
+# Introduction
 
 This is a test document for the L3 implementation of Markdown.  It is pretty much the same as classical Markdown, but there are some differences.  One feature/difference up front — you can render math in the usual LaTeX way, like this:
 
@@ -32,7 +32,7 @@ Another difference: the body of a any block is assumed to be indented with respe
 Notice, by the way, that a table of contents is generated automatically.  The title is the heading beginning with a single hash mark `#`, and there should only be one of these.   The table of contents will provide active links to sections of the document in a soon-to-be released upgrade.
 
 
-## Code
+# Code
 
 This is some code:  `a := 1`.  And so is this
 
@@ -44,7 +44,7 @@ This is some code:  `a := 1`.  And so is this
 Notice the "hanging" style for this block. It works because of the indentation requirement: a block ends when the indentation level goes down.  Like Python.
 
 
-## Quotation
+# Quotation
 
 This is a quote:
 
@@ -60,7 +60,7 @@ This is a quote:
     the head then corresponds to popping from one
     stack and pushing to another.
 
-## Images
+# Images
 
 All software projects should have a mascot.  Here is ours:
 
@@ -70,7 +70,7 @@ All software projects should have a mascot.  Here is ours:
 Images are sized automatically to fill the page from left to right.  We will have some Markdown extension with options for image size and placement, and also captions.
 
 
-## Plans
+# Plans
 
 We'll get to the below as soon as we can.  However, we are completely preocuppied at the moment by the task of finishing version 1 of the L3 compiler — bug fixes, implementing the remaining parts.
 
@@ -82,5 +82,7 @@ We'll get to the below as soon as we can.  However, we are completely preocuppie
 
 
 We welcome and appreciate suggestions, but can't promise to adopt them.
+
+
 
 """

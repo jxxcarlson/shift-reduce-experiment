@@ -138,6 +138,7 @@ filter_ filterType key block =
             case filterType of
                 Equality ->
                     List.filter (\t -> Maybe.map (\x -> x == key) (getName t) == Just True) textList
+                        ++ List.filter (\t -> Maybe.map (\x -> x == "special") (getName t) == Just True) textList
 
                 Contains ->
                     List.filter (\t -> Maybe.map (String.contains key) (getName t) == Just True) textList

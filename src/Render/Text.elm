@@ -5,6 +5,7 @@ import Dict exposing (Dict)
 import Element exposing (Element, alignLeft, alignRight, centerX, column, el, newTabLink, px, spacing)
 import Element.Background as Background
 import Element.Font as Font
+import Expression.AST exposing (Expr(..))
 import Expression.ASTTools as ASTTools
 import LaTeX.MathMacro
 import Render.Math
@@ -57,7 +58,8 @@ renderMarked name generation settings accumulator textList =
 markupDict : Dict String (Int -> Settings -> Accumulator -> List ExprM -> Element msg)
 markupDict =
     Dict.fromList
-        [ ( "strong", \g s a textList -> strong g s a textList )
+        [ ( "special", \g s a textList -> special g s a textList )
+        , ( "strong", \g s a textList -> strong g s a textList )
         , ( "bold", \g s a textList -> strong g s a textList )
         , ( "italic", \g s a textList -> italic g s a textList )
         , ( "boldItalic", \g s a textList -> boldItalic g s a textList )
@@ -96,6 +98,42 @@ verbatimDict =
         ]
 
 
+special : Int -> Settings -> Accumulator -> List ExprM -> Element msg
+special g s a textList =
+    case textList of
+        (TextM functionName _) :: (TextM argString _) :: [] ->
+            case Dict.get functionName specialFunctionsDict of
+                Nothing ->
+                    Element.paragraph []
+                        [ Element.el [ Font.color redColor ] (Element.text <| functionName ++ ": ")
+                        , Element.el [ Font.color blueColor ] (Element.text argString)
+                        ]
+
+                Just f ->
+                    f s argString
+
+        _ ->
+            Element.paragraph []
+                [ Element.el [ Font.color redColor ] (Element.text "Bad syntax for special function")
+                ]
+
+
+specialFunctionsDict : Dict String (Settings -> String -> Element msg)
+specialFunctionsDict =
+    Dict.fromList
+        [ ( "title", \s str -> title s str )
+        ]
+
+
+redColor =
+    Element.rgb 0.6 0 0.8
+
+
+blueColor =
+    Element.rgb 0 0 0.8
+
+
+texmacro : Int -> Settings -> Accumulator -> List ExprM -> Element msg
 texmacro g s a textList =
     macro1 (\str -> Element.el [] (Element.text ("\\" ++ str))) g s a textList
 
@@ -329,12 +367,20 @@ makeId textList =
     Utility.elementAttribute "id" (ASTTools.stringValueOfList textList |> String.trim |> makeSlug)
 
 
-heading1 g s a textList =
-    simpleElement [ Font.size s.titleSize, makeId textList ] g s a textList
+title : Settings -> String -> Element msg
+title s titleText =
+    el [ Font.size s.titleSize, Utility.elementAttribute "id" titleText ] (Element.text titleText)
 
 
 verticalPadding top bottom =
     Element.paddingEach { top = top, bottom = bottom, left = 0, right = 0 }
+
+
+heading1 g s a textList =
+    Element.column [ Font.size 28, verticalPadding 22 11 ]
+        [ Element.link [ makeId textList ]
+            { url = internalLink "TITLE", label = Element.paragraph [] (List.map (render g s a) textList) }
+        ]
 
 
 heading2 g s a textList =

@@ -19,6 +19,15 @@ markdownLanguageChars =
     [ '*', '_', '`', '$', '#' ]
 
 
+markdownEscapeChars =
+    [ "\\*", "\\_", "\\'", "\\$", "\\#", "\\@ = " ]
+
+
+unescape : List Char -> String -> String
+unescape _ str =
+    String.replace "\\@" "@" str
+
+
 type alias TokenParser =
     Parser Context Problem Token
 

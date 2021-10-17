@@ -92,7 +92,7 @@ transformMarkdownHeading : String -> String
 transformMarkdownHeading str =
     case str of
         "#" ->
-            "title"
+            "heading1"
 
         "##" ->
             "heading2"

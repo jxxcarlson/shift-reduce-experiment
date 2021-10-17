@@ -54,6 +54,9 @@ reduce state =
         (Left (AnnotatedText "link" label value loc)) :: [] ->
             { state | committed = Expr "link" [ AST.Text label loc, AST.Text value loc ] loc :: state.committed, stack = [] }
 
+        (Left (Special name argString loc)) :: [] ->
+            { state | committed = Expr "special" [ AST.Text name loc, AST.Text argString loc ] loc :: state.committed, stack = [] }
+
         _ ->
             state
 
