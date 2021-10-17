@@ -16,7 +16,7 @@ miniLaTeXLanguageChars =
 
 
 markdownLanguageChars =
-    [ '*', '_', '`', '$', '#' ]
+    [ '*', '_', '`', '$', '#', '[' ]
 
 
 markdownEscapeChars =
