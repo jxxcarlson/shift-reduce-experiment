@@ -59,6 +59,7 @@ markupDict : Dict String (Int -> Settings -> Accumulator -> List ExprM -> Elemen
 markupDict =
     Dict.fromList
         [ ( "special", \g s a textList -> special g s a textList )
+        , ( "item", \g s a textList -> item g s a textList )
         , ( "strong", \g s a textList -> strong g s a textList )
         , ( "bold", \g s a textList -> strong g s a textList )
         , ( "italic", \g s a textList -> italic g s a textList )
@@ -267,6 +268,7 @@ linkColor =
     Element.rgb 0 0 0.8
 
 
+simpleElement : List (Element.Attribute msg) -> Int -> Settings -> Accumulator -> List ExprM -> Element msg
 simpleElement formatList g s a textList =
     Element.paragraph formatList (List.map (render g s a) textList)
 
@@ -296,6 +298,23 @@ codeStyle =
 mathElement : Int -> Settings -> Accumulator -> String -> Element msg
 mathElement generation settings accumulator str =
     Render.Math.mathText generation Render.Math.InlineMathMode (LaTeX.MathMacro.evalStr accumulator.macroDict str)
+
+
+item : Int -> Settings -> Accumulator -> List ExprM -> Element msg
+item generation settings accumulator str =
+    Element.row [ Element.width Element.fill, Element.paddingEach { left = 18, right = 0, top = 0, bottom = 0 } ]
+        [ el [ Element.height Element.fill ] Element.none
+        , column [ Element.width Element.fill ]
+            [ Element.row [ Element.width Element.fill, spacing 8 ]
+                [ itemSymbol
+                , Element.paragraph [ Element.width Element.fill ] [ Element.text (ASTTools.exprListToStringList str |> String.join " ") ]
+                ]
+            ]
+        ]
+
+
+itemSymbol =
+    el [ Font.bold, Element.alignTop, Element.moveUp 1, Font.size 18 ] (Element.text "•")
 
 
 codeColor =

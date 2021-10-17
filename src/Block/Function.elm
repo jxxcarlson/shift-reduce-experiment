@@ -6,7 +6,7 @@ module Block.Function exposing
     , finalizeBlockStatusOfStack
     , finalizeBlockStatusOfStackTop
     , finalizeBlockStatus_
-    , fixMarkdownHeadingBlock
+    , fixMarkdownBlock
     , getStatus
     , incrementLevel
     , insertErrorMessage
@@ -154,8 +154,8 @@ mapStack f stack =
             f top :: List.drop 1 stack
 
 
-fixMarkdownHeadingBlock : Block -> Block
-fixMarkdownHeadingBlock block =
+fixMarkdownBlock : Block -> Block
+fixMarkdownBlock block =
     let
         metaToExprMeta meta =
             let
@@ -167,6 +167,9 @@ fixMarkdownHeadingBlock block =
     case block of
         Paragraph [ ExprM "special" [ Block.TextM "title" meta1, Block.TextM argString meta2 ] meta3 ] meta4 ->
             Paragraph [ ExprM "title" [ Block.TextM (String.trim argString) meta1 ] (metaToExprMeta meta2) ] meta4
+
+        Block "item" [ Paragraph [ Block.TextM str meta ] meta2 ] meta3 ->
+            Paragraph [ ExprM "item" [ Block.TextM (String.trim str) meta ] (metaToExprMeta meta2) ] meta3
 
         Block "title" [ Paragraph [ Block.TextM str meta ] meta2 ] meta3 ->
             Paragraph [ ExprM "title" [ Block.TextM (String.trim str) meta ] (metaToExprMeta meta2) ] meta3

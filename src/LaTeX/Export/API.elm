@@ -1,12 +1,22 @@
-module LaTeX.Export.API exposing (export, parepareForExportWithImages)
+module LaTeX.Export.API exposing (export, prepareForExportWithImages)
 
 import Block.Block exposing (Block(..), ExprM(..))
 import Expression.ASTTools
 import LaTeX.Export.Block
-import Lang.Lang exposing (Lang)
+import LaTeX.Export.Markdown
+import Lang.Lang exposing (Lang(..))
 import Markup.API
 import Markup.Meta as Meta
 import Maybe.Extra
+
+
+ifApply : Bool -> (a -> a) -> a -> a
+ifApply goAhead f a =
+    if goAhead then
+        f a
+
+    else
+        a
 
 
 export : Lang -> String -> String
@@ -17,6 +27,7 @@ export language sourceText =
                 |> String.lines
                 |> Markup.API.parse language 0
                 |> .ast
+                |> ifApply (language == Markdown) LaTeX.Export.Markdown.normalize
 
         titleString =
             Expression.ASTTools.getTitle ast |> Maybe.withDefault "Untitled"
@@ -24,14 +35,15 @@ export language sourceText =
     ast |> LaTeX.Export.Block.render titleString
 
 
-parepareForExportWithImages : Lang -> String -> { source : String, imageUrls : List String }
-parepareForExportWithImages language sourceText =
+prepareForExportWithImages : Lang -> String -> { source : String, imageUrls : List String }
+prepareForExportWithImages language sourceText =
     let
         ast =
             sourceText
                 |> String.lines
                 |> Markup.API.parse language 0
                 |> .ast
+                |> ifApply (language == Markdown) LaTeX.Export.Markdown.normalize
 
         titleString =
             Expression.ASTTools.getTitle ast |> Maybe.withDefault "Untitled"

@@ -32,13 +32,17 @@ rl str =
     renderFancy { width = 500, titleSize = 30, showTOC = True } L1 0 (String.lines str)
 
 
+
+-- NOTE THE AST TRANSFORMATION BELOW
+
+
 parse : Lang -> Int -> List String -> { ast : List Block, accumulator : Block.State.Accumulator }
 parse lang generation lines =
     let
         state =
             Block.Parser.run lang generation lines
     in
-    { ast = List.map (Block.BlockTools.map (Expression.Parser.parseExpr lang) >> Block.Function.fixMarkdownHeadingBlock) state.committed, accumulator = state.accumulator }
+    { ast = List.map (Block.BlockTools.map (Expression.Parser.parseExpr lang) >> Block.Function.fixMarkdownBlock) state.committed, accumulator = state.accumulator }
 
 
 {-| -}
