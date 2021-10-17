@@ -165,6 +165,9 @@ fixMarkdownHeadingBlock block =
             { dummy | id = meta.id }
     in
     case block of
+        Paragraph [ ExprM "special" [ Block.TextM "title" meta1, Block.TextM argString meta2 ] meta3 ] meta4 ->
+            Paragraph [ ExprM "title" [ Block.TextM (String.trim argString) meta1 ] (metaToExprMeta meta2) ] meta4
+
         Block "title" [ Paragraph [ Block.TextM str meta ] meta2 ] meta3 ->
             Paragraph [ ExprM "title" [ Block.TextM (String.trim str) meta ] (metaToExprMeta meta2) ] meta3
 
