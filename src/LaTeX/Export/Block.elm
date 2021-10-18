@@ -10,7 +10,7 @@ import LaTeX.Export.Text
 render : String -> List Block -> String
 render title blocks =
     LaTeX.Export.Data.preamble title
-        ++ (List.map renderBlock (excludeTitle blocks) |> String.join "\n")
+        ++ (List.map renderBlock (excludeTitle blocks) |> String.join "\n\n")
         ++ "\n\\end{document}"
 
 
