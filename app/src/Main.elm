@@ -15,6 +15,7 @@ import Html exposing (Html)
 import Html.Attributes as HtmlAttr exposing (attribute)
 import Html.Events
 import Json.Decode
+import Json.Encode
 import LaTeX.Export.Block
 import Lang.Lang exposing (Lang(..))
 import Markup.API as API
@@ -133,8 +134,12 @@ update msg model =
             ( { model | viewMode = viewMode }, Cmd.none )
 
         InputText str ->
+            let
+                _ =
+                    Debug.log "InputText fire" (String.length str)
+            in
             ( { model
-                | sourceText = str -- String.trim str
+                | sourceText = str |> Debug.log "InputText (1)"
                 , count = model.count + 1
               }
             , Cmd.none
@@ -182,7 +187,7 @@ noFocus =
 mainColumn : Model -> Element Msg
 mainColumn model =
     column (mainColumnStyle model)
-        [ column [ paddingEach { top = 16, bottom = 0, left = 0, right = 0 }, spacing 8, width (px appWidth_), height (px (appHeight_ model)) ]
+        [ column [ centerY, paddingEach { top = 46, bottom = 0, left = 0, right = 0 }, spacing 8, width (px appWidth_), height (px (appHeight_ model)) ]
             [ -- title "L3 Demo App"
               column [ height fill, spacing 12 ]
                 [ row [ spacing 12 ] [ editor model, rhs model ]
@@ -192,30 +197,44 @@ mainColumn model =
         ]
 
 
+editor model =
+    column [ height fill, moveUp 8 ]
+        [ row [ spacing 12 ]
+            [ l1DocButton model.language
+            , miniLaTeXDocButton model.language
+            , markdownDocButton model.language
+            ]
+        , editor_ model
+        ]
+
+
 editor_ : Model -> Element Msg
 editor_ model =
     let
+        onChange : Html.Attribute Msg
         onChange =
+            -- TODO: (1) I THOUGHT THIS WOULD GET TEXT FROM THE EDITOR AND PUT IT IN model.sourceText
             Json.Decode.string
                 |> Json.Decode.at [ "target", "editorValue" ]
                 |> Json.Decode.map InputText
                 |> Html.Events.on "change"
     in
-    column
-        [ width (px 500)
-        , height fill 
-        , spacingXY 0 10
-        , centerX
+    el
+        [ htmlAttribute onChange
         ]
-        [ el [ width (px (appWidth_ // 2)), height (px (appHeight_ model)), htmlAttribute onChange ] <|
-            html <|
-                Html.node "ace-editor"
-                    [ attribute "mode" "ace/mode/text"
-                    , attribute "wrapmode" "true"
-                    , HtmlAttr.style "height" "100%"
-                    ]
-                    []
-        ]
+    <|
+        (html <|
+            Html.node "ace-editor"
+                [ attribute "mode" "ace/mode/json"
+                , attribute "wrapmode" "true"
+                , HtmlAttr.style "height" (String.fromInt (panelHeight_ model) ++ "px")
+                , HtmlAttr.style "width" (String.fromInt panelWidth_ ++ "px")
+
+                -- TODO: (2) MY ATTEMPT TO SET THE INITIAL TEXT, OR RESET IT  WHEN SWITCHING DOCUMENTS
+                , HtmlAttr.property "value" (Json.Encode.string model.sourceText)
+                ]
+                []
+        )
 
 
 green =
@@ -228,17 +247,6 @@ darkGreen =
 
 white =
     Element.rgb 1 1 1
-
-
-editor model =
-    column [ height fill, spacing 8, moveUp 9 ]
-        [ row [ spacing 12 ]
-            [ l1DocButton model.language
-            , miniLaTeXDocButton model.language
-            , markdownDocButton model.language
-            ]
-        , editor_ model
-        ]
 
 
 keyIt : Int -> List b -> List ( String, b )
@@ -332,7 +340,7 @@ latexSourceView model =
 
 render : Lang -> Int -> String -> List (Element msg)
 render language count source =
-    API.renderFancy { width = 500, titleSize = 34, showTOC = True } language count (String.lines source)
+    API.renderFancy { width = panelWidth_, titleSize = 34, showTOC = True } language count (String.lines source)
 
 
 

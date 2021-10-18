@@ -7,3 +7,4 @@ scripts:
    cloc-lang : cloc --by-file src/Lang
    cloc-markup : cloc --by-file src/Markup
    cloc-render : cloc --by-file src/Render
+
