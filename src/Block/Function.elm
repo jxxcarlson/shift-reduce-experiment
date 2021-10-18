@@ -168,8 +168,13 @@ fixMarkdownBlock block =
         Paragraph [ ExprM "special" [ Block.TextM "title" meta1, Block.TextM argString meta2 ] meta3 ] meta4 ->
             Paragraph [ ExprM "title" [ Block.TextM (String.trim argString) meta1 ] (metaToExprMeta meta2) ] meta4
 
+        -- This is where Markdown items (- Foo bar baz) are made to confirm with the standard AST
         Block "item" [ Paragraph [ Block.TextM str meta ] meta2 ] meta3 ->
             Paragraph [ ExprM "item" [ Block.TextM (String.trim str) meta ] (metaToExprMeta meta2) ] meta3
+
+        -- This is where Rational Markdown numbered items (. Foo bar baz) are made to confirm with the standard AST
+        Block "numberedItem" [ Paragraph [ Block.TextM str meta ] meta2 ] meta3 ->
+            Paragraph [ ExprM "numberedItem" [ Block.TextM (String.trim str) meta ] (metaToExprMeta meta2) ] meta3
 
         Block "title" [ Paragraph [ Block.TextM str meta ] meta2 ] meta3 ->
             Paragraph [ ExprM "title" [ Block.TextM (String.trim str) meta ] (metaToExprMeta meta2) ] meta3

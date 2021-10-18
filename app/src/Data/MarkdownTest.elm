@@ -3,6 +3,22 @@ module Data.MarkdownTest exposing (text)
 
 text =
     """
+*Itemized list*
+
+- Milkshakes
+
+- Sausages
+
+*Numbered list*
+
+. Put gas in the car
+
+. Drive to Las Vegas
+"""
+
+
+text1 =
+    """
 [! title](Markdown Test)
 
 _The L3 project provides a real-time, fault-tolerant compiler to HTML for three markup languages: L1, with a Lisp-like syntax, Markdown (a flavor thereof), and MiniLaTeX, a subset-variant of LaTeX._

@@ -19,6 +19,7 @@ type alias State =
 
 type Status
     = InsideList
+    | InsideNumberedList
     | OutsideList
 
 
@@ -35,7 +36,23 @@ nextStep : State -> Step State (List Block)
 nextStep state =
     case List.head state.input of
         Nothing ->
-            Done state.output
+            case state.status of
+                InsideList ->
+                    let
+                        newBlock =
+                            Block "itemize" (List.reverse state.stack) Block.Block.dummyMeta
+                    in
+                    Done (newBlock :: state.output)
+
+                InsideNumberedList ->
+                    let
+                        newBlock =
+                            Block "enumerate" (List.reverse state.stack) Block.Block.dummyMeta
+                    in
+                    Done (newBlock :: state.output)
+
+                OutsideList ->
+                    Done state.output
 
         Just block ->
             Loop (nextState block state)
@@ -50,7 +67,14 @@ nextState block state =
                     { state
                         | input = List.drop 1 state.input
                         , status = InsideList
-                        , stack = block :: state.stack
+                        , stack = block :: []
+                    }
+
+                Paragraph [ ExprM "numberedItem" _ _ ] _ ->
+                    { state
+                        | input = List.drop 1 state.input
+                        , status = InsideNumberedList
+                        , stack = block :: []
                     }
 
                 _ ->
@@ -67,6 +91,18 @@ nextState block state =
                         , stack = block :: state.stack
                     }
 
+                Paragraph [ ExprM "numberedItem" _ _ ] _ ->
+                    let
+                        newBlock =
+                            Block "itemize" (List.reverse state.stack) Block.Block.dummyMeta
+                    in
+                    { state
+                        | input = List.drop 1 state.input
+                        , status = InsideNumberedList
+                        , output = newBlock :: state.output
+                        , stack = block :: []
+                    }
+
                 _ ->
                     let
                         newBlock =
@@ -76,7 +112,39 @@ nextState block state =
                         | input = List.drop 1 state.input
                         , stack = []
                         , status = OutsideList
+                        , output = block :: newBlock :: state.output
+                    }
+
+        InsideNumberedList ->
+            case block of
+                Paragraph [ ExprM "numberedItem" _ _ ] _ ->
+                    { state
+                        | input = List.drop 1 state.input
+                        , stack = block :: state.stack
+                    }
+
+                Paragraph [ ExprM "item" _ _ ] _ ->
+                    let
+                        newBlock =
+                            Block "enumerate" (List.reverse state.stack) Block.Block.dummyMeta
+                    in
+                    { state
+                        | input = List.drop 1 state.input
+                        , status = InsideList
                         , output = newBlock :: state.output
+                        , stack = block :: []
+                    }
+
+                _ ->
+                    let
+                        newBlock =
+                            Block "enumerate" (List.reverse state.stack) Block.Block.dummyMeta
+                    in
+                    { state
+                        | input = List.drop 1 state.input
+                        , stack = []
+                        , status = OutsideList
+                        , output = block :: newBlock :: state.output
                     }
 
 

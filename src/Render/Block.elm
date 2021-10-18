@@ -131,7 +131,8 @@ blockDict =
 
         -- Used by Markdown
         , ( "quotation", \g s a blocks -> quotationBlock g s a blocks )
-        , ( "item", \g s a blocks -> item g s a blocks )
+        , ( "itemize", \g s a blocks -> itemize g s a blocks )
+        , ( "enumerate", \g s a blocks -> enumerate g s a blocks )
         , ( "title", \_ _ _ _ -> Element.none )
         , ( "heading1", \g s a blocks -> heading1 g s a blocks )
         , ( "heading2", \g s a blocks -> heading2 g s a blocks )
@@ -237,17 +238,54 @@ quotationBlock generation settings accumulator blocks =
         (List.map (renderBlock generation settings accumulator) (debugYellow "XX, block in quotation" blocks))
 
 
-item : Int -> Settings -> Block.State.Accumulator -> List Block -> Element msg
-item generation settings accumulator blocks =
+listSpacing =
+    8
+
+
+itemize : Int -> Settings -> Block.State.Accumulator -> List Block -> Element msg
+itemize generation settings accumulator blocks =
+    column [ spacing listSpacing ]
+        (List.map (item generation settings accumulator) blocks)
+
+
+item : Int -> Settings -> Block.State.Accumulator -> Block -> Element msg
+item generation settings accumulator block =
     row [ width fill, paddingEach { left = 18, right = 0, top = 0, bottom = 0 } ]
         [ el [ height fill ] none
         , column [ width fill ]
-            [ row [ width fill, spacing 8 ]
+            [ row [ width fill, spacing listSpacing ]
                 [ itemSymbol
-                , row [ width fill ] (List.map (renderBlock generation settings accumulator) blocks)
+                , el [ width fill ] (renderBlock generation settings accumulator (block |> Debug.log "XXX, item"))
                 ]
             ]
         ]
+
+
+enumerate : Int -> Settings -> Block.State.Accumulator -> List Block -> Element msg
+enumerate generation settings accumulator blocks =
+    column [ spacing listSpacing ]
+        (List.indexedMap (\k -> numberedItem_ k generation settings accumulator) blocks)
+
+
+numberedItem_ : Int -> Int -> Settings -> Block.State.Accumulator -> Block -> Element msg
+numberedItem_ index generation settings accumulator block =
+    row [ width fill, paddingEach { left = 18, right = 0, top = 0, bottom = 0 } ]
+        [ el [ height fill ] none
+        , column [ width fill ]
+            [ row [ width fill, spacing listSpacing ]
+                [ numberedItemSymbol index
+                , el [ width fill ] (renderBlock generation settings accumulator (block |> Debug.log "XXX, numberedItem"))
+                ]
+            ]
+        ]
+
+
+numberedItemSymbol k =
+    el
+        [ Font.size 14
+        , alignTop
+        ]
+        (text (String.fromInt (k + 1) ++ "."))
 
 
 itemSymbol =

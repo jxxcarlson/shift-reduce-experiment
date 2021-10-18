@@ -9,6 +9,7 @@ import Element as E exposing (Element)
 import Element.Font as Font
 import Expression.ASTTools as ASTTools
 import Expression.Parser
+import LaTeX.Export.Markdown
 import Lang.Lang exposing (Lang(..))
 import Markup.Simplify as Simplify
 import Render.Block
@@ -32,6 +33,15 @@ rl str =
     renderFancy { width = 500, titleSize = 30, showTOC = True } L1 0 (String.lines str)
 
 
+ifApply : Bool -> (a -> a) -> a -> a
+ifApply goAhead f a =
+    if goAhead then
+        f a
+
+    else
+        a
+
+
 
 -- NOTE THE AST TRANSFORMATION BELOW
 
@@ -41,8 +51,19 @@ parse lang generation lines =
     let
         state =
             Block.Parser.run lang generation lines
+
+        ast =
+            case lang of
+                Markdown ->
+                    List.map (Block.BlockTools.map (Expression.Parser.parseExpr lang) >> Block.Function.fixMarkdownBlock) state.committed
+                        |> LaTeX.Export.Markdown.normalize
+
+                _ ->
+                    List.map (Block.BlockTools.map (Expression.Parser.parseExpr lang)) state.committed
     in
-    { ast = List.map (Block.BlockTools.map (Expression.Parser.parseExpr lang) >> Block.Function.fixMarkdownBlock) state.committed, accumulator = state.accumulator }
+    { ast = ast
+    , accumulator = state.accumulator
+    }
 
 
 {-| -}

@@ -18,6 +18,7 @@ lineTypeParser =
     Parser.oneOf
         [ beginCodeBlockParser
         , beginMathBlockParser
+        , beginNumberedItemParser
         , beginItemParser
         , beginHeadingParser
         , beginQuotationBlockParser
@@ -32,6 +33,14 @@ beginItemParser =
         |. Parser.symbol "-"
     )
         |> Parser.map (\_ -> Line.BeginBlock Line.AcceptNibbledFirstLine "item")
+
+
+beginNumberedItemParser : Parser Line.LineType
+beginNumberedItemParser =
+    (Parser.succeed String.slice
+        |. Parser.symbol "."
+    )
+        |> Parser.map (\_ -> Line.BeginBlock Line.AcceptNibbledFirstLine "numberedItem")
 
 
 beginHeadingParser : Parser Line.LineType

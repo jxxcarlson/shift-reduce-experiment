@@ -6,39 +6,19 @@ import Markup.API
 import Markup.Simplify exposing (BlockS(..), ExprS(..))
 
 
-m2 =
+m1 =
     """
-## Code
+- Put gas in the car
+
+- Drive to Las Vegas
 """
 
 
-m1 =
+m2 =
     """
-## Code
+. Put gas in the car
 
-```
-   a[1] = 1
-   b[1] = 1
-
-   c[i] = 2
-   d[i] = c[i] + 1
-```
-
-## Quotation
-
-This is a quote:
-
-> Regular languages are rather inexpressive,
-   but they work great for lexers. On the opposite 
-   side of expressivity spectrum are Turing machines. 
-   For them, we also have a number of meta-languages 
-   (like Rust), which work great for humans.
-    It’s interesting that a Turing machine is 
-    equivalent to a finite state machine with 
-    a pair of stacks: to get two stacks from a tape, 
-    cut the tape in half where the head is. Moving 
-    the head then corresponds to popping from one 
-    stack and pushing to another.
+. Drive to Las Vegas
 """
 
 

@@ -60,6 +60,7 @@ markupDict =
     Dict.fromList
         [ ( "special", \g s a textList -> special g s a textList )
         , ( "item", \g s a textList -> item g s a textList )
+        , ( "numberedItem", \g s a textList -> numberedItem g s a textList )
         , ( "strong", \g s a textList -> strong g s a textList )
         , ( "bold", \g s a textList -> strong g s a textList )
         , ( "italic", \g s a textList -> italic g s a textList )
@@ -302,15 +303,12 @@ mathElement generation settings accumulator str =
 
 item : Int -> Settings -> Accumulator -> List ExprM -> Element msg
 item generation settings accumulator str =
-    Element.row [ Element.width Element.fill, Element.paddingEach { left = 18, right = 0, top = 0, bottom = 0 } ]
-        [ el [ Element.height Element.fill ] Element.none
-        , column [ Element.width Element.fill ]
-            [ Element.row [ Element.width Element.fill, spacing 8 ]
-                [ itemSymbol
-                , Element.paragraph [ Element.width Element.fill ] [ Element.text (ASTTools.exprListToStringList str |> String.join " ") ]
-                ]
-            ]
-        ]
+    Element.paragraph [ Element.width Element.fill ] [ Element.text (ASTTools.exprListToStringList str |> String.join " ") ]
+
+
+numberedItem : Int -> Settings -> Accumulator -> List ExprM -> Element msg
+numberedItem generation settings accumulator str =
+    Element.paragraph [ Element.width Element.fill ] [ Element.text (ASTTools.exprListToStringList str |> String.join " ") ]
 
 
 itemSymbol =
