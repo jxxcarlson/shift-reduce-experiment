@@ -5,7 +5,7 @@ module Block.Library exposing
 
 import Block.Block as Block exposing (BlockStatus(..), SBlock(..))
 import Block.BlockTools as BlockTools
-import Block.Function as Function
+import Block.Function as Function exposing (level)
 import Block.Line exposing (BlockOption(..), LineData, LineType(..))
 import Block.State exposing (Accumulator, State)
 import LaTeX.MathMacro
@@ -32,22 +32,23 @@ import Parser.Advanced
 processLine : Lang -> State -> State
 processLine language state =
     case state.currentLineData.lineType of
-        BeginBlock _ _ ->
+        BeginBlock _ name ->
             state
+                |> Function.setStackBottomLevelAndName (level state.currentLineData.indent) name
                 |> debugIn "BeginBlock"
                 |> Function.pushBlockOnState
                 |> debugOut "BeginBlock (OUT)"
 
-        BeginVerbatimBlock mark ->
+        BeginVerbatimBlock name ->
             let
                 _ =
                     debugIn "BeginVerbatimBlock" state
             in
-            (if Just mark == Maybe.map getBlockName (Function.stackTop state) && (mark == "math" || mark == "code") then
-                state |> endBlock mark
+            (if Just name == Maybe.map getBlockName (Function.stackTop state) && (name == "math" || name == "code") then
+                state |> endBlock name
 
              else
-                Function.pushBlockOnState state
+                state |> Function.setStackBottomLevelAndName (level state.currentLineData.indent) name |> Function.pushBlockOnState
             )
                 |> debugOut "BeginVerbatimBlock (OUT)"
 

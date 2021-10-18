@@ -37,7 +37,7 @@ type alias Accumulator =
 
 
 
--- INTIALIZERS
+-- INITIALIZERS
 
 
 init : Lang -> Int -> List String -> State

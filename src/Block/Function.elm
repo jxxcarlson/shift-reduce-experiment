@@ -29,6 +29,7 @@ module Block.Function exposing
     , reverseCommitted
     , reverseContents
     , setBlockStatus
+    , setStackBottomLevelAndName
     , shiftBlock
     , simpleCommit
     , stackTop
@@ -141,6 +142,15 @@ deleteSpaceDelimitedPrefix str =
 postErrorMessage : String -> String -> State -> State
 postErrorMessage red blue state =
     { state | errorMessage = Just { red = red, blue = blue } }
+
+
+setStackBottomLevelAndName : Int -> String -> State -> State
+setStackBottomLevelAndName level_ name state =
+    if List.isEmpty state.stack then
+        { state | stackBottomLevel = level_, stackBottomName = name }
+
+    else
+        state
 
 
 liftBlockFunctiontoStateFunction : (SBlock -> SBlock) -> State -> State
