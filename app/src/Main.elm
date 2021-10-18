@@ -11,6 +11,7 @@ import Element.Input as Input
 import Expression.ASTTools as ASTTools
 import File.Download as Download
 import Html exposing (Html)
+import LaTeX.Export.API
 import LaTeX.Export.Block
 import Lang.Lang exposing (Lang(..))
 import Markup.API as API
@@ -252,19 +253,6 @@ renderedText model =
 
 latexSourceView : Model -> Element Msg
 latexSourceView model =
-    let
-        ast =
-            model.sourceText
-                |> String.lines
-                |> API.parse model.language 0
-                |> .ast
-
-        titleString =
-            ASTTools.getTitle ast |> Maybe.withDefault "Untitled"
-
-        laTeXText =
-            ast |> LaTeX.Export.Block.render titleString
-    in
     column
         [ spacing 8
         , paddingXY 24 36
@@ -276,7 +264,7 @@ latexSourceView model =
         , alignTop
         , Background.color (Element.rgb255 255 255 255)
         ]
-        [ Element.text laTeXText ]
+        [ Element.text (LaTeX.Export.API.export model.language model.sourceText) ]
 
 
 render : Lang -> Int -> String -> List (Element msg)
