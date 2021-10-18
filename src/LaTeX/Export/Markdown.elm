@@ -52,14 +52,12 @@ nextState block state =
                         , status = InsideList
                         , stack = block :: state.stack
                     }
-                        |> Debug.log "XXX, OUTSIDE, FOUND ITEM"
 
                 _ ->
                     { state
                         | input = List.drop 1 state.input
                         , output = block :: state.output
                     }
-                        |> Debug.log "XXX, OUTSIDE, NO ITEM"
 
         InsideList ->
             case block of
@@ -68,7 +66,6 @@ nextState block state =
                         | input = List.drop 1 state.input
                         , stack = block :: state.stack
                     }
-                        |> Debug.log "XXX, INSIDE, FOUND ITEM"
 
                 _ ->
                     let
@@ -81,7 +78,6 @@ nextState block state =
                         , status = OutsideList
                         , output = newBlock :: state.output
                     }
-                        |> Debug.log "XXX, INSIDE, NO ITEM"
 
 
 type Step state a

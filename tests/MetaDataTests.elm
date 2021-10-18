@@ -9,7 +9,7 @@ metaDataTest : Int -> Int -> String -> { accept : Bool, input : String, output :
 metaDataTest begin end content =
     let
         lines =
-            String.lines content |> Debug.log "RAW LINES" |> List.map (\s -> s ++ "\n") |> Debug.log "INPUT LINES"
+            String.lines content |> List.map (\s -> s ++ "\n")
 
         tokenLoc =
             { begin = begin, end = end }
@@ -23,7 +23,7 @@ metaDataTest begin end content =
         input =
             String.slice begin (end + 1) content
     in
-    { accept = input == str, input = input, output = str, meta = meta |> Debug.log "META" }
+    { accept = input == str, input = input, output = str, meta = meta }
 
 
 suiteMeta : Test

@@ -22,9 +22,6 @@ ifApply goAhead f a =
 export : Lang -> String -> String
 export language sourceText =
     let
-        _ =
-            Debug.log "EXPORT" 1
-
         ast =
             sourceText
                 |> String.lines
@@ -41,9 +38,6 @@ export language sourceText =
 prepareForExportWithImages : Lang -> String -> { source : String, imageUrls : List String }
 prepareForExportWithImages language sourceText =
     let
-        _ =
-            Debug.log "EXPORT" 2
-
         ast =
             sourceText
                 |> String.lines
