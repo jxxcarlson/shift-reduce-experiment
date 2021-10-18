@@ -184,7 +184,7 @@ mainColumn model =
     column (mainColumnStyle model)
         [ column [ paddingEach { top = 16, bottom = 0, left = 0, right = 0 }, spacing 8, width (px appWidth_), height (px (appHeight_ model)) ]
             [ -- title "L3 Demo App"
-              column [ spacing 12 ]
+              column [ height fill, spacing 12 ]
                 [ row [ spacing 12 ] [ editor model, rhs model ]
                 ]
             , row [ Font.size 14, Font.color whiteColor ] []
@@ -203,6 +203,7 @@ editor_ model =
     in
     column
         [ width (px 500)
+        , height fill 
         , spacingXY 0 10
         , centerX
         ]
@@ -211,7 +212,7 @@ editor_ model =
                 Html.node "ace-editor"
                     [ attribute "mode" "ace/mode/text"
                     , attribute "wrapmode" "true"
-                    , HtmlAttr.style "height" "500px"
+                    , HtmlAttr.style "height" "100%"
                     ]
                     []
         ]
@@ -230,7 +231,7 @@ white =
 
 
 editor model =
-    column [ spacing 8, moveUp 9 ]
+    column [ height fill, spacing 8, moveUp 9 ]
         [ row [ spacing 12 ]
             [ l1DocButton model.language
             , miniLaTeXDocButton model.language
