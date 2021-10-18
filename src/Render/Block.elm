@@ -255,7 +255,7 @@ item generation settings accumulator block =
         , column [ width fill ]
             [ row [ width fill, spacing listSpacing ]
                 [ itemSymbol
-                , el [ width fill ] (renderBlock generation settings accumulator (block |> Debug.log "XXX, item"))
+                , el [ width fill ] (renderBlock generation settings accumulator block)
                 ]
             ]
         ]
@@ -274,7 +274,7 @@ numberedItem_ index generation settings accumulator block =
         , column [ width fill ]
             [ row [ width fill, spacing listSpacing ]
                 [ numberedItemSymbol index
-                , el [ width fill ] (renderBlock generation settings accumulator (block |> Debug.log "XXX, numberedItem"))
+                , el [ width fill ] (renderBlock generation settings accumulator block)
                 ]
             ]
         ]
