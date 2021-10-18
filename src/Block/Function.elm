@@ -25,6 +25,7 @@ module Block.Function exposing
     , quantumOfIndentation
     , recoverFromError
     , reduce
+    , reduceStackIfTopAndBottomMatch
     , renderErrorMessage
     , reverseCommitted
     , reverseContents
@@ -142,6 +143,15 @@ deleteSpaceDelimitedPrefix str =
 postErrorMessage : String -> String -> State -> State
 postErrorMessage red blue state =
     { state | errorMessage = Just { red = red, blue = blue } }
+
+
+reduceStackIfTopAndBottomMatch : Int -> String -> State -> State
+reduceStackIfTopAndBottomMatch level_ name state =
+    if level_ == state.stackBottomLevel && name == state.stackBottomName then
+        reduce state
+
+    else
+        state
 
 
 setStackBottomLevelAndName : Int -> String -> State -> State
@@ -287,6 +297,51 @@ recoverFromError state =
     { state | stack = [] } |> debugBlue "recoverFromError "
 
 
+compress : List SBlock -> List SBlock
+compress blocks =
+    case getBlocksOfTheSameLevel blocks of
+        ( [], rest ) ->
+            rest
+
+        ( same, [] ) ->
+            same
+
+        ( same, top :: rest ) ->
+            case top of
+                SBlock name blocks_ meta ->
+                    SBlock name (same ++ blocks_) meta :: rest
+
+                _ ->
+                    blocks
+
+
+getBlocksOfTheSameLevel : List SBlock -> ( List SBlock, List SBlock )
+getBlocksOfTheSameLevel blocks =
+    getBlocksOfTheSameLevelHelper ( [], blocks )
+
+
+getBlocksOfTheSameLevelHelper : ( List SBlock, List SBlock ) -> ( List SBlock, List SBlock )
+getBlocksOfTheSameLevelHelper data =
+    (case data of
+        ( [], [] ) ->
+            ( [], [] )
+
+        ( first, [] ) ->
+            ( first, [] )
+
+        ( [], x :: rest ) ->
+            ( [ x ], rest )
+
+        ( block1 :: same, block2 :: rest ) ->
+            if levelOfBlock block1 == levelOfBlock block2 then
+                getBlocksOfTheSameLevelHelper ( block2 :: block1 :: same, rest )
+
+            else
+                data
+    )
+        |> debugSpecial "getBlocksOfTheSameLevelHelper"
+
+
 reduce : State -> State
 reduce state =
     let
@@ -310,8 +365,10 @@ reduce state =
                         debugBlue "reduce" 1
                 in
                 -- TODO: is this correct?
-                reduce { state | committed = finalize_ block1 :: finalize_ block2 :: state.committed, stack = List.drop 2 state.stack } |> debugOut "REDUCE 1, OUT"
+                -- reduce { state | committed = finalize_ block1 :: finalize_ block2 :: state.committed, stack = List.drop 2 state.stack } |> debugOut "REDUCE 1, OUT"
+                state |> (\state_ -> { state_ | stack = compress state_.stack }) |> debugOut "COMPRESS IN REDUCE"
 
+        -- state |> compress (block1 :: block2 :: []) rest |> reduce |> debugOut "REDUCE 1, OUT"
         block :: [] ->
             let
                 _ =
@@ -565,3 +622,14 @@ debugOut label state =
             debugMagenta (debugPrefix label state) (state.committed |> List.map Simplify.sblock)
     in
     state
+
+
+debugSpecial label ( firstBlocks, otherBlocks ) =
+    let
+        _ =
+            debugMagenta (label ++ ", first") (firstBlocks |> List.map Simplify.sblock)
+
+        _ =
+            debugMagenta (label ++ ", seconds") (otherBlocks |> List.map Simplify.sblock)
+    in
+    ( firstBlocks, otherBlocks )

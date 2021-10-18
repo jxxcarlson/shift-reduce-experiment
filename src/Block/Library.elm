@@ -357,20 +357,24 @@ endBlock name state =
                     state |> Function.changeStatusOfTopOfStack (MismatchedTags "anonymous" name) |> Function.simpleCommit
 
                 Just stackTopName ->
-                    -- the begin and end tags match, so the block is complete; we commit it
+                    -- the begin and end tags match, we mark it as complete
+                    -- TODO: Do we need to check the level as well?
                     if name == stackTopName then
                         state
                             |> updateAccummulatorInStateWithBlock top
                             |> Function.changeStatusOfTopOfStack BlockComplete
-                            |> Function.simpleCommit
+                            --|> Function.simpleCommit
+                            |> Function.reduceStackIfTopAndBottomMatch (level state.currentLineData.indent) name
 
                     else
+                        -- TODO: Do we need to check the level as well?
                         -- the tags don't match. We note that fact for the benefit of the renderer (or the error handler),
                         -- and we commit the block
                         state
                             |> updateAccummulatorInStateWithBlock top
                             |> Function.changeStatusOfTopOfStack (MismatchedTags stackTopName name)
-                            |> Function.simpleCommit
+                            -- |> Function.simpleCommit
+                            |> Function.reduceStackIfTopAndBottomMatch (level state.currentLineData.indent) name
             )
                 |> debugOut "EndBlock (OUT)"
 
@@ -506,6 +510,6 @@ debugOut label state =
             debugBlue (debugPrefix label state) (state.stack |> List.map Simplify.sblock)
 
         _ =
-            debugMagenta (debugPrefix label state) (state.committed |> List.map Simplify.sblock)
+            debugBlue (debugPrefix label state) (state.committed |> List.map Simplify.sblock)
     in
     state
