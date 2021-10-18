@@ -213,7 +213,7 @@ editor_ model =
     let
         onChange : Html.Attribute Msg
         onChange =
-            -- TODO: (1) I THOUGHT THIS WOULD GET TEXT FROM THE EDITOR AND PUT IT IN model.sourceText
+            -- TODO: (1) I though this would get text from the editor and put it in model.sourceText
             Json.Decode.string
                 |> Json.Decode.at [ "target", "editorValue" ]
                 |> Json.Decode.map InputText
@@ -230,7 +230,7 @@ editor_ model =
                 , HtmlAttr.style "height" (String.fromInt (panelHeight_ model) ++ "px")
                 , HtmlAttr.style "width" (String.fromInt panelWidth_ ++ "px")
 
-                -- TODO: (2) MY ATTEMPT TO SET THE INITIAL TEXT, OR RESET IT  WHEN SWITCHING DOCUMENTS
+                -- TODO: (2) My attempt to set the editor text on init, or reset when programmatically changing model.sourceText
                 , HtmlAttr.property "value" (Json.Encode.string model.sourceText)
                 ]
                 []
