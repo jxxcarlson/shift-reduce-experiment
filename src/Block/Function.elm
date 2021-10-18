@@ -41,7 +41,7 @@ import Block.Line exposing (BlockOption(..), LineData, LineType(..))
 import Block.State exposing (State)
 import Expression.Token exposing (Token(..))
 import Lang.Lang exposing (Lang(..))
-import Markup.Debugger exposing (debugBlue, debugMagenta)
+import Markup.Debugger exposing (..)
 import Markup.Meta
 import Markup.ParserTools
 import Markup.Simplify as Simplify
@@ -67,7 +67,7 @@ makeBlock state =
         BeginBlock RejectFirstLine mark ->
             SBlock mark [] (newMeta state) |> Just
 
-        BeginBlock AcceptFirstLine _ ->
+        BeginBlock AcceptFirstLine kind ->
             SBlock (nibble state.currentLineData.content |> transformMarkdownHeading)
                 [ SParagraph [ deleteSpaceDelimitedPrefix state.currentLineData.content ] (newMeta state) ]
                 (newMeta state)
@@ -78,6 +78,7 @@ makeBlock state =
                 [ SParagraph [ deleteSpaceDelimitedPrefix state.currentLineData.content ] (newMeta state) ]
                 (newMeta state)
                 |> Just
+                |> debugRed "makBlock, AcceptNibbledFirstLine"
 
         BeginVerbatimBlock mark ->
             SVerbatimBlock mark [] (newMeta state) |> Just
@@ -132,7 +133,9 @@ newMeta state =
 
 deleteSpaceDelimitedPrefix : String -> String
 deleteSpaceDelimitedPrefix str =
-    String.replace (nibble str ++ " ") "" str
+    str
+        |> String.trimLeft
+        |> (\s -> String.replace (nibble s ++ " ") "" s)
 
 
 postErrorMessage : String -> String -> State -> State
