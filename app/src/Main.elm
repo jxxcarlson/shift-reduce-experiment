@@ -6,11 +6,15 @@ import Data.MarkdownTest
 import Data.MiniLaTeXTest
 import Element exposing (..)
 import Element.Background as Background
+import Element.Border as Border
 import Element.Font as Font
 import Element.Input as Input
 import Expression.ASTTools as ASTTools
 import File.Download as Download
 import Html exposing (Html)
+import Html.Attributes as HtmlAttr exposing (attribute)
+import Html.Events
+import Json.Decode
 import LaTeX.Export.Block
 import Lang.Lang exposing (Lang(..))
 import Markup.API as API
@@ -110,6 +114,15 @@ subscriptions model =
     Sub.none
 
 
+
+--
+--ChangePlanText s ->
+--( { model | currPlanText = s }, Cmd.none )
+--
+--SubmitPlan ->
+--( { model | currPage = DisplayPage }, Cmd.none )
+
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
@@ -179,6 +192,43 @@ mainColumn model =
         ]
 
 
+editor_ : Model -> Element Msg
+editor_ model =
+    let
+        onChange =
+            Json.Decode.string
+                |> Json.Decode.at [ "target", "editorValue" ]
+                |> Json.Decode.map InputText
+                |> Html.Events.on "change"
+    in
+    column
+        [ width (px 500)
+        , spacingXY 0 10
+        , centerX
+        ]
+        [ el [ width (px (appWidth_ // 2)), height (px (appHeight_ model)), htmlAttribute onChange ] <|
+            html <|
+                Html.node "ace-editor"
+                    [ attribute "mode" "ace/mode/text"
+                    , attribute "wrapmode" "true"
+                    , HtmlAttr.style "height" "500px"
+                    ]
+                    []
+        ]
+
+
+green =
+    Element.rgb 0 1 1
+
+
+darkGreen =
+    Element.rgb 0 0.4 0.4
+
+
+white =
+    Element.rgb 1 1 1
+
+
 editor model =
     column [ spacing 8, moveUp 9 ]
         [ row [ spacing 12 ]
@@ -186,7 +236,7 @@ editor model =
             , miniLaTeXDocButton model.language
             , markdownDocButton model.language
             ]
-        , inputText model
+        , editor_ model
         ]
 
 
@@ -382,7 +432,7 @@ appHeight_ model =
 
 
 panelHeight_ model =
-    appHeight_ model - parserDisplayPanelHeight_ - 60
+    appHeight_ model - parserDisplayPanelHeight_ - 120
 
 
 parserDisplayPanelHeight_ =
