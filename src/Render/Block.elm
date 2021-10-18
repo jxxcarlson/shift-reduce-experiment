@@ -133,6 +133,8 @@ blockDict =
         , ( "quotation", \g s a blocks -> quotationBlock g s a blocks )
         , ( "itemize", \g s a blocks -> itemize g s a blocks )
         , ( "enumerate", \g s a blocks -> enumerate g s a blocks )
+
+        --, ( "item", \g s a blocks -> item g s a blocks )
         , ( "title", \_ _ _ _ -> Element.none )
         , ( "heading1", \g s a blocks -> heading1 g s a blocks )
         , ( "heading2", \g s a blocks -> heading2 g s a blocks )
@@ -245,11 +247,11 @@ listSpacing =
 itemize : Int -> Settings -> Block.State.Accumulator -> List Block -> Element msg
 itemize generation settings accumulator blocks =
     column [ spacing listSpacing ]
-        (List.map (item generation settings accumulator) blocks)
+        (List.map (item_ generation settings accumulator) blocks)
 
 
-item : Int -> Settings -> Block.State.Accumulator -> Block -> Element msg
-item generation settings accumulator block =
+item_ : Int -> Settings -> Block.State.Accumulator -> Block -> Element msg
+item_ generation settings accumulator block =
     row [ width fill, paddingEach { left = 18, right = 0, top = 0, bottom = 0 } ]
         [ el [ height fill ] none
         , column [ width fill ]
