@@ -23,15 +23,7 @@ m2 =
 
 
 mi1 =
-    """
-\\begin{itemize}
-
-   \\item Apples
-
-   \\item Oranges
-
-\\end{itemize}
-"""
+    "\\begin{itemize}\n   \n   \\item Apples\n   \n   \\item Oranges\n   \n\\end{itemize}"
 
 
 mi2 =
