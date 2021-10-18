@@ -219,6 +219,7 @@ processLine language state =
                                 else if state.lang == MiniLaTeX then
                                     state
                                         |> Function.finalizeBlockStatusOfStackTop
+                                        |> Function.transformLaTeXBlockInState
                                         |> Function.simpleCommit
                                         |> debugYellow "BlankLine 4"
 

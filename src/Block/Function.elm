@@ -32,6 +32,7 @@ module Block.Function exposing
     , shiftBlock
     , simpleCommit
     , stackTop
+    , transformLaTeXBlockInState
     )
 
 import Block.Block as Block exposing (Block(..), BlockStatus(..), ExprM(..), SBlock(..))
@@ -152,6 +153,30 @@ mapStack f stack =
 
         Just top ->
             f top :: List.drop 1 stack
+
+
+transformLaTeXBlockInState : State -> State
+transformLaTeXBlockInState state =
+    liftBlockFunctiontoStateFunction transformLaTeXBlock state
+
+
+transformLaTeXBlock : SBlock -> SBlock
+transformLaTeXBlock block =
+    case block of
+        SParagraph textList loc ->
+            case textList of
+                [] ->
+                    block
+
+                head :: rest ->
+                    if String.left 5 (String.trimLeft head) == "\\item" then
+                        SBlock "item" [ SParagraph (String.dropLeft 5 (String.trimLeft head) :: rest) loc ] loc
+
+                    else
+                        block
+
+        _ ->
+            block
 
 
 fixMarkdownBlock : Block -> Block
