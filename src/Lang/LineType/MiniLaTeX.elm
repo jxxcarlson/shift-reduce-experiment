@@ -19,7 +19,15 @@ lineType str =
 
 
 lineTypeParser =
-    Parser.oneOf [ beginCodeBlockParser, beginBlockParser, endBlockParser, beginMathBlockParser, Line.ordinaryLineParser [], Line.emptyLineParser ]
+    Parser.oneOf
+        [ beginItemParser
+        , beginCodeBlockParser
+        , beginBlockParser
+        , endBlockParser
+        , beginMathBlockParser
+        , Line.ordinaryLineParser []
+        , Line.emptyLineParser
+        ]
 
 
 beginMathBlockParser : Parser Line.LineType
@@ -49,6 +57,20 @@ beginBlockParser =
     )
         -- |> Parser.map (\s -> Line.BeginBlock Line.RejectFirstLine s)
         |> Parser.map (\s -> mapBlock s)
+
+
+beginItemParser : Parser Line.LineType
+beginItemParser =
+    (Parser.succeed String.slice
+        |. Parser.spaces
+        |. Parser.symbol "\\item "
+        |= Parser.getOffset
+        |. Parser.chompWhile (\c -> c /= '\n')
+        |= Parser.getOffset
+        |= Parser.getSource
+    )
+        -- |> Parser.map (\s -> Line.BeginBlock Line.RejectFirstLine s)
+        |> Parser.map (\s -> Line.BeginBlock Line.AcceptNibbledFirstLine "item")
 
 
 mapBlock : String -> Line.LineType
