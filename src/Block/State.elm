@@ -16,6 +16,8 @@ type alias State =
     , index : Int
     , lastIndex : Int
     , stack : List SBlock
+    , stackBottomName : String
+    , stackBottomLevel : Int
     , currentLineData : Block.Line.LineData
     , previousLineData : Block.Line.LineData
     , committed : List SBlock
@@ -53,6 +55,8 @@ init lang generation input =
     , inVerbatimBlock = False
     , accumulator = initialAccumulator
     , stack = []
+    , stackBottomName = ""
+    , stackBottomLevel = 0
     , errorMessage = Nothing
     , lang = lang
     }
