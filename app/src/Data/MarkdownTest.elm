@@ -78,7 +78,7 @@ We'll get to the below as soon as we can.  However, we are completely preocuppie
 
 - SVG rendering
 
-- Substitute the L3 compiler for the corresponding code at [MiniLaTeX.io](https://minilatex.io)
+- Substitute the L3 compiler for the corresponding code at MiniLaTeX.io.
 
 
 We welcome and appreciate suggestions, but can't promise to adopt them.
