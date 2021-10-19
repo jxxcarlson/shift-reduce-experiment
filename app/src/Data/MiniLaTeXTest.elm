@@ -3,6 +3,28 @@ module Data.MiniLaTeXTest exposing (text)
 
 text =
     """
+\\begin{enumerate}
+
+   \\item Oranges
+
+   \\item Apples
+
+\\end{enumerate}
+
+
+\\begin{itemize}
+
+   \\item Oranges
+
+   \\item Apples
+
+\\end{itemize}
+
+"""
+
+
+text2 =
+    """
 
 \\title{Notes on Quantum Field Theory}
 
