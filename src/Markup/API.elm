@@ -56,10 +56,10 @@ parse lang generation lines =
             case lang of
                 Markdown ->
                     List.map (Block.BlockTools.map (Expression.Parser.parseExpr lang) >> Block.Function.fixMarkdownBlock) state.committed
-                        |> LaTeX.Export.Markdown.normalize
+                        |> LaTeX.Export.Markdown.putListItemsAsChildrenOfBlock
 
                 _ ->
-                    List.map (Block.BlockTools.map (Expression.Parser.parseExpr lang)) state.committed
+                    List.map (Block.BlockTools.map (Expression.Parser.parseExpr lang) >> Block.Function.fixMarkdownBlock) state.committed
     in
     { ast = ast
     , accumulator = state.accumulator
