@@ -27,7 +27,7 @@ export language sourceText =
                 |> String.lines
                 |> Markup.API.parse language 0
                 |> .ast
-                |> ifApply (language == Markdown) LaTeX.Export.Markdown.normalize
+                |> ifApply (language == Markdown) LaTeX.Export.Markdown.putListItemsAsChildrenOfBlock
 
         titleString =
             Expression.ASTTools.getTitle ast |> Maybe.withDefault "Untitled"
@@ -43,7 +43,7 @@ prepareForExportWithImages language sourceText =
                 |> String.lines
                 |> Markup.API.parse language 0
                 |> .ast
-                |> ifApply (language == Markdown) LaTeX.Export.Markdown.normalize
+                |> ifApply (language == Markdown) LaTeX.Export.Markdown.putListItemsAsChildrenOfBlock
 
         titleString =
             Expression.ASTTools.getTitle ast |> Maybe.withDefault "Untitled"
