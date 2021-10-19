@@ -47,10 +47,6 @@ renderBlock generation settings accumulator block =
 
         Block name blocks meta ->
             if meta.status /= BlockComplete then
-                let
-                    _ =
-                        Debug.log "XXX, Block incomplete" name
-                in
                 renderBlocksIncomplete name meta.status blocks
 
             else
@@ -286,6 +282,10 @@ item_ generation settings accumulator block =
 
 enumerate : Int -> Settings -> Block.State.Accumulator -> List Block -> Element msg
 enumerate generation settings accumulator blocks =
+    let
+        _ =
+            debugYellow "XXX, ENTERNG ENUMERATE" (List.length blocks)
+    in
     column [ spacing listSpacing ]
         (List.indexedMap (\k -> numberedItem_ k generation settings accumulator) blocks)
 
@@ -293,12 +293,19 @@ enumerate generation settings accumulator blocks =
 numberedItem_ : Int -> Int -> Settings -> Block.State.Accumulator -> Block -> Element msg
 numberedItem_ index generation settings accumulator block =
     let
+        -- TODO: simplify the below, eliminating the cae 'numberedItem' by takking care of these in putListItemsAsChildrenOfBlock
         blocks =
             case block of
                 Block "item" blocks_ _ ->
                     blocks_
 
+                Block "numberedItem" blocks_ _ ->
+                    blocks_
+
                 Paragraph [ Block.ExprM "item" expressions _ ] meta ->
+                    [ Paragraph expressions meta ]
+
+                Paragraph [ Block.ExprM "numberedItem" expressions _ ] meta ->
                     [ Paragraph expressions meta ]
 
                 _ ->
