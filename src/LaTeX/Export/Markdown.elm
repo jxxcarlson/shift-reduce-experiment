@@ -1,12 +1,12 @@
 module LaTeX.Export.Markdown exposing (putListItemsAsChildrenOfBlock)
 
 import Block.Block exposing (Block(..), BlockStatus(..), ExprM(..))
-import Markup.Meta
+import Markup.Debugger exposing (debugMagenta, debugYellow)
 
 
 putListItemsAsChildrenOfBlock : List Block -> List Block
 putListItemsAsChildrenOfBlock blocks =
-    loop (init blocks) nextStep |> List.reverse
+    loop (init (blocks |> debugYellow "INIT")) nextStep |> List.reverse
 
 
 type alias State =
@@ -60,6 +60,7 @@ nextStep state =
 
 nextState : Block -> State -> State
 nextState block state =
+    -- TODO: Code review
     case state.status of
         OutsideList ->
             case block of
@@ -70,7 +71,21 @@ nextState block state =
                         , stack = block :: []
                     }
 
+                Block "item" _ _ ->
+                    { state
+                        | input = List.drop 1 state.input
+                        , status = InsideList
+                        , stack = block :: []
+                    }
+
                 Paragraph [ ExprM "numberedItem" _ _ ] _ ->
+                    { state
+                        | input = List.drop 1 state.input
+                        , status = InsideNumberedList
+                        , stack = block :: []
+                    }
+
+                Block "numberedItem" _ _ ->
                     { state
                         | input = List.drop 1 state.input
                         , status = InsideNumberedList
@@ -91,7 +106,25 @@ nextState block state =
                         , stack = block :: state.stack
                     }
 
+                Block "item" _ _ ->
+                    { state
+                        | input = List.drop 1 state.input
+                        , stack = block :: state.stack
+                    }
+
                 Paragraph [ ExprM "numberedItem" _ _ ] _ ->
+                    let
+                        newBlock =
+                            Block "itemize" (List.reverse state.stack) Block.Block.dummyMeta
+                    in
+                    { state
+                        | input = List.drop 1 state.input
+                        , status = InsideNumberedList
+                        , output = newBlock :: state.output
+                        , stack = block :: []
+                    }
+
+                Block "numberedItem" _ _ ->
                     let
                         newBlock =
                             Block "itemize" (List.reverse state.stack) Block.Block.dummyMeta
@@ -123,7 +156,25 @@ nextState block state =
                         , stack = block :: state.stack
                     }
 
+                Block "numberedItem" _ _ ->
+                    { state
+                        | input = List.drop 1 state.input
+                        , stack = block :: state.stack
+                    }
+
                 Paragraph [ ExprM "item" _ _ ] _ ->
+                    let
+                        newBlock =
+                            Block "enumerate" (List.reverse state.stack) Block.Block.dummyMeta
+                    in
+                    { state
+                        | input = List.drop 1 state.input
+                        , status = InsideList
+                        , output = newBlock :: state.output
+                        , stack = block :: []
+                    }
+
+                Block "item" _ _ ->
                     let
                         newBlock =
                             Block "enumerate" (List.reverse state.stack) Block.Block.dummyMeta

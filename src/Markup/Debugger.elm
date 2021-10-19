@@ -13,7 +13,7 @@ import Console
 
 
 magentaSwitch =
-    False
+    True
 
 
 cyanSwitch =
@@ -25,15 +25,15 @@ greenSwitch =
 
 
 yellowSwitch =
-    False
+    True
 
 
 blueSwitch =
-    False
+    True
 
 
 redSwitch =
-    False
+    True
 
 
 debugNull label =
