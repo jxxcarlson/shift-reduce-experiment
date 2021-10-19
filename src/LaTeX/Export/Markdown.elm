@@ -1,11 +1,11 @@
-module LaTeX.Export.Markdown exposing (normalize)
+module LaTeX.Export.Markdown exposing (putListItemsAsChildrenOfBlock)
 
 import Block.Block exposing (Block(..), BlockStatus(..), ExprM(..))
 import Markup.Meta
 
 
-normalize : List Block -> List Block
-normalize blocks =
+putListItemsAsChildrenOfBlock : List Block -> List Block
+putListItemsAsChildrenOfBlock blocks =
     loop (init blocks) nextStep |> List.reverse
 
 
