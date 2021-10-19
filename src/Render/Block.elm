@@ -134,8 +134,6 @@ blockDict =
         , ( "quotation", \g s a blocks -> quotationBlock g s a blocks )
         , ( "itemize", \g s a blocks -> itemize g s a blocks )
         , ( "enumerate", \g s a blocks -> enumerate g s a blocks )
-
-        --, ( "item", \g s a blocks -> item g s a blocks )
         , ( "title", \_ _ _ _ -> Element.none )
         , ( "heading1", \g s a blocks -> heading1 g s a blocks )
         , ( "heading2", \g s a blocks -> heading2 g s a blocks )
@@ -284,7 +282,10 @@ enumerate : Int -> Settings -> Block.State.Accumulator -> List Block -> Element 
 enumerate generation settings accumulator blocks =
     let
         _ =
-            debugYellow "XXX, ENTERNG ENUMERATE" (List.length blocks)
+            Debug.log "XXX, ENTERNG ENUMERATE" (List.length blocks)
+
+        _ =
+            Debug.log "XXX, BLOCKS" blocks
     in
     column [ spacing listSpacing ]
         (List.indexedMap (\k -> numberedItem_ k generation settings accumulator) blocks)
@@ -293,7 +294,7 @@ enumerate generation settings accumulator blocks =
 numberedItem_ : Int -> Int -> Settings -> Block.State.Accumulator -> Block -> Element msg
 numberedItem_ index generation settings accumulator block =
     let
-        -- TODO: simplify the below, eliminating the cae 'numberedItem' by takking care of these in putListItemsAsChildrenOfBlock
+        -- TODO: simplify the below, eliminating the case 'numberedItem' by takking care of these in putListItemsAsChildrenOfBlock
         blocks =
             case block of
                 Block "item" blocks_ _ ->
