@@ -22,20 +22,12 @@ m2 =
 """
 
 
-mi1 =
+t1 =
     "\\begin{itemize}\n   \n   \\item Apples\n   \n   \\item Oranges\n   \n\\end{itemize}"
 
 
-mi2 =
-    """
-\\begin{enumerate}
-
-   \\item Apples
-
-   \\item Oranges
-
-\\end{enumerate}
-"""
+t2 =
+    "\\begin{enumerate}\n   \n   \\item Apples\n   \n   \\item Oranges\n   \n\\end{enumerate}"
 
 
 mi3 =
