@@ -3,6 +3,74 @@ module Data.MarkdownTest exposing (text)
 
 text =
     """
+[!title](Krakow Talk: Lambda Days)
+
+
+
+# Introduction
+
+The  principal aim of this talk to is to show how one can build a fault-tolerant parser for a class of markup languages using a functional language.  Any statically typed language should do, but here we use [Elm](https://elm-lang.org) .  It is sufficiently expressive for the job and has the advantage of being designed for web apps, which is what we have in mind: a platform for creating and distributing technical content with both images and mathematical notation.
+
+## Multiple Languages
+
+Our current implementation handles three languages:
+
+- L1, with a Lisp-like syntax, e.g., `[bold stuff]` for
+
+- Rational Markdown, like Markdown, but with some differences and some extensions
+
+- MiniLaTeX, a subset-variant of LaTeX.
+
+While the three languages are quite different from one another,  they are all block-structured, and indentation is significant, as in Python.  The integrated editor make management of indentation easy,  Here are some examples.
+
+### L1
+
+A code block:
+
+```
+   || code
+      sum = 0
+      for k in range(1,101):
+         sum = 1.0/k
+
+### Rational Markdown
+
+
+
+### MiniLaTeX
+
+
+there is a single parser and a single AST.  With a codebase of around 4000 lines, the language-specific parts are small: around 750 lines of code total with three files for each language.
+
+The single AST means that one needs just one function to render HTML.  There is also have a function converts the AST in to standard LaTeX.   All documents can be exported to LaTeX.  As a corollary, we offer a conversion to PDF service for documents in all three languages.
+
+
+## Fault Tolerance
+
+By _fault-tolerant,_ we mean that when the parser encounters a syntax error, it corrects the AST it is building so that current error is noted  in a an unobtrusive, helpful way and the following text is not disturbed.  In this I have been very much inspired by the error messages of the Elm compiler. Here is an example:
+
+
+EXAMPLE
+
+
+Note that the text below the error is not messed up, as is often the case.  Seeing the mesage, you realize that you forgot to put the closing `$$` tag.  If you insert it, you get this:
+
+$$
+   \\int_0^1 x^n dx = \\frac{1}{n+1}
+$$
+
+
+# Implementing Fault Tolerance
+
+Our fault-tolerant parser consists of the following stages
+
+. Break the text into chunks
+
+"""
+
+
+text2 =
+    """
 *Itemized list*
 
 - Milkshakes
