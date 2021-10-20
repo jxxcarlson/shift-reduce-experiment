@@ -122,22 +122,6 @@ handleUnterminatedVerbatimBlock state =
         |> simpleCommit
 
 
-resetInVerbatimBlock2 state =
-    if state.currentLineData.indent <= state.verbatimBlockInitialIndent then
-        if state.inVerbatimBlock then
-            { state
-                | errorMessage = Just { red = "Did you forget to indent this  line", blue = state.currentLineData.content }
-                , inVerbatimBlock = False
-            }
-                |> Function.insertErrorMessage
-
-        else
-            { state | inVerbatimBlock = False }
-
-    else
-        state
-
-
 resetInVerbatimBlock state =
     if state.currentLineData.indent <= state.verbatimBlockInitialIndent then
         { state | inVerbatimBlock = False }
