@@ -1,8 +1,27 @@
 module Data.MiniLaTeXTest exposing (text)
 
 
-text3 =
+text =
     """
+
+\\begin{theorem}
+  Pythagoras sez: $a^2 + b^2 = c^2$.  Cool!!
+\\end{theorem}
+
+
+$$
+x == y
+
+$$
+  x == y
+
+
+$$
+  x == y
+$$
+
+
+
 \\begin{enumerate}
 
    \\item Oranges
@@ -23,7 +42,7 @@ text3 =
 """
 
 
-text =
+text3 =
     """
 
 \\title{Notes on Quantum Field Theory}
