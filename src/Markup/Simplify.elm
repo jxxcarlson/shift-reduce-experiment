@@ -12,6 +12,7 @@ type ExprS
     | VerbatimS String String
     | ArgS (List ExprS)
     | ExprS String (List ExprS)
+    | ErrorS String
 
 
 type BlockS
@@ -134,6 +135,9 @@ simplifyToExprS expr =
         ExprM name exprList _ ->
             ExprS name (List.map simplifyToExprS exprList)
 
+        ErrorM str ->
+            ErrorS str
+
 
 simplifyExprToExprS : Expr -> ExprS
 simplifyExprToExprS expr =
@@ -149,3 +153,6 @@ simplifyExprToExprS expr =
 
         Expr name exprList _ ->
             ExprS name (List.map simplifyExprToExprS exprList)
+
+        Error str ->
+            ErrorS str

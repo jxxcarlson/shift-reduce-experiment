@@ -274,8 +274,9 @@ renderErrorMessage lang msg =
             "[red " ++ msg.red ++ "]" ++ "[blue" ++ msg.blue ++ "]"
 
         Markdown ->
-            "@red[" ++ msg.red ++ "] @blue[" ++ msg.blue ++ "]"
+            "[! red](" ++ msg.red ++ ")"
 
+        --  [! blue ](" ++ msg.blue ++ ")"
         MiniLaTeX ->
             case ( msg.red, msg.blue ) of
                 ( "", "" ) ->

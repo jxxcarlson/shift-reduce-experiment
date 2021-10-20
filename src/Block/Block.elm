@@ -51,6 +51,7 @@ type ExprM
     | VerbatimM String String ExpressionMeta
     | ArgM (List ExprM) ExpressionMeta
     | ExprM String (List ExprM) ExpressionMeta
+    | ErrorM String
 
 
 type SBlock

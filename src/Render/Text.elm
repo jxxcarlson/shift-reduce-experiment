@@ -32,6 +32,9 @@ render generation settings accumulator text =
         ArgM _ _ ->
             Element.none
 
+        ErrorM str ->
+            Element.el [ Font.color redColor ] (Element.text str)
+
 
 errorText index str =
     Element.el [ Font.color (Element.rgb255 200 40 40) ] (Element.text <| "(" ++ String.fromInt index ++ ") not implemented: " ++ str)
@@ -124,6 +127,8 @@ specialFunctionsDict : Dict String (Settings -> String -> Element msg)
 specialFunctionsDict =
     Dict.fromList
         [ ( "title", \s str -> title s str )
+        , ( "red", \s str -> Element.el [ Font.color redColor ] (Element.text str) )
+        , ( "blue", \s str -> Element.el [ Font.color blueColor ] (Element.text str) )
         ]
 
 

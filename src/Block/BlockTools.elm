@@ -167,6 +167,9 @@ exprToExprM count blockData expr =
         Arg exprList meta ->
             ArgM (List.map (exprToExprM count blockData) exprList) (Meta.make Meta.getBlockData count meta [] blockData.firstLine blockData.id)
 
+        Error str ->
+            ErrorM str
+
 
 stringValueOfBlockList : List Block -> String
 stringValueOfBlockList blocks =

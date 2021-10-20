@@ -5,7 +5,7 @@ module Block.Library exposing
 
 import Block.Block as Block exposing (BlockStatus(..), SBlock(..))
 import Block.BlockTools as BlockTools
-import Block.Function as Function
+import Block.Function as Function exposing (simpleCommit)
 import Block.Line exposing (BlockOption(..), LineData, LineType(..))
 import Block.State exposing (Accumulator, State)
 import LaTeX.MathMacro
@@ -71,7 +71,11 @@ processLine language state =
                 _ =
                     debugIn "OrdinaryLine" state
             in
-            state |> resetInVerbatimBlock |> handleOrdinaryLine
+            if state.inVerbatimBlock && state.currentLineData.indent <= state.verbatimBlockInitialIndent then
+                handleUnterminatedVerbatimBlock state
+
+            else
+                state |> resetInVerbatimBlock |> handleOrdinaryLine
 
         VerbatimLine ->
             let
@@ -101,6 +105,32 @@ processLine language state =
 
 
 -- ORDINARY LINE
+
+
+handleUnterminatedVerbatimBlock state =
+    state
+        |> handleVerbatimLine
+        |> Function.postErrorMessage
+            ""
+            "Indentation?"
+        |> Function.insertErrorMessage
+        |> simpleCommit
+
+
+resetInVerbatimBlock2 state =
+    if state.currentLineData.indent <= state.verbatimBlockInitialIndent then
+        if state.inVerbatimBlock then
+            { state
+                | errorMessage = Just { red = "Did you forget to indent this  line", blue = state.currentLineData.content }
+                , inVerbatimBlock = False
+            }
+                |> Function.insertErrorMessage
+
+        else
+            { state | inVerbatimBlock = False }
+
+    else
+        state
 
 
 resetInVerbatimBlock state =
@@ -261,8 +291,8 @@ handleVerbatimLine state =
                     state
                         |> addLineToStackTop
                         |> Function.postErrorMessage
-                            "Below: you forgot to indent the block text."
                             ""
+                            "Below: you forgot to indent the block text."
                         |> Function.insertErrorMessage
 
                 else

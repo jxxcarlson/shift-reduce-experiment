@@ -96,4 +96,9 @@ suiteL1BlockParser =
                 run Markdown "```\n $$\n  x^2\n\nfoo"
                     |> Expect.equal
                         [ SVerbatimBlockS "code" [ " $$", "  x^2" ] BlockComplete, SParagraphS [ "foo" ] BlockComplete ]
+        , test "(13) An incomplete verbatim block" <|
+            \_ ->
+                run Markdown "$$\n\n"
+                    |> Expect.equal
+                        [ SVerbatimBlockS "math" [] BlockStarted ]
         ]

@@ -154,7 +154,8 @@ errorValue state errorData =
             AST.Verbatim "math" (remaining ++ "$") dummyLoc
 
         _ ->
-            AST.Text ("Can't correct this text: " ++ remaining) dummyLoc
+            -- AST.Text ("Hmmm ... not sure what's up" ++ remaining) dummyLoc
+            AST.Error "Indentation?"
 
 
 reduceFinal : Lang -> State -> State

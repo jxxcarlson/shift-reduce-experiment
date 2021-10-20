@@ -6,6 +6,7 @@ import Block.State
 import Dict exposing (Dict)
 import Element exposing (..)
 import Element.Background as Background
+import Element.Border as Border
 import Element.Font as Font
 import Expression.AST
 import LaTeX.MathMacro
@@ -62,6 +63,23 @@ renderBlock generation settings accumulator block =
             error desc
 
 
+renderLinesIncomplete : Settings -> String -> BlockStatus -> List String -> Element msg
+renderLinesIncomplete settings name status lines =
+    column
+        [ Font.family
+            [ Font.typeface "Inconsolata"
+            , Font.monospace
+            ]
+        , Font.color (Element.rgb 0 0 200)
+        , Border.solid
+        , Border.width 1
+        , errorBackgroundColor settings
+        , paddingXY 8 8
+        , spacing 8
+        ]
+        (message settings.showErrorMessages name status :: List.map (\t -> el [] (text t)) lines)
+
+
 renderBlocksIncomplete : Settings -> String -> BlockStatus -> List Block -> Element msg
 renderBlocksIncomplete settings name status blocks =
     column
@@ -70,7 +88,9 @@ renderBlocksIncomplete settings name status blocks =
             , Font.monospace
             ]
         , Font.color codeColor
-        , Background.color (Element.rgb255 230 233 250)
+        , Border.solid
+        , Border.width 1
+        , errorBackgroundColor settings
         , paddingXY 8 8
         , spacing 8
         ]
@@ -78,6 +98,14 @@ renderBlocksIncomplete settings name status blocks =
             :: (Element.text <| Block.stringValueOfBlockList blocks)
             :: []
         )
+
+
+errorBackgroundColor settings =
+    if settings.showErrorMessages then
+        Background.color (Element.rgb255 230 233 250)
+
+    else
+        Background.color (Element.rgb255 250 230 233)
 
 
 message : Bool -> String -> BlockStatus -> Element msg
@@ -98,20 +126,6 @@ message show name blockStatus =
 
     else
         Element.none
-
-
-renderLinesIncomplete : Settings -> String -> BlockStatus -> List String -> Element msg
-renderLinesIncomplete settings name status lines =
-    column
-        [ Font.family
-            [ Font.typeface "Inconsolata"
-            , Font.monospace
-            ]
-        , Font.color (Element.rgb 0 0 200)
-        , Background.color (Element.rgb255 230 233 250)
-        , spacing 8
-        ]
-        (message settings.showErrorMessages name status :: List.map (\t -> el [] (text t)) lines)
 
 
 error str =

@@ -17,6 +17,7 @@ type Expr
     | Verbatim String String Token.Loc
     | Arg (List Expr) Token.Loc
     | Expr String (List Expr) Token.Loc
+    | Error String
 
 
 dummy =
@@ -125,6 +126,9 @@ stringValue text =
         Verbatim _ str _ ->
             str
 
+        Error str ->
+            str
+
 
 miniLaTeXStringValue : Expr -> String
 miniLaTeXStringValue text =
@@ -139,4 +143,7 @@ miniLaTeXStringValue text =
             List.map stringValue textList |> String.join ""
 
         Verbatim _ str _ ->
+            str
+
+        Error str ->
             str

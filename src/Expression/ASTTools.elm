@@ -105,6 +105,9 @@ exprMToString text =
         VerbatimM _ str _ ->
             str
 
+        ErrorM str ->
+            str
+
 
 getTitle : List Block -> Maybe String
 getTitle blocks =
@@ -262,6 +265,9 @@ stringValue text =
         VerbatimM _ str _ ->
             str
 
+        ErrorM str ->
+            str
+
 
 textToString : ExprM -> String
 textToString text =
@@ -276,4 +282,7 @@ textToString text =
             List.map textToString textList |> String.join "\n"
 
         VerbatimM _ str _ ->
+            str
+
+        ErrorM str ->
             str

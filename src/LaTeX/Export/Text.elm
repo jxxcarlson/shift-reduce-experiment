@@ -26,6 +26,9 @@ render expr =
         ArgM str _ ->
             encloseWithBraces (render expr)
 
+        ErrorM str ->
+            "\\red" ++ encloseWithBraces str
+
 
 errorText index str =
     "(" ++ String.fromInt index ++ ") not implemented: " ++ str
@@ -76,6 +79,9 @@ renderExpression expr =
 
         ExprM name expressions _ ->
             renderNamedExpression name expressions
+
+        ErrorM str ->
+            "\\red" ++ encloseWithBraces str
 
 
 encloseWithBraces : String -> String
