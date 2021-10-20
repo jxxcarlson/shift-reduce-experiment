@@ -1,5 +1,6 @@
 module Utility exposing
     ( elementAttribute
+    , ifApply
     , keyValueDict
     , prepare
     , takeUntil
@@ -9,6 +10,15 @@ import Dict exposing (Dict)
 import Element
 import Html.Attributes
 import Maybe.Extra
+
+
+ifApply : Bool -> (a -> a) -> a -> a
+ifApply goAhead f a =
+    if goAhead then
+        f a
+
+    else
+        a
 
 
 keyValueDict : List String -> Dict String String

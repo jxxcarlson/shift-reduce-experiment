@@ -8,15 +8,7 @@ import Lang.Lang exposing (Lang(..))
 import Markup.API
 import Markup.Meta as Meta
 import Maybe.Extra
-
-
-ifApply : Bool -> (a -> a) -> a -> a
-ifApply goAhead f a =
-    if goAhead then
-        f a
-
-    else
-        a
+import Utility
 
 
 export : Lang -> String -> String
@@ -27,7 +19,7 @@ export language sourceText =
                 |> String.lines
                 |> Markup.API.parse language 0
                 |> .ast
-                |> ifApply (language == Markdown) LaTeX.Export.Markdown.putListItemsAsChildrenOfBlock
+                |> Utility.ifApply (language == Markdown) LaTeX.Export.Markdown.putListItemsAsChildrenOfBlock
 
         titleString =
             Expression.ASTTools.getTitle ast |> Maybe.withDefault "Untitled"
@@ -43,7 +35,7 @@ prepareForExportWithImages language sourceText =
                 |> String.lines
                 |> Markup.API.parse language 0
                 |> .ast
-                |> ifApply (language == Markdown) LaTeX.Export.Markdown.putListItemsAsChildrenOfBlock
+                |> Utility.ifApply (language == Markdown) LaTeX.Export.Markdown.putListItemsAsChildrenOfBlock
 
         titleString =
             Expression.ASTTools.getTitle ast |> Maybe.withDefault "Untitled"

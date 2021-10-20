@@ -50,15 +50,6 @@ rl str =
     renderFancy defaultSettings L1 0 (String.lines str)
 
 
-ifApply : Bool -> (a -> a) -> a -> a
-ifApply goAhead f a =
-    if goAhead then
-        f a
-
-    else
-        a
-
-
 
 -- NOTE THE AST TRANSFORMATION BELOW
 
