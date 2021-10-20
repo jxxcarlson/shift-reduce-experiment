@@ -65,39 +65,43 @@ renderBlock generation settings accumulator block =
 
 renderLinesIncomplete : Settings -> String -> BlockStatus -> List String -> Element msg
 renderLinesIncomplete settings name status lines =
-    column
-        [ Font.family
-            [ Font.typeface "Inconsolata"
-            , Font.monospace
+    column [ paddingEach { left = 20, right = 0, top = 0, bottom = 0 } ]
+        [ column
+            [ Font.family
+                [ Font.typeface "Inconsolata"
+                , Font.monospace
+                ]
+            , Font.color (Element.rgb 0 0 200)
+            , Border.solid
+            , Border.width 1
+            , errorBackgroundColor settings
+            , paddingXY 8 8
+            , spacing 8
             ]
-        , Font.color (Element.rgb 0 0 200)
-        , Border.solid
-        , Border.width 1
-        , errorBackgroundColor settings
-        , paddingXY 8 8
-        , spacing 8
+            (message settings.showErrorMessages name status :: List.map (\t -> el [] (text t)) lines)
         ]
-        (message settings.showErrorMessages name status :: List.map (\t -> el [] (text t)) lines)
 
 
 renderBlocksIncomplete : Settings -> String -> BlockStatus -> List Block -> Element msg
 renderBlocksIncomplete settings name status blocks =
-    column
-        [ Font.family
-            [ Font.typeface "Inconsolata"
-            , Font.monospace
+    column [ paddingEach { left = 20, right = 0, top = 0, bottom = 0 } ]
+        [ column
+            [ Font.family
+                [ Font.typeface "Inconsolata"
+                , Font.monospace
+                ]
+            , Font.color codeColor
+            , Border.solid
+            , Border.width 1
+            , errorBackgroundColor settings
+            , paddingXY 8 8
+            , spacing 8
             ]
-        , Font.color codeColor
-        , Border.solid
-        , Border.width 1
-        , errorBackgroundColor settings
-        , paddingXY 8 8
-        , spacing 8
+            (message settings.showErrorMessages name status
+                :: (Element.text <| Block.stringValueOfBlockList blocks)
+                :: []
+            )
         ]
-        (message settings.showErrorMessages name status
-            :: (Element.text <| Block.stringValueOfBlockList blocks)
-            :: []
-        )
 
 
 errorBackgroundColor settings =
