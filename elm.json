@@ -13,11 +13,13 @@
             "elm-community/list-extra": "8.5.1",
             "elm-community/maybe-extra": "5.2.0",
             "elm-community/result-extra": "2.4.0",
+            "elm-community/string-extra": "4.0.1",
             "mdgriffith/elm-ui": "1.1.8",
             "rtfeldman/console-print": "1.0.1",
             "toastal/either": "3.6.3"
         },
         "indirect": {
+            "elm/regex": "1.0.0",
             "elm/virtual-dom": "1.0.2"
         }
     },
