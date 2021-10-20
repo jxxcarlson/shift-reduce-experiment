@@ -5,7 +5,7 @@ module Block.Library exposing
 
 import Block.Block as Block exposing (BlockStatus(..), SBlock(..))
 import Block.BlockTools as BlockTools
-import Block.Function as Function exposing (level)
+import Block.Function as Function
 import Block.Line exposing (BlockOption(..), LineData, LineType(..))
 import Block.State exposing (Accumulator, State)
 import LaTeX.MathMacro
@@ -34,7 +34,7 @@ processLine language state =
     case state.currentLineData.lineType of
         BeginBlock _ name ->
             state
-                |> Function.setStackBottomLevelAndName (level state.currentLineData.indent) name
+                |> Function.setStackBottomLevelAndName state.currentLineData.indent name
                 |> debugIn "BeginBlock"
                 |> Function.pushBlockOnState
                 |> debugOut "BeginBlock (OUT)"
@@ -48,7 +48,7 @@ processLine language state =
                 state |> endBlock name
 
              else
-                state |> Function.setStackBottomLevelAndName (level state.currentLineData.indent) name |> Function.pushBlockOnState
+                state |> Function.setStackBottomLevelAndName state.currentLineData.indent name |> Function.pushBlockOnState
             )
                 |> debugOut "BeginVerbatimBlock (OUT)"
 
@@ -92,12 +92,12 @@ processLine language state =
                      else
                         -- Handle the case of a non-blank line following a non-blank line.
                         -- The action depends on the indentation of the current line as compared to
-                        -- the level of the current block (top of the stack)
+                        -- the of the current block (top of the stack)
                         let
                             _ =
-                                debugRed "(i, j)" ( Function.level state.currentLineData.indent, Function.levelOfCurrentBlock state )
+                                debugRed "(i, j)" ( state.currentLineData.indent, Function.levelOfCurrentBlock state )
                         in
-                        case compare (Function.level state.currentLineData.indent) (Function.levelOfCurrentBlock state) of
+                        case compare state.currentLineData.indent (Function.levelOfCurrentBlock state) of
                             EQ ->
                                 -- If the block on top of the stack is a paragraph, add the
                                 -- current line to it.
@@ -113,13 +113,13 @@ processLine language state =
                                         |> Function.pushBlock (SParagraph [ state.currentLineData.content ] (newMeta state))
 
                             GT ->
-                                -- The line has greater level than the block on top of the stack, so add it to the block
+                                -- The line has greater than the block on top of the stack, so add it to the block
                                 -- TODO. Or should we create a new block?
                                 state |> addLineToStackTop |> debugRed "TROUBLE HERE? (2) — Add ordinary line to current block (GT)"
 
                             LT ->
                                 -- If the block on top of the stack is a verbatim block and the indentation
-                                -- of the current line is less than the indentation level of the block,
+                                -- of the current line is less than the indentation of the block,
                                 -- then signal an error but add it to the block anyway.  Otherwise, commit
                                 -- the current block and create a new one.
                                 -- TODO. In fact, in the else clause, we should reduce the stack, then create the block.
@@ -149,7 +149,7 @@ processLine language state =
                 addLineToStackTop state
 
              else
-                case compare (Function.level state.currentLineData.indent) (Function.levelOfCurrentBlock state) of
+                case compare state.currentLineData.indent (Function.levelOfCurrentBlock state) of
                     EQ ->
                         addLineToStackTop state
 
@@ -167,7 +167,7 @@ processLine language state =
                                 |> Function.insertErrorMessage
 
                         else
-                            -- The indentation level is too small.  Commit the block on
+                            -- The indentation is too small.  Commit the block on
                             -- top of the stack and create a new block.
                             state
                                 |> commitBlock
@@ -188,15 +188,15 @@ processLine language state =
                 -- TODO.  Examine with care. I think this can all be reduced to index str state or commitBlock
                 let
                     _ =
-                        debugRed "(i, j)" ( Function.level state.currentLineData.indent, Function.levelOfCurrentBlock state + 1 )
+                        debugRed "(i, j)" ( state.currentLineData.indent, Function.levelOfCurrentBlock state + 1 )
 
                     _ =
                         debugRed "STACK TOP" (List.head state.stack)
                 in
-                case compare (Function.level state.currentLineData.indent) (Function.levelOfCurrentBlock state + 1) of
+                case compare state.currentLineData.indent (Function.levelOfCurrentBlock state + 1) of
                     EQ ->
-                        -- As long as the line is of level greater than or equal to
-                        -- the level of the current verbatim block on top of the stack,
+                        -- As long as the line is of greater than or equal to
+                        -- the of the current verbatim block on top of the stack,
                         -- stuff those lines into the block
                         addLineToStackTop state |> debugYellow "BlankLine 1"
 
@@ -358,23 +358,23 @@ endBlock name state =
 
                 Just stackTopName ->
                     -- the begin and end tags match, we mark it as complete
-                    -- TODO: Do we need to check the level as well?
+                    -- TODO: Do we need to check the as well?
                     if name == stackTopName then
                         state
                             |> updateAccummulatorInStateWithBlock top
                             |> Function.changeStatusOfTopOfStack BlockComplete
                             --|> Function.simpleCommit
-                            |> Function.reduceStackIfTopAndBottomMatch (level state.currentLineData.indent) name
+                            |> Function.reduceStackIfTopAndBottomMatch state.currentLineData.indent name
 
                     else
-                        -- TODO: Do we need to check the level as well?
+                        -- TODO: Do we need to check the as well?
                         -- the tags don't match. We note that fact for the benefit of the renderer (or the error handler),
                         -- and we commit the block
                         state
                             |> updateAccummulatorInStateWithBlock top
                             |> Function.changeStatusOfTopOfStack (MismatchedTags stackTopName name)
                             -- |> Function.simpleCommit
-                            |> Function.reduceStackIfTopAndBottomMatch (level state.currentLineData.indent) name
+                            |> Function.reduceStackIfTopAndBottomMatch state.currentLineData.indent name
             )
                 |> debugOut "EndBlock (OUT)"
 
@@ -417,7 +417,7 @@ commitBlock_ state =
                 next_ =
                     finalize_ next
             in
-            case compare (Function.levelOfBlock top) (Function.levelOfBlock next) of
+            case compare (Function.indentationOfBlock top) (Function.indentationOfBlock next) of
                 GT ->
                     Function.shiftBlock top_ state |> debugCyan "commitBlock (2)"
 

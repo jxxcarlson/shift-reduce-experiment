@@ -9,9 +9,8 @@ module Block.Function exposing
     , fixMarkdownBlock
     , getStatus
     , incrementLevel
+    , indentationOfBlock
     , insertErrorMessage
-    , level
-    , levelOfBlock
     , levelOfCurrentBlock
     , liftBlockFunctiontoStateFunction
     , mapStack
@@ -333,7 +332,7 @@ getBlocksOfTheSameLevelHelper data =
             ( [ x ], rest )
 
         ( block1 :: same, block2 :: rest ) ->
-            if levelOfBlock block1 == levelOfBlock block2 then
+            if indentationOfBlock block1 == indentationOfBlock block2 then
                 getBlocksOfTheSameLevelHelper ( block2 :: block1 :: same, rest )
 
             else
@@ -350,7 +349,7 @@ reduce state =
     in
     case state.stack of
         block1 :: ((SBlock name blocks meta) as block2) :: rest ->
-            if levelOfBlock block1 > levelOfBlock block2 then
+            if indentationOfBlock block1 > indentationOfBlock block2 then
                 -- incorporate block1 into the block just below it in the stack
                 -- then reduce again
                 let
@@ -407,28 +406,23 @@ levelOfCurrentBlock state =
             0
 
         Just block ->
-            levelOfBlock block
+            indentationOfBlock block
 
 
-levelOfBlock : SBlock -> Int
-levelOfBlock block =
+indentationOfBlock : SBlock -> Int
+indentationOfBlock block =
     case block of
         SParagraph _ meta ->
-            level meta.indent
+            meta.indent
 
         SVerbatimBlock _ _ meta ->
-            level meta.indent
+            meta.indent
 
         SBlock _ _ meta ->
-            level meta.indent
+            meta.indent
 
         SError _ ->
             0
-
-
-level : Int -> Int
-level indentation =
-    indentation // quantumOfIndentation
 
 
 quantumOfIndentation =
