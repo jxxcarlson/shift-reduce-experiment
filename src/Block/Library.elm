@@ -45,10 +45,10 @@ processLine language state =
                     debugIn "BeginVerbatimBlock" state
             in
             (if Just name == Maybe.map getBlockName (Function.stackTop state) && (name == "math" || name == "code") then
-                state |> endBlock name
+                { state | inVerbatimBlock = True } |> endBlock name
 
              else
-                state |> Function.setStackBottomLevelAndName state.currentLineData.indent name |> Function.pushBlockOnState
+                { state | inVerbatimBlock = True } |> Function.setStackBottomLevelAndName state.currentLineData.indent name |> Function.pushBlockOnState
             )
                 |> debugOut "BeginVerbatimBlock (OUT)"
 
@@ -247,23 +247,26 @@ processLine language state =
 classify : Lang -> Bool -> Int -> String -> LineData
 classify language inVerbatimBlock verbatimBlockInitialIndent str =
     let
+        _ =
+            ( inVerbatimBlock, verbatimBlockInitialIndent ) |> debugMagenta "(inVerbatimBlock, verbatimBlockInitialIndent)"
+
         lineType =
             getLineTypeParser language
 
         leadingSpaces =
-            Block.Line.countLeadingSpaces str
+            Block.Line.countLeadingSpaces str |> debugMagenta "leadingSpaces"
 
         provisionalLineType =
-            lineType (String.dropLeft leadingSpaces str) |> debugCyan "provisionalLineType"
+            lineType (String.dropLeft leadingSpaces str) |> debugMagenta "provisionalLineType"
 
         lineType_ =
-            (if inVerbatimBlock && leadingSpaces >= (verbatimBlockInitialIndent |> debugCyan "verbatimBlockInitialIndent") then
+            (if inVerbatimBlock && leadingSpaces > verbatimBlockInitialIndent then
                 Block.Line.VerbatimLine
 
              else
                 provisionalLineType
             )
-                |> debugCyan "FINAL LINE TYPE"
+                |> debugMagenta "FINAL LINE TYPE"
     in
     { indent = leadingSpaces, lineType = lineType_, content = str }
 
