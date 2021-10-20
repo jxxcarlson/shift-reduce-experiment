@@ -284,13 +284,6 @@ item_ generation settings accumulator block =
 
 enumerate : Int -> Settings -> Block.State.Accumulator -> List Block -> Element msg
 enumerate generation settings accumulator blocks =
-    let
-        _ =
-            Debug.log "XXX, ENTERNG ENUMERATE" (List.length blocks)
-
-        _ =
-            Debug.log "XXX, BLOCKS" blocks
-    in
     column [ spacing listSpacing ]
         (List.indexedMap (\k -> numberedItem_ k generation settings accumulator) blocks)
 
