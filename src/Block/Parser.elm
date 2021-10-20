@@ -50,7 +50,7 @@ getLine language state =
         | currentLineData =
             Block.Library.classify language
                 state.inVerbatimBlock
-                state.verbatimBlockInitialIndent
+                state.initialBlockIndent
                 (List.Extra.getAt state.index state.input
                     |> Maybe.withDefault "??"
                 )

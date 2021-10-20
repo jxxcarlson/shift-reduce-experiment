@@ -22,7 +22,7 @@ type alias State =
     , previousLineData : Block.Line.LineData
     , committed : List SBlock
     , indent : Int
-    , verbatimBlockInitialIndent : Int
+    , initialBlockIndent : Int
     , generation : Int
     , blockCount : Int
     , inVerbatimBlock : Bool
@@ -49,7 +49,7 @@ init lang generation input =
     , currentLineData = { indent = 0, lineType = Block.Line.BlankLine, content = "" }
     , previousLineData = { indent = 0, lineType = Block.Line.BlankLine, content = "" }
     , indent = 0
-    , verbatimBlockInitialIndent = 0
+    , initialBlockIndent = 0
     , generation = generation
     , blockCount = 0
     , inVerbatimBlock = False

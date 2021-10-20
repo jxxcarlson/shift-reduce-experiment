@@ -72,7 +72,7 @@ processLine language state =
                 _ =
                     debugIn "OrdinaryLine" state
             in
-            if state.inVerbatimBlock && state.currentLineData.indent <= state.verbatimBlockInitialIndent then
+            if state.inVerbatimBlock && state.currentLineData.indent <= state.initialBlockIndent then
                 handleUnterminatedVerbatimBlock state
 
             else
@@ -123,7 +123,7 @@ handleUnterminatedVerbatimBlock state =
 
 
 resetInVerbatimBlock state =
-    if state.currentLineData.indent <= state.verbatimBlockInitialIndent then
+    if state.currentLineData.indent <= state.initialBlockIndent then
         { state | inVerbatimBlock = False }
 
     else
@@ -184,7 +184,7 @@ handleOrdinaryLine state =
                         -- then signal an error but add it to the block anyway.  Otherwise, commit
                         -- the current block and create a new one.
                         -- TODO. In fact, in the else clause, we should reduce the stack, then create the block.
-                        if state.verbatimBlockInitialIndent == Function.levelOfCurrentBlock state then
+                        if state.initialBlockIndent == Function.levelOfCurrentBlock state then
                             addLineToStackTop
                                 { state | errorMessage = Just { red = "Below: you forgot to indent the math text. This is needed for all blocks.  Also, remember the trailing dollar signs", blue = "" } }
                                 |> Function.insertErrorMessage
@@ -276,7 +276,7 @@ handleVerbatimLine state =
 
             LT ->
                 -- TODO: is this OK?
-                if state.verbatimBlockInitialIndent == Function.levelOfCurrentBlock state then
+                if state.initialBlockIndent == Function.levelOfCurrentBlock state then
                     state
                         |> addLineToStackTop
                         |> Function.postErrorMessage
