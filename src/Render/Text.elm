@@ -397,29 +397,40 @@ verticalPadding top bottom =
     Element.paddingEach { top = top, bottom = bottom, left = 0, right = 0 }
 
 
+headingFontSize settings level =
+    let
+        factor =
+            (sqrt (level + 1) - 0.2) |> min 2.2
+
+        size =
+            toFloat settings.titleSize / factor |> round
+    in
+    Font.size size
+
+
 heading1 g s a textList =
-    Element.column [ Font.size 28, verticalPadding 22 11 ]
+    Element.column [ headingFontSize s 1, verticalPadding 22 11 ]
         [ Element.link [ makeId textList ]
             { url = internalLink "TITLE", label = Element.paragraph [] (List.map (render g s a) textList) }
         ]
 
 
 heading2 g s a textList =
-    Element.column [ Font.size 22, verticalPadding 22 11 ]
+    Element.column [ headingFontSize s 2, verticalPadding 22 11 ]
         [ Element.link [ makeId textList ]
             { url = internalLink "TITLE", label = Element.paragraph [] (List.map (render g s a) textList) }
         ]
 
 
 heading3 g s a textList =
-    Element.column [ Font.size 18, verticalPadding 18 9 ]
+    Element.column [ headingFontSize s 3, verticalPadding 18 9 ]
         [ Element.link [ makeId textList ]
             { url = internalLink "TITLE", label = Element.paragraph [] (List.map (render g s a) textList) }
         ]
 
 
 heading4 g s a textList =
-    Element.column [ Font.size 14, verticalPadding 14 7 ]
+    Element.column [ headingFontSize s 4, verticalPadding 14 7 ]
         [ Element.link [ makeId textList ]
             { url = internalLink "TITLE", label = Element.paragraph [] (List.map (render g s a) textList) }
         ]
