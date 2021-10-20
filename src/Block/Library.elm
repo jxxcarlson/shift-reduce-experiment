@@ -17,6 +17,7 @@ import Markup.Debugger exposing (debug3, debugBlue, debugCyan, debugMagenta, deb
 import Markup.ParserTools
 import Markup.Simplify as Simplify
 import Parser.Advanced
+import Utility
 
 
 {-|
