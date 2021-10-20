@@ -21,6 +21,7 @@ type alias Meta =
     }
 
 
+dummyMeta : { begin : number, end : number, indent : number, id : String, status : BlockStatus }
 dummyMeta =
     { begin = 0, end = 0, indent = 0, id = "ID", status = BlockComplete }
 
