@@ -14,7 +14,7 @@ import Html exposing (Html)
 import LaTeX.Export.API
 import LaTeX.Export.Block
 import Lang.Lang exposing (Lang(..))
-import Markup.API as API
+import Markup.API as API exposing (defaultSettings)
 import Process
 import Render.Settings
 import Task
@@ -245,6 +245,7 @@ renderedText model =
         , scrollbarY
         , moveUp 9
         , Font.size 14
+        , spacing 14
         , alignTop
         , Background.color (Element.rgb255 255 255 255)
         ]
@@ -267,9 +268,13 @@ latexSourceView model =
         [ Element.text (LaTeX.Export.API.export model.language model.sourceText) ]
 
 
+settings =
+    { defaultSettings | paragraphSpacing = 42 }
+
+
 render : Lang -> Int -> String -> List (Element msg)
 render language count source =
-    API.renderFancy { width = 500, titleSize = 34, showErrorMessages = False, showTOC = True } language count (String.lines source)
+    API.renderFancy settings language count (String.lines source)
 
 
 

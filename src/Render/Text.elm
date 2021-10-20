@@ -409,28 +409,35 @@ headingFontSize settings level =
 
 
 heading1 g s a textList =
-    Element.column [ headingFontSize s 1, verticalPadding 22 11 ]
+    Element.column [ headingFontSize s 1, verticalPadding 14 0 ]
         [ Element.link [ makeId textList ]
             { url = internalLink "TITLE", label = Element.paragraph [] (List.map (render g s a) textList) }
         ]
 
 
 heading2 g s a textList =
-    Element.column [ headingFontSize s 2, verticalPadding 22 11 ]
+    Element.column [ headingFontSize s 2, verticalPadding 14 0 ]
         [ Element.link [ makeId textList ]
             { url = internalLink "TITLE", label = Element.paragraph [] (List.map (render g s a) textList) }
         ]
 
 
 heading3 g s a textList =
-    Element.column [ headingFontSize s 3, verticalPadding 18 9 ]
+    Element.column [ headingFontSize s 3, verticalPadding 14 0 ]
         [ Element.link [ makeId textList ]
             { url = internalLink "TITLE", label = Element.paragraph [] (List.map (render g s a) textList) }
         ]
 
 
 heading4 g s a textList =
-    Element.column [ headingFontSize s 4, verticalPadding 14 7 ]
+    Element.column [ headingFontSize s 4, verticalPadding 14 0 ]
+        [ Element.link [ makeId textList ]
+            { url = internalLink "TITLE", label = Element.paragraph [] (List.map (render g s a) textList) }
+        ]
+
+
+heading5 g s a textList =
+    Element.column [ headingFontSize s 5, verticalPadding 14 0 ]
         [ Element.link [ makeId textList ]
             { url = internalLink "TITLE", label = Element.paragraph [] (List.map (render g s a) textList) }
         ]

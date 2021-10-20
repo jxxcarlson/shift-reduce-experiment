@@ -1,4 +1,16 @@
-module Markup.API exposing (Settings, compile, defaultSettings, getTitle, p, parse, prepareForExport, render, renderFancy, rl, tableOfContents)
+module Markup.API exposing
+    ( Settings
+    , compile
+    , defaultSettings
+    , getTitle
+    , p
+    , parse
+    , prepareForExport
+    , render
+    , renderFancy
+    , rl
+    , tableOfContents
+    )
 
 import Block.Block exposing (Block)
 import Block.BlockTools
@@ -20,7 +32,12 @@ import Utility
 
 defaultSettings : Settings
 defaultSettings =
-    { width = 500, titleSize = 30, showTOC = True, showErrorMessages = False }
+    { width = 500
+    , titleSize = 30
+    , paragraphSpacing = 28
+    , showTOC = True
+    , showErrorMessages = False
+    }
 
 
 p : Lang -> String -> List Simplify.BlockS
@@ -30,7 +47,7 @@ p lang str =
 
 rl : String -> List (Element msg)
 rl str =
-    renderFancy { width = 500, titleSize = 30, showTOC = True, showErrorMessages = False } L1 0 (String.lines str)
+    renderFancy defaultSettings L1 0 (String.lines str)
 
 
 ifApply : Bool -> (a -> a) -> a -> a
