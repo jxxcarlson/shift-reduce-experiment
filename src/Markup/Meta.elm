@@ -20,6 +20,7 @@ type alias ExpressionMeta =
     }
 
 
+dummy : ExpressionMeta
 dummy =
     { id = "dummy", loc = { begin = { row = 0, col = 0 }, end = { row = 0, col = 0 } } }
 
