@@ -14,6 +14,7 @@ import Markup.Debugger exposing (debugYellow)
 import Render.Math
 import Render.Settings exposing (Settings)
 import Render.Text
+import String.Extra
 import Utility
 
 
@@ -266,7 +267,13 @@ quotationBlock generation settings accumulator blocks =
 
 renderTheoremLikeBlock : Int -> Settings -> Block.State.Accumulator -> String -> List Block -> Element msg
 renderTheoremLikeBlock generation settings accumulator name blocks =
-    Element.none
+    column [ Element.spacing 8 ]
+        [ row [ Font.bold ] [ Element.text (String.Extra.toTitleCase name) ]
+        , column
+            [ paddingEach { left = 18, right = 0, top = 0, bottom = 8 }
+            ]
+            (List.map (renderBlock generation settings accumulator) (debugYellow "XX, block in quotation" blocks))
+        ]
 
 
 listSpacing =
