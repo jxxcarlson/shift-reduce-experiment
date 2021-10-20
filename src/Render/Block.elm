@@ -120,13 +120,13 @@ message show name blockStatus =
                 Element.none
 
             MismatchedTags first second ->
-                Element.el [ Font.color (Element.rgb 180 0 0) ] (Element.text <| "Mismatched tags: " ++ first ++ " ≠ " ++ second)
+                Element.el [ Font.color (Element.rgb 0 0 180) ] (Element.text <| "Mismatched tags: " ++ first ++ " ≠ " ++ second)
 
             BlockStarted ->
-                Element.el [ Font.color (Element.rgb 180 0 0) ] (Element.text <| "Unfinished " ++ name ++ " block")
+                Element.el [ Font.color (Element.rgb 0 0 180) ] (Element.text <| "Unfinished " ++ name ++ " block")
 
             BlockUnimplemented ->
-                Element.el [ Font.color (Element.rgb 180 0 0) ] (Element.text <| "Unimplemented block: " ++ name)
+                Element.el [ Font.color (Element.rgb 0 0 180) ] (Element.text <| "Unimplemented block: " ++ name)
 
     else
         Element.none

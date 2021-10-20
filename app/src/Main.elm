@@ -269,7 +269,7 @@ latexSourceView model =
 
 
 settings =
-    { defaultSettings | paragraphSpacing = 42 }
+    { defaultSettings | paragraphSpacing = 42, showErrorMessages = True }
 
 
 render : Lang -> Int -> String -> List (Element msg)

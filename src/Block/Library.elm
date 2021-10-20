@@ -109,11 +109,15 @@ processLine language state =
 
 
 handleUnterminatedVerbatimBlock state =
+    let
+        _ =
+            debugRed "handleUnterminatedVerbatimBlock, currentLine" state.currentLineData.content
+    in
     state
+        |> Utility.ifApply (state.currentLineData.content == "$") (Function.postErrorMessage "" "Another dollar sign at end?")
+        |> Function.insertErrorMessage
         |> handleVerbatimLine
-        |> Function.postErrorMessage
-            ""
-            "Indentation?"
+        |> Utility.ifApply (state.currentLineData.content /= "$") (Function.postErrorMessage "" "Indentation?")
         |> Function.insertErrorMessage
         |> simpleCommit
 
