@@ -269,7 +269,7 @@ latexSourceView model =
 
 render : Lang -> Int -> String -> List (Element msg)
 render language count source =
-    API.renderFancy { width = 500, titleSize = 34, showTOC = True } language count (String.lines source)
+    API.renderFancy { width = 500, titleSize = 34, showErrorMessages = False, showTOC = True } language count (String.lines source)
 
 
 

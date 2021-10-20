@@ -13,14 +13,14 @@ import LaTeX.Export.Markdown
 import Lang.Lang exposing (Lang(..))
 import Markup.Simplify as Simplify
 import Render.Block
-import Render.Settings
+import Render.Settings exposing (Settings)
 import Render.Text
 import Utility
 
 
-defaultSettings : Render.Settings.Settings
+defaultSettings : Settings
 defaultSettings =
-    { width = 500, titleSize = 30, showTOC = True }
+    { width = 500, titleSize = 30, showTOC = True, showErrorMessages = False }
 
 
 p : Lang -> String -> List Simplify.BlockS
@@ -30,7 +30,7 @@ p lang str =
 
 rl : String -> List (Element msg)
 rl str =
-    renderFancy { width = 500, titleSize = 30, showTOC = True } L1 0 (String.lines str)
+    renderFancy { width = 500, titleSize = 30, showTOC = True, showErrorMessages = False } L1 0 (String.lines str)
 
 
 ifApply : Bool -> (a -> a) -> a -> a
@@ -83,7 +83,7 @@ renderFancy settings language count source =
 
         toc_ : List (Element msg)
         toc_ =
-            tableOfContents count { width = 500 } parseData.accumulator ast
+            tableOfContents count settings parseData.accumulator ast
 
         maybeTitleString =
             ASTTools.getTitle ast
@@ -135,7 +135,7 @@ render =
 
 {-| -}
 type alias Settings =
-    { width : Int }
+    Render.Settings.Settings
 
 
 prepareForExport : String -> ( List String, String )

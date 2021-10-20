@@ -2,4 +2,8 @@ module Render.Settings exposing (Settings)
 
 
 type alias Settings =
-    { width : Int, titleSize : Int, showTOC : Bool }
+    { width : Int, titleSize : Int, showTOC : Bool, showErrorMessages : Bool }
+
+
+
+---  settings.showErrorMessages

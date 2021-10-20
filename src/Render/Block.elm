@@ -35,7 +35,7 @@ renderBlock generation settings accumulator block =
 
         VerbatimBlock name lines _ meta ->
             if meta.status /= BlockComplete then
-                renderLinesIncomplete name meta.status lines
+                renderLinesIncomplete settings name meta.status lines
 
             else
                 case Dict.get name verbatimBlockDict of
@@ -47,13 +47,13 @@ renderBlock generation settings accumulator block =
 
         Block name blocks meta ->
             if meta.status /= BlockComplete then
-                renderBlocksIncomplete name meta.status blocks
+                renderBlocksIncomplete settings name meta.status blocks
 
             else
                 case Dict.get name blockDict of
                     Nothing ->
                         -- error ("Unimplemented block: " ++ name)
-                        renderBlocksIncomplete name BlockUnimplemented blocks
+                        renderBlocksIncomplete settings name BlockUnimplemented blocks
 
                     Just f ->
                         f generation settings accumulator blocks
@@ -62,8 +62,8 @@ renderBlock generation settings accumulator block =
             error desc
 
 
-renderBlocksIncomplete : String -> BlockStatus -> List Block -> Element msg
-renderBlocksIncomplete name status blocks =
+renderBlocksIncomplete : Settings -> String -> BlockStatus -> List Block -> Element msg
+renderBlocksIncomplete settings name status blocks =
     column
         [ Font.family
             [ Font.typeface "Inconsolata"
@@ -74,30 +74,34 @@ renderBlocksIncomplete name status blocks =
         , paddingXY 8 8
         , spacing 8
         ]
-        (message name status
+        (message settings.showErrorMessages name status
             :: (Element.text <| Block.stringValueOfBlockList blocks)
             :: []
         )
 
 
-message : String -> BlockStatus -> Element msg
-message name blockStatus =
-    case blockStatus of
-        BlockComplete ->
-            Element.none
+message : Bool -> String -> BlockStatus -> Element msg
+message show name blockStatus =
+    if show then
+        case blockStatus of
+            BlockComplete ->
+                Element.none
 
-        MismatchedTags first second ->
-            Element.el [ Font.color (Element.rgb 180 0 0) ] (Element.text <| "Mismatched tags: " ++ first ++ " ≠ " ++ second)
+            MismatchedTags first second ->
+                Element.el [ Font.color (Element.rgb 180 0 0) ] (Element.text <| "Mismatched tags: " ++ first ++ " ≠ " ++ second)
 
-        BlockStarted ->
-            Element.el [ Font.color (Element.rgb 180 0 0) ] (Element.text <| "Unfinished " ++ name ++ " block")
+            BlockStarted ->
+                Element.el [ Font.color (Element.rgb 180 0 0) ] (Element.text <| "Unfinished " ++ name ++ " block")
 
-        BlockUnimplemented ->
-            Element.el [ Font.color (Element.rgb 180 0 0) ] (Element.text <| "Unimplemented block: " ++ name)
+            BlockUnimplemented ->
+                Element.el [ Font.color (Element.rgb 180 0 0) ] (Element.text <| "Unimplemented block: " ++ name)
+
+    else
+        Element.none
 
 
-renderLinesIncomplete : String -> BlockStatus -> List String -> Element msg
-renderLinesIncomplete name status lines =
+renderLinesIncomplete : Settings -> String -> BlockStatus -> List String -> Element msg
+renderLinesIncomplete settings name status lines =
     column
         [ Font.family
             [ Font.typeface "Inconsolata"
@@ -107,7 +111,7 @@ renderLinesIncomplete name status lines =
         , Background.color (Element.rgb255 230 233 250)
         , spacing 8
         ]
-        (message name status :: List.map (\t -> el [] (text t)) lines)
+        (message settings.showErrorMessages name status :: List.map (\t -> el [] (text t)) lines)
 
 
 error str =

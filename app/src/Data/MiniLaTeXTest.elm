@@ -1,7 +1,7 @@
 module Data.MiniLaTeXTest exposing (text)
 
 
-text =
+text3 =
     """
 \\begin{enumerate}
 
@@ -23,7 +23,7 @@ text =
 """
 
 
-text2 =
+text =
     """
 
 \\title{Notes on Quantum Field Theory}
