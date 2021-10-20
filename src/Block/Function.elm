@@ -10,8 +10,8 @@ module Block.Function exposing
     , getStatus
     , incrementLevel
     , indentationOfBlock
+    , indentationOfCurrentBlock
     , insertErrorMessage
-    , levelOfCurrentBlock
     , liftBlockFunctiontoStateFunction
     , mapStack
     , nameOfStackTop
@@ -126,7 +126,7 @@ nibble str =
 newMeta state =
     { begin = state.index
     , end = state.index
-    , status = BlockStarted
+    , status = BlockUnfinished
     , id = String.fromInt state.blockCount
     , indent = state.currentLineData.indent
     }
@@ -400,8 +400,8 @@ reduce state =
 -- LEVEL
 
 
-levelOfCurrentBlock : State -> Int
-levelOfCurrentBlock state =
+indentationOfCurrentBlock : State -> Int
+indentationOfCurrentBlock state =
     case stackTop state of
         Nothing ->
             0
@@ -437,7 +437,7 @@ incrementLevel lineData =
 
 finalizeBlockStatus_ : BlockStatus -> BlockStatus
 finalizeBlockStatus_ status =
-    if status == BlockStarted then
+    if status == BlockUnfinished then
         BlockComplete
 
     else

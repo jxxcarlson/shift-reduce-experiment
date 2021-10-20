@@ -126,7 +126,7 @@ message show name blockStatus =
             MismatchedTags first second ->
                 Element.el [ Font.color (Element.rgb 0 0 180) ] (Element.text <| "Mismatched tags: " ++ first ++ " ≠ " ++ second)
 
-            BlockStarted ->
+            BlockUnfinished ->
                 Element.el [ Font.color (Element.rgb 0 0 180) ] (Element.text <| "Unfinished " ++ name ++ " block")
 
             BlockUnimplemented ->
@@ -270,7 +270,7 @@ renderTheoremLikeBlock generation settings accumulator name blocks =
     column [ Element.spacing 8 ]
         [ row [ Font.bold ] [ Element.text (String.Extra.toTitleCase name) ]
         , column
-            [ paddingEach { left = 18, right = 0, top = 0, bottom = 8 }
+            [ Font.italic
             ]
             (List.map (renderBlock generation settings accumulator) (debugYellow "XX, block in quotation" blocks))
         ]

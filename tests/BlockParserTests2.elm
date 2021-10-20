@@ -12,8 +12,8 @@ run lang str =
     Block.Parser.run lang 0 (String.lines str) |> .committed |> List.map Simplify.sblock
 
 
-suiteL1BlockParser : Test
-suiteL1BlockParser =
+suiteMiniLaTeXBlockParser : Test
+suiteMiniLaTeXBlockParser =
     describe "parsing MiniLaTeX blocks"
         [ test "(1) Two-line paragraph" <|
             \_ ->
@@ -41,7 +41,7 @@ suiteL1BlockParser =
             \_ ->
                 run MiniLaTeX "\\begin{foo}\n   abc\n   def"
                     |> Expect.equal
-                        [ SBlockS "foo" [ SParagraphS [ "   abc", "   def" ] BlockComplete ] BlockStarted ]
+                        [ SBlockS "foo" [ SParagraphS [ "   abc", "   def" ] BlockComplete ] BlockUnfinished ]
 
         --[ SBlockS "foo" [ SParagraphS [ "   abc", "   def" ] BlockComplete ] BlockComplete ]
         , test "(6) Two blocks in succession of the same level" <|
@@ -88,17 +88,22 @@ suiteL1BlockParser =
                         [ SVerbatimBlockS "code" [ "   abc", "   def" ] BlockComplete, SParagraphS [ "\\skip{10} \\blue{Indentation?}" ] BlockComplete ]
         , test "(12) A verbatim with code inside" <|
             \_ ->
-                run Markdown "```\n $$\n  x^2\n\n"
+                run Markdown "```\n $$\n  x^2\n```  \n"
                     |> Expect.equal
                         [ SVerbatimBlockS "code" [ " $$", "  x^2" ] BlockComplete ]
-        , test "(13) A verbatim with code inside followed by text at indentation = 0" <|
+        , test "(13) A verbatim  block with code inside followed by text at indentation = 0" <|
+            \_ ->
+                run Markdown "```\n $$\n  x^2\n```\n\nfoo"
+                    |> Expect.equal
+                        [ SVerbatimBlockS "code" [ " $$", "  x^2" ] BlockComplete, SParagraphS [ "foo" ] BlockComplete ]
+        , test "(14) An incomplete verbatim with code inside followed by text at indentation = 0" <|
             \_ ->
                 run Markdown "```\n $$\n  x^2\n\nfoo"
                     |> Expect.equal
-                        [ SVerbatimBlockS "code" [ " $$", "  x^2" ] BlockComplete, SParagraphS [ "foo" ] BlockComplete ]
-        , test "(13) An incomplete verbatim block" <|
+                        [ SVerbatimBlockS "code" [ " $$", "  x^2" ] BlockUnfinished, SParagraphS [ "foo" ] BlockComplete ]
+        , test "(15) An incomplete verbatim block" <|
             \_ ->
                 run Markdown "$$\n\n"
                     |> Expect.equal
-                        [ SVerbatimBlockS "math" [] BlockStarted ]
+                        [ SVerbatimBlockS "math" [] BlockUnfinished ]
         ]

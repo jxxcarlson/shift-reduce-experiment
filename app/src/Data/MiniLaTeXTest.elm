@@ -4,40 +4,29 @@ module Data.MiniLaTeXTest exposing (text)
 text =
     """
 
+1.
+
+
+\\begin{theorem}
+Pythagoras sez: $a^2 + b^2 = c^2$.  Cool!!
+
+2.
+
+
+
+\\begin{theorem}
+  Pythagoras sez: $a^2 + b^2 = c^2$.  Cool!!
+
+
+3.
+
+
 \\begin{theorem}
   Pythagoras sez: $a^2 + b^2 = c^2$.  Cool!!
 \\end{theorem}
 
 
-$$
-x == y
 
-$$
-  x == y
-
-
-$$
-  x == y
-$$
-
-
-
-\\begin{enumerate}
-
-   \\item Oranges
-
-   \\item Apples
-
-\\end{enumerate}
-
-
-\\begin{itemize}
-
-   \\item Oranges
-
-   \\item Apples
-
-\\end{itemize}
 
 """
 

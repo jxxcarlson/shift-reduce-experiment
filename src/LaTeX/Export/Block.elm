@@ -80,7 +80,7 @@ renderLinesIncomplete name status lines =
 statusToString : BlockStatus -> String
 statusToString status =
     case status of
-        BlockStarted ->
+        BlockUnfinished ->
             "Error: environment is missing a matching tag at the end"
 
         MismatchedTags tag1 tag2 ->
