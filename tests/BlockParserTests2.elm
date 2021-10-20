@@ -85,7 +85,7 @@ suiteL1BlockParser =
             \_ ->
                 run MiniLaTeX "\\begin{code}\n   abc\n   def\n\\end{code}\nyada yada"
                     |> Expect.equal
-                        [ SVerbatimBlockS "code" [ "   abc", "   def" ] BlockComplete, SParagraphS [ "\\skip{10} \\blue{Indentation?}   a" ] BlockComplete ]
+                        [ SVerbatimBlockS "code" [ "   abc", "   def" ] BlockComplete, SParagraphS [ "\\skip{10} \\blue{Indentation?}" ] BlockComplete ]
         , test "(12) A verbatim with code inside" <|
             \_ ->
                 run Markdown "```\n $$\n  x^2\n\n"
