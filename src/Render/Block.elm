@@ -50,6 +50,9 @@ renderBlock generation settings accumulator block =
             if meta.status /= BlockComplete then
                 renderBlocksIncomplete settings name meta.status blocks
 
+            else if List.member name [ "theorem", "colloary", "definition", "lemma", "proposition" ] then
+                renderTheoremLikeBlock generation settings accumulator name blocks
+
             else
                 case Dict.get name blockDict of
                     Nothing ->
@@ -259,6 +262,11 @@ quotationBlock generation settings accumulator blocks =
         [ paddingEach { left = 18, right = 0, top = 0, bottom = 8 }
         ]
         (List.map (renderBlock generation settings accumulator) (debugYellow "XX, block in quotation" blocks))
+
+
+renderTheoremLikeBlock : Int -> Settings -> Block.State.Accumulator -> String -> List Block -> Element msg
+renderTheoremLikeBlock generation settings accumulator name blocks =
+    Element.none
 
 
 listSpacing =
