@@ -126,7 +126,7 @@ nibble str =
 newMeta state =
     { begin = state.index
     , end = state.index
-    , status = BlockUnfinished
+    , status = BlockUnfinished "begin"
     , id = String.fromInt state.blockCount
     , indent = state.currentLineData.indent
     }
@@ -437,11 +437,12 @@ incrementLevel lineData =
 
 finalizeBlockStatus_ : BlockStatus -> BlockStatus
 finalizeBlockStatus_ status =
-    if status == BlockUnfinished then
-        BlockComplete
+    case status of
+        BlockUnfinished _ ->
+            BlockComplete
 
-    else
-        status
+        _ ->
+            status
 
 
 finalizeBlockStatus : SBlock -> SBlock

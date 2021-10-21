@@ -80,8 +80,8 @@ renderLinesIncomplete name status lines =
 statusToString : BlockStatus -> String
 statusToString status =
     case status of
-        BlockUnfinished ->
-            "Error: environment is missing a matching tag at the end"
+        BlockUnfinished str ->
+            "Error: " ++ str
 
         MismatchedTags tag1 tag2 ->
             "Error: the tags " ++ tag1 ++ " and " ++ tag2 ++ " are not the same."

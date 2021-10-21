@@ -100,7 +100,8 @@ processLine language state =
                     debugIn "BlankLine" state
             in
             state
-                |> Utility.ifApply (state.currentLineData.indent <= state.initialBlockIndent && Maybe.map Block.typeOfSBlock (List.head state.stack) /= Just Block.P) handleUnterminatedBlock
+                |> Utility.ifApply (state.currentLineData.indent <= state.initialBlockIndent && Maybe.map Block.typeOfSBlock (List.head state.stack) /= Just Block.P)
+                    (handleUnterminatedBlock (Just "missing \\end{...}, $, ... (2)"))
                 |> resetInVerbatimBlock
                 |> handleBlankLine
                 |> debugOut "BlankLine (OUT)"
@@ -117,15 +118,33 @@ processLine language state =
 -- ORDINARY LINE
 
 
-handleUnterminatedBlock state =
+handleUnterminatedBlock : Maybe String -> State -> State
+handleUnterminatedBlock mStr state =
     case List.head state.stack of
         Nothing ->
             state
 
         Just block ->
+            let
+                name =
+                    Maybe.map getBlockName (List.head state.stack) |> Maybe.withDefault "unnamed" |> debugRed "handleUnterminatedBlock, BLOCK NAME"
+
+                out =
+                    case mStr of
+                        Nothing ->
+                            "???"
+
+                        Just str ->
+                            str
+            in
             state
-                |> Function.liftBlockFunctiontoStateFunction (\b -> BlockTools.mapMeta (\m -> { m | status = BlockUnfinished }) b)
+                |> postMessageWithBlockUnfinished out
                 |> Function.simpleCommit
+
+
+postMessageWithBlockUnfinished : String -> State -> State
+postMessageWithBlockUnfinished str =
+    Function.liftBlockFunctiontoStateFunction (\b -> BlockTools.mapMeta (\m -> { m | status = BlockUnfinished str }) b)
 
 
 
@@ -138,11 +157,12 @@ handleUnterminatedVerbatimBlock state =
             debugRed "handleUnterminatedVerbatimBlock, currentLine" state.currentLineData.content
     in
     state
-        |> Utility.ifApply (state.currentLineData.content == "$") (Function.postErrorMessage "" "Another dollar sign at end?")
+        |> Utility.ifApply (state.currentLineData.content == "$") (postMessageWithBlockUnfinished "missing dollar sign?")
         |> Function.insertErrorMessage
         |> handleVerbatimLine
-        |> Utility.ifApply (state.currentLineData.content /= "$") (Function.postErrorMessage "" "Indentation?")
+        |> Utility.ifApply (state.currentLineData.content /= "$") (postMessageWithBlockUnfinished "indentation?")
         |> Function.insertErrorMessage
+        |> postMessageWithBlockUnfinished "missing \\end or $?"
         |> simpleCommit
 
 
@@ -163,7 +183,7 @@ handleOrdinaryLine state =
                     debugRed "Nothing branch of OrdinaryLine" state
             in
             state
-                |> Function.pushBlock (SParagraph [ state.currentLineData.content ] (newMeta state))
+                |> Function.pushBlock (SParagraph [ state.currentLineData.content ] (newMeta "nothing to report (1)" state))
                 |> debugOut "End of Nothing Branch, OrdinaryLine"
 
         Just top ->
@@ -172,7 +192,7 @@ handleOrdinaryLine state =
                 state
                     |> Function.finalizeBlockStatusOfStackTop
                     |> Function.simpleCommit
-                    |> Function.pushBlock (SParagraph [ state.currentLineData.content ] (newMeta state))
+                    |> Function.pushBlock (SParagraph [ state.currentLineData.content ] (newMeta "nothing to report (2)" state))
 
              else
                 -- Handle the case of a non-blank line following a non-blank line.
@@ -205,7 +225,7 @@ handleOrdinaryLine state =
                                 --|> Function.simpleCommit
                                 --|> Function.pushBlock (SParagraph [ state.currentLineData.content ] (newMeta state))
                                 |> addLineToStackTop
-                                |> handleUnterminatedBlock
+                                |> handleUnterminatedBlock (Just "indentation? (1)")
 
                     GT ->
                         -- The line has greater than the block on top of the stack, so add it to the block
@@ -316,12 +336,26 @@ handleVerbatimLine state =
     else
         case compare state.currentLineData.indent (Function.indentationOfCurrentBlock state) of
             EQ ->
+                let
+                    _ =
+                        debugRed "f, handleVerbatimLine" EQ
+                in
                 addLineToStackTop state
 
             GT ->
-                addLineToStackTop state
+                let
+                    _ =
+                        debugRed "f, handleVerbatimLine" GT
+                in
+                state
+                    |> addLineToStackTop
+                    |> Utility.ifApply (state.currentLineData.content == "$") (postMessageWithBlockUnfinished "missing dollar sign?" >> Function.simpleCommit)
 
             LT ->
+                let
+                    _ =
+                        debugRed "f, handleVerbatimLine" LT
+                in
                 -- TODO: is this OK?
                 if state.initialBlockIndent == Function.indentationOfCurrentBlock state then
                     state
@@ -387,10 +421,10 @@ getLineTypeParser language =
 -- CREATE BLOCK
 
 
-newMeta state =
+newMeta str state =
     { begin = state.index
     , end = state.index
-    , status = BlockUnfinished
+    , status = BlockUnfinished str
     , id = String.fromInt state.blockCount
     , indent = state.currentLineData.indent
     }

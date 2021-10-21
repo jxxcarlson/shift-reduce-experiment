@@ -82,8 +82,22 @@ renderLinesIncomplete settings name status lines =
             , paddingXY 8 8
             , spacing 8
             ]
-            (message settings.showErrorMessages name status :: List.map (\t -> el [] (text t)) lines)
+            (message settings.showErrorMessages name status
+                :: (el [ paddingXY 24 0 ] (Element.text (errorHeaderString name))
+                        :: List.map (\t -> el [] (text t)) lines
+                   )
+            )
         ]
+
+
+errorHeaderString : String -> String
+errorHeaderString name_ =
+    case name_ of
+        "math" ->
+            "$$"
+
+        _ ->
+            "\\begin{" ++ name_ ++ "}"
 
 
 renderBlocksIncomplete : Settings -> String -> BlockStatus -> List Block -> Element msg
@@ -102,6 +116,7 @@ renderBlocksIncomplete settings name status blocks =
             , spacing 8
             ]
             (message settings.showErrorMessages name status
+                :: el [] (Element.text (errorHeaderString name))
                 :: (Element.text <| Block.stringValueOfBlockList blocks)
                 :: []
             )
@@ -126,8 +141,8 @@ message show name blockStatus =
             MismatchedTags first second ->
                 Element.el [ Font.color (Element.rgb 0 0 180) ] (Element.text <| "Mismatched tags: " ++ first ++ " ≠ " ++ second)
 
-            BlockUnfinished ->
-                Element.el [ Font.color (Element.rgb 0 0 180) ] (Element.text <| "Unfinished " ++ name ++ " block")
+            BlockUnfinished str ->
+                Element.el [ Font.color (Element.rgb 0 0 180) ] (Element.text <| "Unfinished " ++ name ++ " block: " ++ str)
 
             BlockUnimplemented ->
                 Element.el [ Font.color (Element.rgb 0 0 180) ] (Element.text <| "Unimplemented block: " ++ name)
