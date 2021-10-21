@@ -206,24 +206,24 @@ verticalPadding top bottom =
 
 
 heading1 g s a textList =
-    Element.link [ Font.size 30, makeId textList, verticalPadding 30 15 ]
+    Element.link [ Font.size 30, makeId textList, verticalPadding 30 30 ]
         { url = internalLink "TITLE", label = Element.paragraph [] (render g s a textList) }
 
 
 heading2 g s a textList =
-    Element.link [ Font.size 22, makeId textList, verticalPadding 22 11 ]
+    Element.link [ Font.size 22, makeId textList, verticalPadding 22 22 ]
         { url = internalLink "TITLE", label = Element.paragraph [] (render g s a textList) }
 
 
 heading3 : Int -> Settings -> Block.State.Accumulator -> List Block -> Element msg
 heading3 g s a textList =
-    Element.link [ Font.size 18, makeId textList, verticalPadding 18 9 ]
+    Element.link [ Font.size 18, makeId textList, verticalPadding 18 18 ]
         { url = internalLink "TITLE", label = Element.paragraph [] (render g s a textList) }
 
 
 heading4 : Int -> Settings -> Block.State.Accumulator -> List Block -> Element msg
 heading4 g s a textList =
-    Element.link [ Font.size 14, makeId textList, verticalPadding 14 7 ]
+    Element.link [ Font.size 14, makeId textList, verticalPadding 14 14 ]
         { url = internalLink "TITLE", label = Element.paragraph [] (render g s a textList) }
 
 
