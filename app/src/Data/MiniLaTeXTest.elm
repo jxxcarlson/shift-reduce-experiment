@@ -4,13 +4,14 @@ module Data.MiniLaTeXTest exposing (text)
 text =
     """
 
-1.
+
+1. Indentation error
 
 
 \\begin{theorem}
 Pythagoras sez: $a^2 + b^2 = c^2$.  Cool!!
 
-2.
+2.  Missing tag
 
 
 
@@ -18,14 +19,12 @@ Pythagoras sez: $a^2 + b^2 = c^2$.  Cool!!
   Pythagoras sez: $a^2 + b^2 = c^2$.  Cool!!
 
 
-3.
+3. OK
 
 
 \\begin{theorem}
   Pythagoras sez: $a^2 + b^2 = c^2$.  Cool!!
 \\end{theorem}
-
-
 
 
 """

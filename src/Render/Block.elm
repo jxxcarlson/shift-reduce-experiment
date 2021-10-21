@@ -83,11 +83,21 @@ renderLinesIncomplete settings name status lines =
             , spacing 8
             ]
             (message settings.showErrorMessages name status
-                :: (el [ paddingXY 24 0 ] (Element.text (errorHeaderString name))
+                :: (el [ paddingXY (verbatimPadding status) 0 ] (Element.text (errorHeaderString name))
                         :: List.map (\t -> el [] (text t)) lines
                    )
             )
         ]
+
+
+verbatimPadding : BlockStatus -> Int
+verbatimPadding status =
+    case status of
+        BlockUnfinished "indentation?" ->
+            0
+
+        _ ->
+            0
 
 
 errorHeaderString : String -> String
@@ -140,6 +150,9 @@ message show name blockStatus =
 
             MismatchedTags first second ->
                 Element.el [ Font.color (Element.rgb 0 0 180) ] (Element.text <| "Mismatched tags: " ++ first ++ " ≠ " ++ second)
+
+            BlockUnfinished "begin" ->
+                Element.el [ Font.color (Element.rgb 0 0 180) ] (Element.text <| "Unfinished " ++ name ++ " block: " ++ "indentation? (9)")
 
             BlockUnfinished str ->
                 Element.el [ Font.color (Element.rgb 0 0 180) ] (Element.text <| "Unfinished " ++ name ++ " block: " ++ str)

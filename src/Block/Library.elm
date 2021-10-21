@@ -97,11 +97,14 @@ processLine language state =
         BlankLine ->
             let
                 _ =
-                    debugIn "BlankLine" state
+                    debugYellow "BlankLine" 666
+
+                _ =
+                    debugIn "BlankLine (&&&)" state
             in
             state
                 |> Utility.ifApply (state.currentLineData.indent <= state.initialBlockIndent && Maybe.map Block.typeOfSBlock (List.head state.stack) /= Just Block.P)
-                    (handleUnterminatedBlock (Just "missing \\end{...}, $, ... (2)"))
+                    (handleUnterminatedBlock (Just "missing end tag"))
                 |> resetInVerbatimBlock
                 |> handleBlankLine
                 |> debugOut "BlankLine (OUT)"
@@ -162,7 +165,7 @@ handleUnterminatedVerbatimBlock state =
         |> handleVerbatimLine
         |> Utility.ifApply (state.currentLineData.content /= "$") (postMessageWithBlockUnfinished "indentation?")
         |> Function.insertErrorMessage
-        |> postMessageWithBlockUnfinished "missing \\end or $?"
+        |> postMessageWithBlockUnfinished "indentation?"
         |> simpleCommit
 
 

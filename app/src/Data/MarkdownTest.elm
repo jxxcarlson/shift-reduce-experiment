@@ -74,8 +74,8 @@ When the source text is rendered, the text in error is highlighted and note is m
 
 
 
-  $$
-    \\int_0^1 x^n dx = \\frac{1}{n+1}
+$$
+\\int_0^1 x^n dx = \\frac{1}{n+1}
 
 The line following the `$$` is not indented.
 
@@ -84,8 +84,8 @@ The line following the `$$` is not indented.
 We fix the indentation, but the block is not closed, so the system still highlights what we have written:
 
 
-  $$
-    \\int_0^1 x^n dx = \\frac{1}{n+1}
+$$
+  \\int_0^1 x^n dx = \\frac{1}{n+1}
 
 The closing `$$` is missing:
 
