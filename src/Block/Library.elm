@@ -97,13 +97,10 @@ processLine language state =
         BlankLine ->
             let
                 _ =
-                    debugYellow "BlankLine" 666
-
-                _ =
-                    debugIn "BlankLine (&&&)" state
+                    debugIn "BlankLine" state
             in
             state
-                |> Utility.ifApply (state.currentLineData.indent <= state.initialBlockIndent && Maybe.map Block.typeOfSBlock (List.head state.stack) /= Just Block.P)
+                |> Utility.ifApply (isBlockUnterminatedAfterAddingLine state)
                     (handleUnterminatedBlock (Just "missing end tag"))
                 |> resetInVerbatimBlock
                 |> handleBlankLine
@@ -119,6 +116,16 @@ processLine language state =
 
 
 -- ORDINARY LINE
+
+
+isBlockUnterminatedAfterAddingLine : State -> Bool
+isBlockUnterminatedAfterAddingLine state =
+    state.currentLineData.indent <= state.initialBlockIndent && (Maybe.map Block.typeOfSBlock (List.head state.stack) /= Just Block.P)
+
+
+
+-- |> Utility.ifApply (state.currentLineData.indent <= state.initialBlockIndent && Maybe.map Block.typeOfSBlock (List.head state.stack) /= Just Block.P)
+--                    (handleUnterminatedBlock (Just "missing end tag"))
 
 
 handleUnterminatedBlock : Maybe String -> State -> State
@@ -140,9 +147,17 @@ handleUnterminatedBlock mStr state =
                         Just str ->
                             str
             in
-            state
-                |> postMessageWithBlockUnfinished out
-                |> Function.simpleCommit
+            if List.member name unterminatedBlockNames then
+                state
+
+            else
+                state
+                    |> postMessageWithBlockUnfinished out
+                    |> Function.simpleCommit
+
+
+unterminatedBlockNames =
+    [ "item" ]
 
 
 postMessageWithBlockUnfinished : String -> State -> State
