@@ -335,7 +335,9 @@ handleBlankLine state =
                                 |> Function.finalizeBlockStatusOfStackTop
                                 |> Function.transformLaTeXBlockInState
                                 -- TODO: an idea that doesn't work: |> ifApply (List.isEmpty state.stack) Function.simpleCommit
-                                |> Function.simpleCommit
+                                {- |> Function.simpleCommit -}
+                                -- TODO: try having function reduce handle this (should be ultimate goal anyway).
+                                |> Function.reduce
                                 |> debugYellow "XXX BlankLine 4"
 
                         else
