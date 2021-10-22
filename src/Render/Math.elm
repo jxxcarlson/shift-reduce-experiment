@@ -15,7 +15,7 @@ type DisplayMode
 mathText : Int -> DisplayMode -> String -> Element msg
 mathText generation displayMode content =
     Html.Keyed.node "span"
-        [ HA.style "margin-left" "6px" ]
+        [ HA.style "margin-left" "6px", HA.style "padding-top" "14px", HA.style "padding-bottom" "14px" ]
         [ ( String.fromInt generation, mathText_ displayMode "ID" content )
         ]
         |> Element.html

@@ -1,36 +1,40 @@
 module Data.MiniLaTeXTest exposing (text)
 
 
-text =
+text3 =
     """
+\title{MiniLaTeX Test}
 
 
-1. Indentation error
+\\ection{Lists}
 
+\\begin{enumerate}
 
-\\begin{theorem}
-Pythagoras sez: $a^2 + b^2 = c^2$.  Cool!!
+  \\item Foo
 
-2.  Missing tag
+  \\item  Bar
 
+\\end{enumerate}
 
+\\italic{Nested lists are not working. }
 
-\\begin{theorem}
-  Pythagoras sez: $a^2 + b^2 = c^2$.  Cool!!
+\\section{Blocks}
 
+This is a test
 
-3. OK
+\\begin{indent}
+   One, two, three: $x^2 =1 $
 
+   \\begin{theorem}
+       There are infinitely many primes
+   \\end{theorem}
 
-\\begin{theorem}
-  Pythagoras sez: $a^2 + b^2 = c^2$.  Cool!!
-\\end{theorem}
-
+\\end{indent}
 
 """
 
 
-text3 =
+text =
     """
 
 \\title{Notes on Quantum Field Theory}
