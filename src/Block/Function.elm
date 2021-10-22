@@ -384,8 +384,14 @@ reduce state =
                     { state | committed = reverseContents (setBlockStatus BlockComplete block) :: state.committed, stack = [] } |> debugOut "REDUCE 2a, OUT"
 
             else
-                --- { state | committed = reverseContents (fbefinalizeBlockStatus block) :: state.committed, stack = [] } |> debugOut "REDUCE 2b, OUT"
+            --- { state | committed = reverseContents (fbefinalizeBlockStatus block) :: state.committed, stack = [] } |> debugOut "REDUCE 2b, OUT"
+            if
+                getStatus block == BlockComplete
+            then
                 { state | committed = reverseContents block :: state.committed, stack = [] } |> debugOut "REDUCE 2b, OUT"
+
+            else
+                state
 
         _ ->
             let
