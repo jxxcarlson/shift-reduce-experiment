@@ -293,7 +293,7 @@ renderErrorMessage lang msg =
 
 recoverFromError : State -> State
 recoverFromError state =
-    { state | stack = [] } |> debugBlue "recoverFromError "
+    { state | committed = List.reverse (List.map reverseContents state.stack) ++ state.committed, stack = [] } |> debugBlue "recoverFromError "
 
 
 compress : List SBlock -> List SBlock
