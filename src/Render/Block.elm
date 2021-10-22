@@ -9,6 +9,7 @@ import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
 import Expression.AST
+import Expression.ASTTools as ASTTools
 import LaTeX.MathMacro
 import Markup.Debugger exposing (debugYellow)
 import Render.Math
@@ -315,7 +316,17 @@ itemize generation settings accumulator blocks =
             debugYellow "XXX, ENTERNG itemize" (List.length blocks)
     in
     column [ spacing listSpacing ]
-        (List.map (item_ generation settings accumulator) blocks)
+        (List.map (item_ generation settings accumulator) (nonEmptyBlocks blocks))
+
+
+nonEmptyBlocks : List Block -> List Block
+nonEmptyBlocks blocks =
+    List.filter blockIsNonempty blocks
+
+
+blockIsNonempty : Block -> Bool
+blockIsNonempty block =
+    String.length (ASTTools.stringContentOfNamedBlock block |> String.trim) > 0
 
 
 item_ : Int -> Settings -> Block.State.Accumulator -> Block -> Element msg
@@ -346,7 +357,7 @@ item_ generation settings accumulator block =
 enumerate : Int -> Settings -> Block.State.Accumulator -> List Block -> Element msg
 enumerate generation settings accumulator blocks =
     column [ spacing listSpacing ]
-        (List.indexedMap (\k -> numberedItem_ k generation settings accumulator) blocks)
+        (List.indexedMap (\k -> numberedItem_ k generation settings accumulator) (nonEmptyBlocks blocks))
 
 
 numberedItem_ : Int -> Int -> Settings -> Block.State.Accumulator -> Block -> Element msg

@@ -10,6 +10,7 @@ module Expression.ASTTools exposing
     , getText
     , getTitle
     , listExprMToString
+    , stringContentOfNamedBlock
     , stringValue
     , stringValueOfList
     , textToString
