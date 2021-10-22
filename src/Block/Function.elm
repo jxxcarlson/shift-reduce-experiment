@@ -435,16 +435,6 @@ incrementLevel lineData =
     { lineData | indent = lineData.indent + quantumOfIndentation }
 
 
-finalizeBlockStatus_ : BlockStatus -> BlockStatus
-finalizeBlockStatus_ status =
-    case status of
-        BlockUnfinished _ ->
-            BlockComplete
-
-        _ ->
-            status
-
-
 finalizeBlockStatus : SBlock -> SBlock
 finalizeBlockStatus block =
     case block of
@@ -459,6 +449,16 @@ finalizeBlockStatus block =
 
         _ ->
             block
+
+
+finalizeBlockStatus_ : BlockStatus -> BlockStatus
+finalizeBlockStatus_ status =
+    case status of
+        BlockUnfinished _ ->
+            BlockComplete
+
+        _ ->
+            status
 
 
 getStatus : SBlock -> BlockStatus
