@@ -17,7 +17,7 @@ import Markup.Debugger exposing (debug3, debugBlue, debugCyan, debugMagenta, deb
 import Markup.ParserTools
 import Markup.Simplify as Simplify
 import Parser.Advanced
-import Utility
+import Utility exposing (ifApply)
 
 
 {-|
@@ -303,6 +303,7 @@ handleBlankLine state =
                         debugRed "XXX BLANK" 3
                 in
                 -- TODO.   Can't this all be reduced to commitBlock?
+                -- TODO: No!
                 case Function.stackTop state of
                     Nothing ->
                         --- commitBlock state |> debugYellow "XXX BlankLine 3"
@@ -318,6 +319,7 @@ handleBlankLine state =
                             state
                                 |> Function.finalizeBlockStatusOfStackTop
                                 |> Function.transformLaTeXBlockInState
+                                -- TODO: an idea that doesn't work: |> ifApply (List.isEmpty state.stack) Function.simpleCommit
                                 |> Function.simpleCommit
                                 |> debugYellow "XXX BlankLine 4"
 
@@ -498,6 +500,9 @@ endBlock name state =
                 Just stackTopName ->
                     -- the begin and end tags match, we mark it as complete
                     -- TODO: Do we need to check the as well?
+                    -- TODO: We are making an exception for item blocks which are in some sense 'autocompletd'
+                    -- TODO: But making exceptions outside of 'Lang/*' is not good
+                    -- if name == stackTopName || stackTopName == "item" then
                     if name == stackTopName then
                         state
                             |> updateAccummulatorInStateWithBlock top
