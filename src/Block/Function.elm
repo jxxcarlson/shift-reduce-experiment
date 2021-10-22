@@ -5,7 +5,6 @@ module Block.Function exposing
     , finalizeBlockStatus
     , finalizeBlockStatusOfStack
     , finalizeBlockStatusOfStackTop
-    , finalizeBlockStatus_
     , fixMarkdownBlock
     , getStatus
     , incrementLevel
