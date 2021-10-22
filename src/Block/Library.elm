@@ -37,7 +37,7 @@ processLine language state =
             { state | inVerbatimBlock = False }
                 |> Function.setStackBottomLevelAndName state.currentLineData.indent name
                 |> debugIn "BeginBlock"
-                |> Function.pushBlockOnState
+                |> Function.makeBlockWithCurrentLine
                 |> debugOut "BeginBlock (OUT)"
 
         BeginVerbatimBlock name ->
@@ -49,7 +49,7 @@ processLine language state =
                 { state | inVerbatimBlock = True } |> endBlock name
 
              else
-                { state | inVerbatimBlock = True } |> Function.setStackBottomLevelAndName state.currentLineData.indent name |> Function.pushBlockOnState
+                { state | inVerbatimBlock = True } |> Function.setStackBottomLevelAndName state.currentLineData.indent name |> Function.makeBlockWithCurrentLine
             )
                 |> debugOut "BeginVerbatimBlock (OUT)"
 
@@ -375,7 +375,7 @@ handleVerbatimLine state =
                     -- top of the stack and create a new block.
                     state
                         |> commitBlock
-                        |> Function.pushBlockOnState
+                        |> Function.makeBlockWithCurrentLine
 
 
 
