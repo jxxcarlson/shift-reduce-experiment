@@ -41,7 +41,7 @@ suiteMiniLaTeXBlockParser =
             \_ ->
                 run MiniLaTeX "\\begin{foo}\n   abc\n   def"
                     |> Expect.equal
-                        [ SBlockS "foo" [ SParagraphS [ "   abc", "   def" ] BlockComplete ] BlockUnfinished ]
+                        [ SBlockS "foo" [ SParagraphS [ "   abc", "   def" ] BlockComplete ] (BlockUnfinished "???") ]
 
         --[ SBlockS "foo" [ SParagraphS [ "   abc", "   def" ] BlockComplete ] BlockComplete ]
         , test "(6) Two blocks in succession of the same level" <|
@@ -100,10 +100,10 @@ suiteMiniLaTeXBlockParser =
             \_ ->
                 run Markdown "```\n $$\n  x^2\n\nfoo"
                     |> Expect.equal
-                        [ SVerbatimBlockS "code" [ " $$", "  x^2" ] BlockUnfinished, SParagraphS [ "foo" ] BlockComplete ]
+                        [ SVerbatimBlockS "code" [ " $$", "  x^2" ] (BlockUnfinished "???"), SParagraphS [ "foo" ] BlockComplete ]
         , test "(15) An incomplete verbatim block" <|
             \_ ->
                 run Markdown "$$\n\n"
                     |> Expect.equal
-                        [ SVerbatimBlockS "math" [] BlockUnfinished ]
+                        [ SVerbatimBlockS "math" [] (BlockUnfinished "???") ]
         ]
