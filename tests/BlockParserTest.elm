@@ -75,7 +75,7 @@ suiteL1BlockParser =
             \_ ->
                 run2 L1 "| foo\n   AAA\n      PQR"
                     |> Expect.equal
-                        [ SBlockS "foo" [ SParagraphS [ "   AAA", "      PQR" ] BlockComplete ] BlockUnfinished ]
+                        [ SBlockS "foo" [ SParagraphS [ "   AAA", "      PQR" ] BlockComplete ] (BlockUnfinished "???") ]
         , test
             "(9) Complete block (note the trailing newline)"
           <|
