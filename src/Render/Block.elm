@@ -173,6 +173,7 @@ verbatimBlockDict : Dict String (Int -> Settings -> Block.State.Accumulator -> L
 verbatimBlockDict =
     Dict.fromList
         [ ( "code", \g s a lines -> codeBlock g s a lines )
+        , ( "verbatim", \g s a lines -> codeBlock g s a lines )
         , ( "math", \g s a lines -> mathBlock g s a lines )
         , ( "equation", \g s a lines -> equation g s a lines )
         , ( "align", \g s a lines -> aligned g s a lines )
