@@ -6,12 +6,20 @@ import Data.MarkdownTest
 import Data.MiniLaTeXTest
 import Element exposing (..)
 import Element.Background as Background
+import Element.Border as Border
 import Element.Font as Font
 import Element.Input as Input
 import Expression.ASTTools as ASTTools
 import File.Download as Download
 import Html exposing (Html)
+
 import LaTeX.Export.API
+
+import Html.Attributes as HtmlAttr exposing (attribute)
+import Html.Events
+import Json.Decode
+import Json.Encode
+
 import LaTeX.Export.Block
 import Lang.Lang exposing (Lang(..))
 import Markup.API as API exposing (defaultSettings)
@@ -111,6 +119,15 @@ subscriptions model =
     Sub.none
 
 
+
+--
+--ChangePlanText s ->
+--( { model | currPlanText = s }, Cmd.none )
+--
+--SubmitPlan ->
+--( { model | currPage = DisplayPage }, Cmd.none )
+
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
@@ -122,7 +139,7 @@ update msg model =
 
         InputText str ->
             ( { model
-                | sourceText = str -- String.trim str
+                | sourceText = str 
                 , count = model.count + 1
               }
             , Cmd.none
@@ -170,9 +187,9 @@ noFocus =
 mainColumn : Model -> Element Msg
 mainColumn model =
     column (mainColumnStyle model)
-        [ column [ paddingEach { top = 16, bottom = 0, left = 0, right = 0 }, spacing 8, width (px appWidth_), height (px (appHeight_ model)) ]
+        [ column [ centerY, paddingEach { top = 46, bottom = 0, left = 0, right = 0 }, spacing 8, width (px appWidth_), height (px (appHeight_ model)) ]
             [ -- title "L3 Demo App"
-              column [ spacing 12 ]
+              column [ height fill, spacing 12 ]
                 [ row [ spacing 12 ] [ editor model, rhs model ]
                 ]
             , row [ Font.size 14, Font.color whiteColor ] []
@@ -181,14 +198,53 @@ mainColumn model =
 
 
 editor model =
-    column [ spacing 8, moveUp 9 ]
+    column [ height fill, moveUp 8 ]
         [ row [ spacing 12 ]
             [ l1DocButton model.language
             , miniLaTeXDocButton model.language
             , markdownDocButton model.language
             ]
-        , inputText model
+        , editor_ model
         ]
+
+
+editor_ : Model -> Element Msg
+editor_ model =
+    let
+        onChange : Html.Attribute Msg
+        onChange =
+            Json.Decode.string
+                |> Json.Decode.at [ "target", "editorText" ]
+                |> Json.Decode.map InputText
+                |> Html.Events.on "change"
+    in
+    el [ htmlAttribute onChange ]
+        <| html 
+            <| Html.node "ace-editor"
+                [ HtmlAttr.attribute "theme" "twilight"
+                , HtmlAttr.attribute "wrapmode" "true"
+                , HtmlAttr.attribute "tabsize" "2"
+                , HtmlAttr.attribute "softtabs" "true"
+                , HtmlAttr.attribute "navigateWithinSoftTabs" "true"
+                , HtmlAttr.attribute "fontsize" "12"
+                , HtmlAttr.style "height" (String.fromInt (panelHeight_ model) ++ "px")
+                , HtmlAttr.style "width" (String.fromInt panelWidth_ ++ "px")
+                , HtmlAttr.attribute "text" model.sourceText
+                ]
+                []
+        
+
+
+green =
+    Element.rgb 0 1 1
+
+
+darkGreen =
+    Element.rgb 0 0.4 0.4
+
+
+white =
+    Element.rgb 1 1 1
 
 
 keyIt : Int -> List b -> List ( String, b )
@@ -274,7 +330,11 @@ settings =
 
 render : Lang -> Int -> String -> List (Element msg)
 render language count source =
-    API.renderFancy settings language count (String.lines source)
+--<<<<<<< HEAD
+      API.renderFancy settings language count (String.lines source)
+--=======
+--    API.renderFancy { width = panelWidth_, titleSize = 34, showTOC = True } language count (String.lines source)
+-->>>>>>> ace-editor
 
 
 
@@ -375,7 +435,7 @@ appHeight_ model =
 
 
 panelHeight_ model =
-    appHeight_ model - parserDisplayPanelHeight_ - 60
+    appHeight_ model - parserDisplayPanelHeight_ - 120
 
 
 parserDisplayPanelHeight_ =

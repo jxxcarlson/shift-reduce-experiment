@@ -41,12 +41,12 @@ debugNull label =
 
 
 debug3 label =
-    Debug.log (Console.black (Console.bgYellow (" " ++ label ++ " ")))
+    identity --- Debug.log (Console.black (Console.bgYellow (" " ++ label ++ " ")))
 
 
 debugMagenta label =
     if magentaSwitch then
-        Debug.log (Console.black (Console.bgMagenta (" " ++ label ++ " ")))
+        identity ---  Debug.log (Console.black (Console.bgMagenta (" " ++ label ++ " ")))
 
     else
         identity
@@ -54,7 +54,7 @@ debugMagenta label =
 
 debugCyan label =
     if cyanSwitch then
-        Debug.log (Console.black (Console.bgCyan (" " ++ label ++ " ")))
+        identity ---  Debug.log (Console.black (Console.bgCyan (" " ++ label ++ " ")))
 
     else
         identity
@@ -62,7 +62,7 @@ debugCyan label =
 
 debugGreen label =
     if greenSwitch then
-        Debug.log (Console.black (Console.bgGreen (" " ++ label ++ " ")))
+        identity ---  Debug.log (Console.black (Console.bgGreen (" " ++ label ++ " ")))
 
     else
         identity
@@ -70,7 +70,7 @@ debugGreen label =
 
 debugYellow label =
     if yellowSwitch then
-        Debug.log (Console.black (Console.bgYellow (" " ++ label ++ " ")))
+        identity --- Debug.log (Console.black (Console.bgYellow (" " ++ label ++ " ")))
 
     else
         identity
@@ -78,7 +78,7 @@ debugYellow label =
 
 debugBlue label =
     if blueSwitch then
-        Debug.log (Console.white (Console.bgBlue (" " ++ label ++ " ")))
+        identity --- Debug.log (Console.white (Console.bgBlue (" " ++ label ++ " ")))
 
     else
         identity
@@ -86,7 +86,7 @@ debugBlue label =
 
 debugRed label =
     if redSwitch then
-        Debug.log (Console.black (Console.bgRed (" " ++ label ++ " ")))
+        identity ---  Debug.log (Console.black (Console.bgRed (" " ++ label ++ " ")))
 
     else
         identity
