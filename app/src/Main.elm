@@ -213,28 +213,21 @@ editor_ model =
     let
         onChange : Html.Attribute Msg
         onChange =
-            -- TODO: (1) I though this would get text from the editor and put it in model.sourceText
             Json.Decode.string
-                |> Json.Decode.at [ "target", "editorValue" ]
+                |> Json.Decode.at [ "target", "editorText" ]
                 |> Json.Decode.map InputText
                 |> Html.Events.on "change"
     in
-    el
-        [ htmlAttribute onChange
-        ]
-    <|
-        (html <|
-            Html.node "ace-editor"
-                [ attribute "mode" "ace/mode/json"
-                , attribute "wrapmode" "true"
+    el [ htmlAttribute onChange ]
+        <| html 
+            <| Html.node "ace-editor"
+                [ HtmlAttr.attribute "wrapmode" "true"
                 , HtmlAttr.style "height" (String.fromInt (panelHeight_ model) ++ "px")
                 , HtmlAttr.style "width" (String.fromInt panelWidth_ ++ "px")
-
-                -- TODO: (2) My attempt to set the editor text on init, or reset when programmatically changing model.sourceText
-                , HtmlAttr.property "value" (Json.Encode.string model.sourceText)
+                , HtmlAttr.attribute "text" model.sourceText
                 ]
                 []
-        )
+        
 
 
 green =
