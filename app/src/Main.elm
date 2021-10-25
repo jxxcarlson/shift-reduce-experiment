@@ -139,7 +139,7 @@ update msg model =
 
         InputText str ->
             ( { model
-                | sourceText = str 
+                | sourceText = str
                 , count = model.count + 1
               }
             , Cmd.none
