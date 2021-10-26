@@ -49,7 +49,7 @@ parseToBlock lang id firstLine str =
 -}
 run : Lang -> String -> State
 run lang input =
-    loop (init input) (nextState lang) |> debugCyan "FINAL STATE"
+    loop (init input) (nextStep lang) |> debugCyan "FINAL STATE"
 
 
 init : String -> State
@@ -87,16 +87,16 @@ init str =
          in the main parser module (this module).
 
 -}
-nextState : Lang -> State -> Step State State
-nextState lang state_ =
+nextStep : Lang -> State -> Step State State
+nextStep lang state_ =
     { state_ | count = state_.count + 1 }
         -- |> debug2 ("STATE (" ++ String.fromInt (state_.count + 1) ++ ")")
         |> reduce lang
-        |> nextState_ lang
+        |> nextStep_ lang
 
 
-nextState_ : Lang -> State -> Step State State
-nextState_ lang state =
+nextStep_ : Lang -> State -> Step State State
+nextStep_ lang state =
     if state.scanPointer >= state.end then
         finalize lang (reduceFinal lang state |> debugMagenta "reduceFinal (APPL)")
 
@@ -115,6 +115,9 @@ finalize lang state =
 
 processToken : Lang -> State -> Step State State
 processToken lang state =
+    let
+        _  = debugBlue "Stack: "  state.stack
+    in
     case Tokenizer.get lang state.scanPointer (String.dropLeft state.scanPointer state.sourceText) of
         TokenError errorData meta ->
             let
@@ -137,7 +140,7 @@ processToken lang state =
             Loop { state | committed = errorValue state errorData :: state.committed, scanPointer = state.scanPointer + tokenLength + 1 }
 
         newToken ->
-            Loop (shift newToken (reduce lang state))
+            Loop (shift newToken (reduce lang state)) |> debugRed "processToken, OUT"
 
 
 errorValue : State -> ErrorData -> Expr

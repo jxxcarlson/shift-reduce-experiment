@@ -10,6 +10,12 @@ import Markup.Debugger exposing (debugNull)
 
 reduceFinal : State -> State
 reduceFinal state =
+    state |> reduce |> reduceFinal_
+
+
+reduceFinal_ : State -> State
+reduceFinal_ state =
+
     case state.stack of
         (Right (AST.Expr name args loc)) :: [] ->
             { state | committed = AST.Expr name (List.reverse args) loc :: state.committed, stack = [] } |> debugNull "FINAL RULE 1"
@@ -30,6 +36,24 @@ reduceFinal state =
 reduce : State -> State
 reduce state =
     case state.stack of
+        (Left (Token.Symbol "]" loc3))::(Left (Token.Text fName loc2))::(Left (Token.Symbol "[" loc1))::rest ->
+            let
+                expr = Right ((Expr fName) [] {begin = loc1.begin, end = loc3.end})
+            in
+            {state | stack = expr :: rest}
+
+        (Left (Token.Symbol ")" loc3))::(Left (Token.Text arg loc2))::(Left (Token.Symbol "(" loc1))::rest ->
+                    let
+                        expr = Right (Arg [(AST.Text arg loc2)] {begin = loc1.begin, end = loc3.end})
+                    in
+             {state | stack = expr :: rest}
+
+        (Right (Arg args2 loc2))::(Right (Expr fName args1 loc1))::rest ->
+            let
+                expr = Right (Expr fName (args1 ++ args2) {begin = loc1.begin, end = loc2.end})
+            in
+            {state | stack = expr :: rest}
+
         (Left (Token.Text str loc)) :: [] ->
             reduceAux (AST.Text str loc) [] state |> debugNull "RULE 1"
 
