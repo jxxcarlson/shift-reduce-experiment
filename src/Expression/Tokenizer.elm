@@ -1,4 +1,4 @@
-module Expression.Tokenizer exposing (get)
+module Expression.Tokenizer exposing (get, run)
 
 import Expression.Error exposing (..)
 import Expression.Token exposing (Token(..))
@@ -25,6 +25,46 @@ get lang start input =
 
         Err errorList ->
             TokenError errorList { begin = start, end = start + 1 }
+
+
+type alias State = { source : String, scanPointer : Int , sourceLength :Int,  tokens : List Token}
+
+{-|
+    >  run MiniLaTeX "\\foo{1}"
+      [FunctionName "foo" { begin = 0, end = 3 },Symbol "{" { begin = 4, end = 4 },Text "1" { begin = 5, end = 5 },Symbol "}" { begin = 6, end = 6 }]
+-}
+run : Lang -> String -> List Token
+run lang source =
+    loop (init source) (nextStep lang)
+
+
+init : String -> State
+init source = {source = source, scanPointer = 0, sourceLength =  String.length source, tokens = []}
+
+nextStep : Lang -> State -> Step State (List Token)
+nextStep lang state =
+    if state.scanPointer >= state.sourceLength then
+       Done (List.reverse state.tokens)
+    else
+       let
+           token = get lang state.scanPointer (String.dropLeft state.scanPointer state.source )
+           newScanPointer = state.scanPointer + (Expression.Token.length token) + 1
+       in
+       Loop { state | tokens = token :: state.tokens, scanPointer = newScanPointer}
+
+type Step state a
+    = Loop state
+    | Done a
+
+
+loop : state -> (state -> Step state a) -> a
+loop s f =
+    case f s of
+        Loop s_ ->
+            loop s_ f
+
+        Done b ->
+            b
 
 
 
