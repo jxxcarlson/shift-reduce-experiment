@@ -489,7 +489,7 @@ emph g s a textList =
     simpleElement [ Font.italic, Element.paddingEach { left = 0, right = 2, top = 0, bottom = 0 } ] g s a textList
 
 
-red g s ay textList =
+red g s a textList =
     simpleElement [ Font.color (Element.rgb255 200 0 0) ] g s a textList
 
 blue g s a textList =
