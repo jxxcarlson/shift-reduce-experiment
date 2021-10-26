@@ -15,7 +15,8 @@ type alias TokenParser =
 tokenParser start =
     Parser.oneOf
         [
-         Common.symbolParser start '['
+        imageParser start
+        , Common.symbolParser start '['
         , Common.symbolParser start ']'
         , Common.symbolParser start '('
         , Common.symbolParser start ')'
@@ -33,6 +34,19 @@ markedTextParser : Int -> String -> Char -> Char -> TokenParser
 markedTextParser start mark begin end =
     ParserTools.text (\c -> c == begin) (\c -> c /= end)
         |> Parser.map (\data -> MarkedText mark (dropLeft mark data.content) { begin = start, end = start + data.end - data.begin })
+
+imageParser : Int -> TokenParser
+imageParser start =
+    Parser.succeed (\begin annotation arg end -> AnnotatedText "image" annotation.content arg.content { begin = start + begin, end = start + end })
+        |= Parser.getOffset
+        |. Parser.symbol (Parser.Token "![" (ExpectingSymbol "!["))
+        |= ParserTools.text (\c -> c /= ']') (\c -> c /= ']')
+        |. Parser.symbol (Parser.Token "]" (ExpectingSymbol "]"))
+        |. Parser.symbol (Parser.Token "(" (ExpectingSymbol "("))
+        |= ParserTools.text (\c -> c /= '(') (\c -> c /= ')')
+        |. Parser.symbol (Parser.Token ")" (ExpectingSymbol ")"))
+        |= Parser.getOffset
+
 
 
 
