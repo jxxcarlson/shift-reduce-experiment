@@ -40,7 +40,7 @@ reduce state =
         (Left (Token.Symbol "]" loc3))::(Left (Token.Text fName loc2))::(Left (Token.Symbol "[" loc1))::rest ->
             let
                 expr = if String.left 1 fName == "!" then
-                         Right ((Expr (String.dropLeft 1 fName)) [] {begin = loc1.begin, end = loc3.end})
+                         Right ((Expr (String.trim <| String.dropLeft 1 fName)) [] {begin = loc1.begin, end = loc3.end})
                     else
                       Right (Expr  "link" [AST.Text fName loc2] {begin = loc1.begin, end = loc3.end})
             in
