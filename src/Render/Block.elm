@@ -253,7 +253,7 @@ codeBlock generation settings accumulator textList =
             , Font.monospace
             ]
         , Font.color codeColor
-        , paddingEach { left = 0, right = 0, top = 12, bottom = 8 }
+        , paddingEach { left = 0, right = 0, top = 6, bottom = 8 }
         , spacing 6
         ]
         (List.map (\t -> el [] (text t)) (List.map (String.dropLeft 0) textList))
