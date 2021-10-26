@@ -36,6 +36,7 @@ reduceFinal_ state =
 reduce : State -> State
 reduce state =
     case state.stack of
+        -- RULE R1: L S [, L  T fname, L S ] -> Right Expr fname []
         (Left (Token.Symbol "]" loc3))::(Left (Token.Text fName loc2))::(Left (Token.Symbol "[" loc1))::rest ->
             let
                 expr = if String.left 1 fName == "!" then
@@ -45,12 +46,21 @@ reduce state =
             in
             {state | stack = expr :: rest}
 
+         -- RULE R2: L S (, L  T arg, L S ) -> Right Arg [T arg]
         (Left (Token.Symbol ")" loc3))::(Left (Token.Text arg loc2))::(Left (Token.Symbol "(" loc1))::rest ->
                     let
                         expr = Right (Arg [(AST.Text arg loc2)] {begin = loc1.begin, end = loc3.end})
                     in
              {state | stack = expr :: rest}
 
+         -- RULE R3: L S (, R Expr fname args, L S ) -> R Arg [Expr fname  args]
+        (Left (Token.Symbol ")" loc3))::Right expr_::(Left (Token.Symbol "(" loc1))::rest ->
+                            let
+                                expr = Right (Arg [expr_] {begin = loc1.begin, end = loc3.end})
+                            in
+                     {state | stack = expr :: rest}
+
+         -- RULE R4: R Expr fname args1, R A args2 -> Right Arg (args2 ++ arg1))
         (Right (Arg args2 loc2))::(Right (Expr fName args1 loc1))::rest ->
             let
                 expr = Right (Expr fName (args2 ++ args1) {begin = loc1.begin, end = loc2.end})
