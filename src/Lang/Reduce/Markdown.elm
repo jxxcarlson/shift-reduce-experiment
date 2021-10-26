@@ -5,7 +5,7 @@ import Expression.AST as AST exposing (Expr(..))
 import Expression.State exposing (State)
 import Expression.Token as Token exposing (Token(..))
 import Markup.Common exposing (Step(..))
-import Markup.Debugger exposing (debugNull)
+import Markup.Debugger exposing (debugNull, debugYellow)
 
 
 reduceFinal : State -> State
@@ -20,11 +20,11 @@ reduceFinal_ state =
         (Right (AST.Expr name args loc)) :: [] ->
             { state | committed = AST.Expr name (List.reverse args) loc :: state.committed, stack = [] } |> debugNull "FINAL RULE 1"
 
-        --
-        --(Left (MarkedText "strong" str _)) :: [] ->
-        --    { state | committed = Expr "strong" [ AST.Text str ] :: state.committed, stack = [] } |> debug1 "FINAL RULE 2"
+
+        (Left (Token.Text str loc)) :: rest ->
+           reduceFinal { state | committed = AST.Text str loc :: state.committed, stack = rest } |> debugYellow "FINAL RULE 2"
         _ ->
-            state |> debugNull "FINAL RULE LAST"
+            state |> debugYellow "FINAL RULE LAST"
 
 
 {-|
@@ -38,7 +38,10 @@ reduce state =
     case state.stack of
         (Left (Token.Symbol "]" loc3))::(Left (Token.Text fName loc2))::(Left (Token.Symbol "[" loc1))::rest ->
             let
-                expr = Right ((Expr fName) [] {begin = loc1.begin, end = loc3.end})
+                expr = if String.left 1 fName == "!" then
+                         Right ((Expr (String.dropLeft 1 fName)) [] {begin = loc1.begin, end = loc3.end})
+                    else
+                      Right (Expr  "link" [AST.Text fName loc2] {begin = loc1.begin, end = loc3.end})
             in
             {state | stack = expr :: rest}
 
@@ -50,7 +53,7 @@ reduce state =
 
         (Right (Arg args2 loc2))::(Right (Expr fName args1 loc1))::rest ->
             let
-                expr = Right (Expr fName (args1 ++ args2) {begin = loc1.begin, end = loc2.end})
+                expr = Right (Expr fName (args2 ++ args1) {begin = loc1.begin, end = loc2.end})
             in
             {state | stack = expr :: rest}
 
@@ -128,8 +131,12 @@ recoverFromError state =
                     , committed = AST.Text "I corrected an unmatched '[' in the following expression: " Token.dummyLoc :: state.committed
                 }
 
+
+        (Right expr)::[]
+           -> Done { state | stack = [], committed =  expr :: state.committed }
         _ ->
             let
+                _ = debugYellow "LAST EXIT, STACK" state.stack
                 position =
                     state.stack |> stackBottom |> Maybe.andThen scanPointerOfItem |> Maybe.withDefault state.scanPointer
 
