@@ -71,6 +71,10 @@ markupDict =
         , ( "red", \g s a textList -> red g s a textList )
         , ( "blue", \g s a textList -> blue g s a textList )
         , ( "violet", \g s a textList -> violet g s a textList )
+        , ( "highlight", \g s a textList -> highlight g s a textList )
+        , ( "strike", \g s a textList -> strike g s a textList )
+        , ( "underline", \g s a textList -> underline g s a textList )
+        , ( "gray", \g s a textList -> gray g s a textList )
         , ( "errorHighlight", \g s a textList -> errorHighlight g s a textList )
         , ( "title", \_ _ _ _ -> Element.none )
         , ( "heading1", \g s a textList -> heading1 g s a textList )
@@ -485,9 +489,8 @@ emph g s a textList =
     simpleElement [ Font.italic, Element.paddingEach { left = 0, right = 2, top = 0, bottom = 0 } ] g s a textList
 
 
-red g s a textList =
+red g s ay textList =
     simpleElement [ Font.color (Element.rgb255 200 0 0) ] g s a textList
-
 
 blue g s a textList =
     simpleElement [ Font.color (Element.rgb255 0 0 200) ] g s a textList
@@ -495,6 +498,19 @@ blue g s a textList =
 
 violet g s a textList =
     simpleElement [ Font.color (Element.rgb255 150 100 255) ] g s a textList
+
+highlight g s a textList =
+    simpleElement [ Background.color (Element.rgb255 255 255 0) ] g s a textList
+
+strike g s a textList =
+    simpleElement [ Font.strike ] g s a textList
+
+underline g s a textList =
+    simpleElement [ Font.underline ] g s a textList
+
+gray g s a textList =
+    simpleElement [ Font.color (Element.rgb 0.5 0.5 0.5) ] g s a textList
+
 
 
 errorHighlight g s a textList =
