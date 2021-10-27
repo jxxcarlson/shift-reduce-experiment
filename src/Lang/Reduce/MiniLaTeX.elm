@@ -66,6 +66,8 @@ reduce state =
         (Left (Token.Text str loc)) :: [] ->
             reduceAux (AST.Text str loc) [] state |> debugGreen "RULE 1"
 
+        (Left (Token.Text str loc)) :: (Right expr):: [] ->
+                   {state | stack = [], committed = (AST.Text str loc):: expr :: state.committed}  |> debugGreen "RULE X"
 
         -- Recognize an Expr
         (Left (Token.Symbol "}" loc4)) :: (Left (Token.Text arg loc3)) :: (Left (Token.Symbol "{" _)) :: (Left (Token.FunctionName name loc1)) :: rest ->
