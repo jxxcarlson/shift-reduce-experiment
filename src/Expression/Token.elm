@@ -6,6 +6,7 @@ module Expression.Token exposing
     , length
     , startPositionOf
     , stringValue
+    , symbolToString
     )
 
 import Expression.Error exposing (ErrorData)
@@ -21,6 +22,13 @@ type Token
     | Special String String Loc -- eg, for @title[The Greatest Book Ever!]
     | TokenError ErrorData Loc
 
+
+
+symbolToString : Token -> Maybe String
+symbolToString token  =
+    case token of
+        Symbol str _-> Just str
+        _ -> Nothing
 
 stringValue : Token -> String
 stringValue token =

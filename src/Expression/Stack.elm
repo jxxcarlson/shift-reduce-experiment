@@ -4,6 +4,7 @@ module Expression.Stack exposing
     , isFunctionName
     , stackHasSymbol
     , toExprList
+    , symbolToString
     )
 
 import Either exposing (Either(..))
@@ -18,6 +19,13 @@ type alias StackItem =
 
 type alias Stack =
     List StackItem
+
+
+symbolToString : StackItem -> Maybe String
+symbolToString item =
+    case item of
+       Left token -> Token.symbolToString token
+       Right _ -> Nothing
 
 
 dump : Stack -> String

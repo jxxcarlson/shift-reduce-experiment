@@ -27,7 +27,7 @@ get lang start input =
             TokenError errorList { begin = start, end = start + 1 }
 
 
-type alias State = { source : String, scanPointer : Int , sourceLength :Int,  tokens : List Token}
+type alias State = { i : Int, source : String, scanPointer : Int , sourceLength :Int,  tokens : List Token}
 
 {-|
     >  run MiniLaTeX "\\foo{1}"
@@ -39,7 +39,7 @@ run lang source =
 
 
 init : String -> State
-init source = {source = source, scanPointer = 0, sourceLength =  String.length source, tokens = []}
+init source = {source = source, i = 0, scanPointer = 0, sourceLength =  String.length source, tokens = []}
 
 nextStep : Lang -> State -> Step State (List Token)
 nextStep lang state =
@@ -50,7 +50,7 @@ nextStep lang state =
            token = get lang state.scanPointer (String.dropLeft state.scanPointer state.source )
            newScanPointer = state.scanPointer + (Expression.Token.length token) + 1
        in
-       Loop { state | tokens = token :: state.tokens, scanPointer = newScanPointer}
+       Loop { state | i = state.i + 1, tokens = token :: state.tokens, scanPointer = newScanPointer}
 
 type Step state a
     = Loop state

@@ -98,7 +98,7 @@ nextStep lang state_ =
 nextStep_ : Lang -> State -> Step State State
 nextStep_ lang state =
     if state.scanPointer >= state.end then
-        finalize lang (reduceFinal lang state |> debugMagenta "reduceFinal (APPL)")
+        finalize lang (reduceFinal lang state |> debugMagenta "reduceFinal")
 
     else
         processToken lang state
@@ -116,9 +116,10 @@ finalize lang state =
 processToken : Lang -> State -> Step State State
 processToken lang state =
     let
-        _  = debugBlue "Stack: "  state.stack
+       token = Tokenizer.get lang state.scanPointer (String.dropLeft state.scanPointer state.sourceText) |> debugBlue ("Token: " ++ String.fromInt state.count)
+       _  = debugBlue ("Stack: " ++ String.fromInt state.count)  state.stack
     in
-    case Tokenizer.get lang state.scanPointer (String.dropLeft state.scanPointer state.sourceText) of
+    case token of
         TokenError errorData meta ->
             let
                 ( row, col ) =
