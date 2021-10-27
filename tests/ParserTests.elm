@@ -37,7 +37,7 @@ suiteMarkdown =
         , test "(3) LINK" <|
             \_ ->
                 run Markdown "[N Y T](url)"
-                    |> Expect.equal { committed = [ Expr "link" [ Text "N Y T" { begin = 0, end = 12 }, Text "url" { begin = 0, end = 12 } ] { begin = 0, end = 12 } ], count = 2, end = 12, scanPointer = 13, sourceText = "[N Y T](url)", stack = [] }
+                    |> Expect.equal { committed = [Expr "link" [Text "N Y T" { begin = 1, end = 5 },Text "url" { begin = 8, end = 10 }] { begin = 0, end = 11 }], count = 7, end = 12, scanPointer = 12, sourceText = "[N Y T](url)", stack = [] }
         ]
 
 
@@ -81,7 +81,7 @@ suiteMiniLaTeX =
         , test "(9) \\foo{\\bar{1}}" <|
             \_ ->
                 run MiniLaTeX "abc \\href{1}{2} def"
-                    |> Expect.equal { committed = [ Text "abc " { begin = 0, end = 3 }, Expr "href" [ Text "1" { begin = 10, end = 10 }, Text "2" { begin = 13, end = 13 } ] { begin = 4, end = 14 }, Text " def" { begin = 15, end = 18 } ], count = 10, end = 19, scanPointer = 19, sourceText = "abc \\href{1}{2} def", stack = [] }
+                    |> Expect.equal { committed = [Text "abc " { begin = 0, end = 3 },Expr "href" [Text "2" { begin = 13, end = 13 },Text "1" { begin = 10, end = 10 }] { begin = 4, end = 14 },Text " def" { begin = 15, end = 18 }], count = 10, end = 19, scanPointer = 19, sourceText = "abc \\href{1}{2} def", stack = [] }
         ]
 
 

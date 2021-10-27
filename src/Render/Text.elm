@@ -197,7 +197,7 @@ href g s a textList =
 
 
 href_ : String -> String -> Element msg
-href_ url label =
+href_ label url =
     newTabLink []
         { url = url
         , label = el [ Font.color linkColor, Font.italic ] (Element.text <| label)
