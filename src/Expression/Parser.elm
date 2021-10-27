@@ -117,7 +117,7 @@ processToken : Lang -> State -> Step State State
 processToken lang state =
     let
        token = Tokenizer.get lang state.scanPointer (String.dropLeft state.scanPointer state.sourceText) |> debugBlue ("Token: " ++ String.fromInt state.count)
-       _  = debugBlue ("Stack: " ++ String.fromInt state.count)  state.stack
+       _  = debugBlue ("Stack: " ++ String.fromInt (state.count - 1))  state.stack
     in
     case token of
         TokenError errorData meta ->

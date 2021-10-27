@@ -5,7 +5,7 @@ import Expression.AST as AST exposing (Expr)
 import Expression.State exposing (State)
 import Expression.Token as Token exposing (Token(..))
 import Markup.Common exposing (Step(..))
-import Markup.Debugger exposing (debugGreen)
+import Markup.Debugger exposing (debugGreen, debugYellow)
 import Expression.Stack as Stack exposing (Stack)
 import List.Extra
 
@@ -18,10 +18,13 @@ fixedPoint state =
 
 reduceFinal : State -> State
 reduceFinal state =
-    state |>reduce |> reduceFinal_
+    state |> reduce |> reduceFinal_
 
 reduceFinal_ : State -> State
 reduceFinal_ state =
+   ( let
+        _ = debugYellow "reduceFinal_, IN" state
+    in
     case state.stack of
         (Right (AST.Expr name args loc)) :: [] ->
             { state | committed = AST.Expr (transformMacroNames name) (List.reverse args) loc :: state.committed, stack = [] } |> debugGreen "FINAL RULE 1"
@@ -37,9 +40,18 @@ reduceFinal_ state =
             in
             { state | committed = red :: blue :: state.committed, stack = rest }
 
+
+        --(Left (Token.Text str loc)) :: rest ->
+        --           {state | stack = rest, committed = (AST.Text str loc):: state.committed}  |> debugGreen "FINAL RULE 2"
+
+        (Left (Token.Text str loc)) :: (Right expr):: [] ->
+                   {state | stack = [], committed = (AST.Text str loc):: expr :: state.committed}  |> debugGreen "FINAL RULE 2"
+
+
         _ ->
             state  |> debugGreen "REDUCE FINAL, PASS"
 
+  ) |> debugYellow "reduceFinal_, OUT"
 
 {-|
 
@@ -99,14 +111,20 @@ reduce state =
 -}
 reduceArg : Stack -> Stack
 reduceArg stack =
-    case stack of
+    let
+        _ = debugYellow "reduce, IN" stack
+    in
+   ( case stack of
         (Left (Token.Symbol "}" loc2)) :: rest ->
             let
+                _ = debugYellow "reduceArg" rest
                 interior =
                     List.Extra.takeWhile (\item -> not (Stack.symbolToString item  == Just "{")) rest
 
                 n =
-                    List.length interior
+                    List.length interior  |> debugYellow "n, interior length"
+
+                found = List.Extra.getAt n rest |> debugYellow "found"
             in
             case ( List.Extra.getAt n rest, Stack.toExprList interior ) of
                 ( Nothing, _ ) ->
@@ -118,13 +136,13 @@ reduceArg stack =
                 ( Just stackItem, Just exprList ) ->
                     case stackItem of
                         (Left (Token.Symbol "{" loc1)) ->
-                            Right (AST.Arg (List.reverse exprList) {begin = loc1.begin, end = loc2.end}) :: List.drop (n + 1) rest
+                            Right (AST.Arg ( exprList) {begin = loc1.begin, end = loc2.end}) :: List.drop (n + 1) rest
 
                         _ ->
                             stack
 
         _ ->
-            stack
+            stack) |> debugYellow "reduceArg (OUT)"
 
 transformMacroNames : String -> String
 transformMacroNames str =
