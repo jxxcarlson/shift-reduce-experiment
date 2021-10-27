@@ -13,6 +13,7 @@ import Lang.Lang exposing (Lang(..))
 import Lang.Reduce.L1 as L1
 import Lang.Reduce.Markdown as Markdown
 import Lang.Reduce.MiniLaTeX as MiniLaTeX
+import Lang.Token.Common
 import List.Extra
 import Markup.Common exposing (Step(..), loop)
 import Markup.Debugger exposing (..)
@@ -56,6 +57,7 @@ init : String -> State
 init str =
     { sourceText = str
     , scanPointer = 0
+    , tokenState = Lang.Token.Common.TSA
     , end = String.length str
     , stack = []
     , committed = []
@@ -116,8 +118,11 @@ finalize lang state =
 processToken : Lang -> State -> Step State State
 processToken lang state =
     let
-       token = Tokenizer.get lang state.scanPointer (String.dropLeft state.scanPointer state.sourceText) |> debugBlue ("Token: " ++ String.fromInt state.count)
-       _  = debugBlue ("Stack: " ++ String.fromInt (state.count - 1))  state.stack
+        token =
+            Tokenizer.get lang Lang.Token.Common.TSA state.scanPointer (String.dropLeft state.scanPointer state.sourceText) |> debugBlue ("Token: " ++ String.fromInt state.count)
+
+        _ =
+            debugBlue ("Stack: " ++ String.fromInt (state.count - 1)) state.stack
     in
     case token of
         TokenError errorData meta ->

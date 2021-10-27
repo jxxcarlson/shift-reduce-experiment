@@ -1,4 +1,4 @@
-module Lang.Token.Common exposing (TokenParser, mathParser, symbolParser, textParser)
+module Lang.Token.Common exposing (TokenParser, TokenState(..), mathParser, symbolParser, textParser)
 
 import Expression.Error exposing (..)
 import Expression.Token exposing (Token(..))
@@ -16,7 +16,7 @@ miniLaTeXLanguageChars =
 
 
 markdownLanguageChars =
-    [ '*', '_', '`', '$', '#', '[', ']', '(' , ')' ]
+    [ '*', '_', '`', '$', '#', '[', ']', '(', ')' ]
 
 
 markdownEscapeChars =
@@ -26,6 +26,11 @@ markdownEscapeChars =
 unescape : List Char -> String -> String
 unescape _ str =
     String.replace "\\@" "@" str
+
+
+type TokenState
+    = TSA
+    | TSB
 
 
 type alias TokenParser =

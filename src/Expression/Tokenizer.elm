@@ -3,6 +3,7 @@ module Expression.Tokenizer exposing (get, run)
 import Expression.Error exposing (..)
 import Expression.Token exposing (Token(..))
 import Lang.Lang exposing (Lang(..))
+import Lang.Token.Common as Common exposing (TokenState(..))
 import Lang.Token.L1 as L1
 import Lang.Token.Markdown as Markdown
 import Lang.Token.MiniLaTeX as MiniLaTeX
@@ -17,9 +18,9 @@ import Parser.Advanced as Parser exposing (Parser)
     which is at this juncture pointing one character beyond the string chomped.
 
 -}
-get : Lang -> Int -> String -> Token
-get lang start input =
-    case Parser.run (tokenParser lang start) input of
+get : Lang -> TokenState -> Int -> String -> Token
+get lang tokenState start input =
+    case Parser.run (tokenParser lang tokenState start) input of
         Ok token ->
             token
 
@@ -27,11 +28,21 @@ get lang start input =
             TokenError errorList { begin = start, end = start + 1 }
 
 
-type alias State = { i : Int, source : String, scanPointer : Int , sourceLength :Int,  tokens : List Token}
+type alias State =
+    { i : Int
+    , source : String
+    , scanPointer : Int
+    , sourceLength : Int
+    , tokenState : TokenState
+    , tokens : List Token
+    }
+
 
 {-|
+
     >  run MiniLaTeX "\\foo{1}"
       [FunctionName "foo" { begin = 0, end = 3 },Symbol "{" { begin = 4, end = 4 },Text "1" { begin = 5, end = 5 },Symbol "}" { begin = 6, end = 6 }]
+
 -}
 run : Lang -> String -> List Token
 run lang source =
@@ -39,18 +50,31 @@ run lang source =
 
 
 init : String -> State
-init source = {source = source, i = 0, scanPointer = 0, sourceLength =  String.length source, tokens = []}
+init source =
+    { source = source
+    , i = 0
+    , scanPointer = 0
+    , sourceLength = String.length source
+    , tokens = []
+    , tokenState = TSA
+    }
+
 
 nextStep : Lang -> State -> Step State (List Token)
 nextStep lang state =
     if state.scanPointer >= state.sourceLength then
-       Done (List.reverse state.tokens)
+        Done (List.reverse state.tokens)
+
     else
-       let
-           token = get lang state.scanPointer (String.dropLeft state.scanPointer state.source )
-           newScanPointer = state.scanPointer + (Expression.Token.length token) + 1
-       in
-       Loop { state | i = state.i + 1, tokens = token :: state.tokens, scanPointer = newScanPointer}
+        let
+            token =
+                get lang state.tokenState state.scanPointer (String.dropLeft state.scanPointer state.source)
+
+            newScanPointer =
+                state.scanPointer + Expression.Token.length token + 1
+        in
+        Loop { state | i = state.i + 1, tokens = token :: state.tokens, scanPointer = newScanPointer }
+
 
 type Step state a
     = Loop state
@@ -82,14 +106,14 @@ type alias TokenParser =
       Ok [Text ("Test: "),Symbol "[",Text ("i "),Symbol "[",Text ("j foo bar"),Symbol "]",Symbol "]"]
 
 -}
-tokenParser : Lang -> Int -> TokenParser
-tokenParser lang start =
+tokenParser : Lang -> TokenState -> Int -> TokenParser
+tokenParser lang tokenState start =
     case lang of
         L1 ->
-            L1.tokenParser start
+            L1.tokenParser tokenState start
 
         MiniLaTeX ->
-            MiniLaTeX.tokenParser start
+            MiniLaTeX.tokenParser tokenState start
 
         Markdown ->
-            Markdown.tokenParser start
+            Markdown.tokenParser tokenState start
