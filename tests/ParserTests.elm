@@ -78,10 +78,10 @@ suiteMiniLaTeX =
             \_ ->
                 run MiniLaTeX "\\href{1}{2}"
                     |> Expect.equal { committed = [ Expr "href" [ Text "1" { begin = 6, end = 6 }, Text "2" { begin = 9, end = 9 } ] { begin = 0, end = 10 } ], count = 8, end = 11, scanPointer = 11, sourceText = "\\href{1}{2}", stack = [] }
-        , test "(9) \\foo{\\bar{1}}" <|
+        , test "(9) abc \\href{1}{2} def" <|
             \_ ->
                 run MiniLaTeX "abc \\href{1}{2} def"
-                    |> Expect.equal { committed = [Text "abc " { begin = 0, end = 3 },Expr "href" [Text "2" { begin = 13, end = 13 },Text "1" { begin = 10, end = 10 }] { begin = 4, end = 14 },Text " def" { begin = 15, end = 18 }], count = 10, end = 19, scanPointer = 19, sourceText = "abc \\href{1}{2} def", stack = [] }
+                    |> Expect.equal { committed = [Text "abc " { begin = 0, end = 3 },Expr "href" [Text "1" { begin = 10, end = 10 },Text "2" { begin = 13, end = 13 }] { begin = 4, end = 14 },Text " def" { begin = 15, end = 18 }], count = 10, end = 19, scanPointer = 19, sourceText = "abc \\href{1}{2} def", stack = [] }
         ]
 
 

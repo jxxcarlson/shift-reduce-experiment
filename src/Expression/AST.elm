@@ -6,6 +6,8 @@ module Expression.AST exposing
     , stringValue
     , stringValueOfArgList
     , stringValueOfList
+    , reverseContents
+
     )
 
 import Expression.Token as Token
@@ -20,6 +22,18 @@ type Expr
     | Error String
 
 
+
+reverseContents : Expr -> Expr
+reverseContents expr =
+    case expr of
+
+        Expr name args loc ->
+            Expr name (List.reverse args) loc
+
+        Arg args loc ->
+           Arg  (List.reverse args) loc
+
+        _ -> expr
 dummy =
     { begin = 0, end = 0 }
 

@@ -9,6 +9,7 @@ module Expression.ASTTools exposing
     , getHeadings
     , getText
     , getTitle
+    , reverseContents
     , listExprMToString
     , stringContentOfNamedBlock
     , stringValue
@@ -109,6 +110,17 @@ exprMToString text =
         ErrorM str ->
             str
 
+reverseContents : ExprM -> ExprM
+reverseContents expr =
+    case expr of
+
+        ExprM name textList meta ->
+            ExprM name (List.reverse textList) meta
+
+        ArgM textList meta ->
+           ArgM  (List.reverse textList) meta
+
+        _ -> expr
 
 getTitle : List Block -> Maybe String
 getTitle blocks =

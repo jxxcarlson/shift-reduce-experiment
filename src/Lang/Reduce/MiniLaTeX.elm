@@ -2,6 +2,7 @@ module Lang.Reduce.MiniLaTeX exposing (recoverFromError, reduce, reduceFinal)
 
 import Either exposing (Either(..))
 import Expression.AST as AST exposing (Expr)
+import Expression.ASTTools as ASTTools
 import Expression.State exposing (State)
 import Expression.Token as Token exposing (Token(..))
 import Markup.Common exposing (Step(..))
@@ -67,7 +68,7 @@ reduce state =
             reduceAux (AST.Text str loc) [] state |> debugGreen "RULE 1"
 
         (Left (Token.Text str loc)) :: (Right expr):: [] ->
-                   {state | stack = [], committed = (AST.Text str loc):: expr :: state.committed}  |> debugGreen "RULE X"
+                   {state | stack = [], committed = (AST.Text str loc):: (AST.reverseContents expr) :: state.committed}  |> debugGreen "RULE X"
 
         -- Recognize an Expr
         (Left (Token.Symbol "}" loc4)) :: (Left (Token.Text arg loc3)) :: (Left (Token.Symbol "{" _)) :: (Left (Token.FunctionName name loc1)) :: rest ->
