@@ -5,7 +5,7 @@ import Expression.AST as AST exposing (Expr(..))
 import Expression.State exposing (State)
 import Expression.Token as Token exposing (Token(..))
 import Markup.Common exposing (Step(..))
-import Markup.Debugger exposing (debugNull, debugYellow)
+import Markup.Debugger exposing (debugGreen, debugNull, debugYellow)
 
 
 reduceFinal : State -> State
@@ -15,14 +15,13 @@ reduceFinal state =
 
 reduceFinal_ : State -> State
 reduceFinal_ state =
-
     case state.stack of
         (Right (AST.Expr name args loc)) :: [] ->
             { state | committed = AST.Expr name (List.reverse args) loc :: state.committed, stack = [] } |> debugNull "FINAL RULE 1"
 
-
         (Left (Token.Text str loc)) :: rest ->
-           reduceFinal { state | committed = AST.Text str loc :: state.committed, stack = rest } |> debugYellow "FINAL RULE 2"
+            reduceFinal { state | committed = AST.Text str loc :: state.committed, stack = rest } |> debugYellow "FINAL RULE 2"
+
         _ ->
             state |> debugYellow "FINAL RULE LAST"
 
@@ -37,35 +36,44 @@ reduce : State -> State
 reduce state =
     case state.stack of
         -- RULE R1: L S [, L  T fname, L S ] -> Right Expr fname []
-        (Left (Token.Symbol "]" loc3))::(Left (Token.Text fName loc2))::(Left (Token.Symbol "[" loc1))::rest ->
+        (Left (Token.Symbol "]" loc3)) :: (Left (Token.Text fName loc2)) :: (Left (Token.Symbol "[" loc1)) :: rest ->
             let
-                expr = if String.left 1 fName == "!" then
-                         Right ((Expr (String.trim <| String.dropLeft 1 fName)) [] {begin = loc1.begin, end = loc3.end})
+                expr =
+                    if String.left 1 fName == "!" then
+                        Right (Expr (String.trim <| String.dropLeft 1 fName) [] { begin = loc1.begin, end = loc3.end })
+
                     else
-                      Right (Expr  "link" [AST.Text fName loc2] {begin = loc1.begin, end = loc3.end})
+                        Right (Expr "link" [ AST.Text fName loc2 ] { begin = loc1.begin, end = loc3.end })
             in
-            {state | stack = expr :: rest}
+            { state | stack = expr :: rest }
 
-         -- RULE R2: L S (, L  T arg, L S ) -> Right Arg [T arg]
-        (Left (Token.Symbol ")" loc3))::(Left (Token.Text arg loc2))::(Left (Token.Symbol "(" loc1))::rest ->
-                    let
-                        expr = Right (Arg [(AST.Text arg loc2)] {begin = loc1.begin, end = loc3.end})
-                    in
-             {state | stack = expr :: rest}
-
-         -- RULE R3: L S (, R Expr fname args, L S ) -> R Arg [Expr fname  args]
-        (Left (Token.Symbol ")" loc3))::Right expr_::(Left (Token.Symbol "(" loc1))::rest ->
-                            let
-                                expr = Right (Arg [expr_] {begin = loc1.begin, end = loc3.end})
-                            in
-                     {state | stack = expr :: rest}
-
-         -- RULE R4: R Expr fname args1, R A args2 -> Right Arg (args2 ++ arg1))
-        (Right (Arg args2 loc2))::(Right (Expr fName args1 loc1))::rest ->
+        -- RULE R2: L S (, L  T arg, L S ) -> Right Arg [T arg]
+        (Left (Token.Symbol ")" loc3)) :: (Left (Token.Text arg loc2)) :: (Left (Token.Symbol "(" loc1)) :: rest ->
             let
-                expr = Right (Expr fName (args2 ++ args1) {begin = loc1.begin, end = loc2.end})
+                expr =
+                    Right (Arg [ AST.Text arg loc2 ] { begin = loc1.begin, end = loc3.end })
             in
-            {state | stack = expr :: rest}
+            { state | stack = expr :: rest }
+
+        -- RULE R3: L S (, R Expr fname args, L S ) -> R Arg [Expr fname  args]
+        (Left (Token.Symbol ")" loc3)) :: (Right expr_) :: (Left (Token.Symbol "(" loc1)) :: rest ->
+            let
+                expr =
+                    Right (Arg [ expr_ ] { begin = loc1.begin, end = loc3.end })
+            in
+            { state | stack = expr :: rest }
+
+        -- RULE R4: R Expr fname args1, R A args2 -> Right Arg (args2 ++ arg1))
+        (Right (Arg args2 loc2)) :: (Right (Expr fName args1 loc1)) :: rest ->
+            let
+                expr =
+                    Right (Expr fName (args2 ++ args1) { begin = loc1.begin, end = loc2.end })
+            in
+            { state | stack = expr :: rest }
+
+        -- reduce  arg :: functionName :: rest to expr :: rest
+        (Right (AST.Arg args loc2)) :: (Left (Token.FunctionName name loc1)) :: rest ->
+            { state | stack = Right (AST.Expr name args { begin = loc1.begin, end = loc2.end }) :: rest } |> debugGreen "RULE B"
 
         (Left (Token.Text str loc)) :: [] ->
             reduceAux (AST.Text str loc) [] state |> debugNull "RULE 1"
@@ -141,12 +149,14 @@ recoverFromError state =
                     , committed = AST.Text "I corrected an unmatched '[' in the following expression: " Token.dummyLoc :: state.committed
                 }
 
+        (Right expr) :: [] ->
+            Done { state | stack = [], committed = expr :: state.committed }
 
-        (Right expr)::[]
-           -> Done { state | stack = [], committed =  expr :: state.committed }
         _ ->
             let
-                _ = debugYellow "LAST EXIT, STACK" state.stack
+                _ =
+                    debugYellow "LAST EXIT, STACK" state.stack
+
                 position =
                     state.stack |> stackBottom |> Maybe.andThen scanPointerOfItem |> Maybe.withDefault state.scanPointer
 

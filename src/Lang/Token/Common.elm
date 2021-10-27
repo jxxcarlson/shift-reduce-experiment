@@ -30,7 +30,7 @@ unescape _ str =
 
 type TokenState
     = TSA
-    | TSB
+    | TSB Int
 
 
 type alias TokenParser =

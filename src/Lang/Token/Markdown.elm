@@ -17,7 +17,7 @@ tokenParser tokenState start =
         TSA ->
             tokenParserA start
 
-        TSB ->
+        TSB k ->
             tokenParserB start
 
 
@@ -30,7 +30,7 @@ tokenParserA start =
         , markedTextParser start "italic" '_' '_'
         , markedTextParser start "code" '`' '`'
         , markedTextParser start "math" '$' '$'
-        , Common.textParser Markdown start
+        , textParserA start
         ]
 
 
@@ -45,8 +45,26 @@ tokenParserB start =
         , markedTextParser start "italic" '_' '_'
         , markedTextParser start "code" '`' '`'
         , markedTextParser start "math" '$' '$'
-        , Common.textParser Markdown start
+        , textParserB start
         ]
+
+
+textParserA start =
+    ParserTools.text (\c -> not <| List.member c markdownLanguageCharsA) (\c -> not <| List.member c markdownLanguageCharsA)
+        |> Parser.map (\data -> Text data.content { begin = start, end = start + data.end - data.begin - 1 })
+
+
+textParserB start =
+    ParserTools.text (\c -> not <| List.member c markdownLanguageCharsB) (\c -> not <| List.member c markdownLanguageCharsB)
+        |> Parser.map (\data -> Text data.content { begin = start, end = start + data.end - data.begin - 1 })
+
+
+markdownLanguageCharsA =
+    [ '*', '_', '`', '$', '#', '[', ']' ]
+
+
+markdownLanguageCharsB =
+    [ '*', '_', '`', '$', '#', '[', ']', '(', ')' ]
 
 
 markedTextParser : Int -> String -> Char -> Char -> TokenParser
