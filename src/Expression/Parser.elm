@@ -17,6 +17,7 @@ import Lang.Token.Common
 import List.Extra
 import Markup.Common exposing (Step(..), loop)
 import Markup.Debugger exposing (..)
+import Markup.Simplify as Simplify
 
 
 parseExpr : Lang -> String -> List AST.Expr
@@ -150,7 +151,7 @@ processToken : Lang -> State -> Step State State
 processToken lang state =
     let
         token =
-            Tokenizer.get lang state.tokenState state.scanPointer (String.dropLeft state.scanPointer state.sourceText) |> debugBlue ("Token: " ++ String.fromInt state.count)
+            Tokenizer.get lang state.tokenState state.scanPointer (String.dropLeft state.scanPointer state.sourceText)
 
         tokenState =
             if lang == Markdown then
@@ -160,7 +161,16 @@ processToken lang state =
                 state.tokenState
 
         _ =
-            debugBlue ("Stack: " ++ String.fromInt (state.count - 1)) state.stack
+            debugBlue "n" state.count
+
+        _ =
+            debugBlue "Stack" state.stack |> Simplify.stack
+
+        _ =
+            debugBlue "Committed" state.committed |> Simplify.expressions
+
+        _ =
+            debugBlue "Token" token
     in
     case token of
         TokenError errorData meta ->
