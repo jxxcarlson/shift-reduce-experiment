@@ -46,6 +46,18 @@ reduceFinal_ state =
 reduce : State -> State
 reduce state =
     case state.stack of
+        -- commit lone text token
+        (Left (Token.Text str loc)) :: [] ->
+            reduceAux (AST.Text str loc) [] state |> debugGreen "RED 6 (RULE 1)"
+
+        -- commit text :: expression
+        (Left (Token.Text str loc1)) :: (Right (AST.Expr name args loc2)) :: rest ->
+            let
+                _ =
+                    debugRed "reduceFinal, RULE 2, IN" state
+            in
+            { state | committed = AST.Text str loc1 :: AST.Expr name (List.reverse args) loc2 :: state.committed, stack = rest } |> debugYellow "FINAL RULE 2"
+
         -- RULE R1: L S [, L  T fname, L S ] -> Right Expr fname []
         (Left (Token.Symbol "]" loc3)) :: (Left (Token.Text fName loc2)) :: (Left (Token.Symbol "[" loc1)) :: rest ->
             let
@@ -85,9 +97,6 @@ reduce state =
         -- reduce  arg :: functionName :: rest to expr :: rest
         (Right (AST.Arg args loc2)) :: (Left (Token.FunctionName name loc1)) :: rest ->
             { state | stack = Right (AST.Expr name args { begin = loc1.begin, end = loc2.end }) :: rest } |> debugGreen "RED 5 (RULE B)"
-
-        (Left (Token.Text str loc)) :: [] ->
-            reduceAux (AST.Text str loc) [] state |> debugGreen "RED 6 (RULE 1)"
 
         (Left (MarkedText "boldItalic" str loc)) :: [] ->
             reduceAux (Expr "boldItalic" [ AST.Text str loc ] loc) [] state |> debugGreen "RED 7"
