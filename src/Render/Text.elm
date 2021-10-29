@@ -88,6 +88,10 @@ markupDict =
         , ( "image", \g s a textList -> image g s a textList )
         , ( "texmacro", \g s a textList -> texmacro g s a textList )
         , ( "texarg", \g s a textList -> texarg g s a textList )
+        , ( "abstract", \g s a textList -> abstract g s a textList )
+        , ( "tags", \g s a textList -> Element.none )
+        , ( "author", \g s a textList -> author g s a textList )
+        , ( "large", \g s a textList -> large g s a textList )
 
         -- MiniLaTeX stuff
         , ( "term", \g s a textList -> term g s a textList )
@@ -175,6 +179,18 @@ macro2 element g s a textList =
             el [ Font.color errorColor ] (Element.text "Invalid arguments")
 
 
+large g s a textList =
+    simpleElement [ Font.size 18 ] g s a textList
+
+
+author g s a textList =
+    simpleElement [ Font.size 18 ] g s a textList
+
+
+abstract g s a textList =
+    Element.paragraph [] [ Element.el [ Font.size 18 ] (Element.text "Abstract."), simpleElement [] g s a textList ]
+
+
 link g s a exprList =
     case exprList of
         (TextM label _) :: (TextM url _) :: _ ->
@@ -197,7 +213,7 @@ href g s a textList =
 
 
 href_ : String -> String -> Element msg
-href_  url label=
+href_ url label =
     newTabLink []
         { url = url
         , label = el [ Font.color linkColor, Font.italic ] (Element.text <| label)
@@ -492,6 +508,7 @@ emph g s a textList =
 red g s a textList =
     simpleElement [ Font.color (Element.rgb255 200 0 0) ] g s a textList
 
+
 blue g s a textList =
     simpleElement [ Font.color (Element.rgb255 0 0 200) ] g s a textList
 
@@ -499,18 +516,21 @@ blue g s a textList =
 violet g s a textList =
     simpleElement [ Font.color (Element.rgb255 150 100 255) ] g s a textList
 
+
 highlight g s a textList =
     simpleElement [ Background.color (Element.rgb255 255 255 0) ] g s a textList
+
 
 strike g s a textList =
     simpleElement [ Font.strike ] g s a textList
 
+
 underline g s a textList =
     simpleElement [ Font.underline ] g s a textList
 
+
 gray g s a textList =
     simpleElement [ Font.color (Element.rgb 0.5 0.5 0.5) ] g s a textList
-
 
 
 errorHighlight g s a textList =
