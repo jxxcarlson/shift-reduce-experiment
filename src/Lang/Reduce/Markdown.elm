@@ -2,8 +2,10 @@ module Lang.Reduce.Markdown exposing (normalizeExpr, recoverFromError, reduce, r
 
 import Either exposing (Either(..))
 import Expression.AST as AST exposing (Expr(..))
+import Expression.Stack as Stack exposing (Stack)
 import Expression.State exposing (State)
 import Expression.Token as Token exposing (Token(..))
+import List.Extra
 import Markup.Common exposing (Step(..))
 import Markup.Debugger exposing (debugGreen, debugNull, debugRed, debugYellow)
 
@@ -97,6 +99,10 @@ reduce state =
         -- reduce  arg :: functionName :: rest to expr :: rest
         (Right (AST.Arg args loc2)) :: (Left (Token.FunctionName name loc1)) :: rest ->
             { state | stack = Right (AST.Expr name args { begin = loc1.begin, end = loc2.end }) :: rest } |> debugGreen "RED 5 (RULE B)"
+
+        -- Transform "{" .... "}" to Right (Arg [....])
+        (Left (Token.Symbol ")" loc3)) :: rest ->
+            { state | stack = reduceArg state.stack } |> debugGreen "RULE A"
 
         (Left (MarkedText "boldItalic" str loc)) :: [] ->
             reduceAux (Expr "boldItalic" [ AST.Text str loc ] loc) [] state |> debugGreen "RED 7"
@@ -209,3 +215,51 @@ scanPointerOfItem item =
 
         Right _ ->
             Nothing
+
+
+{-|
+
+    If the stack is prefix::rest, where prefix = (L S "}", L a, L b, ...  , (L S "}"), convert it
+    to newPrefix = Arg [R a, R b, ], and set the stack to newPrefix :: rest
+
+-}
+reduceArg : Stack -> Stack
+reduceArg stack =
+    let
+        _ =
+            debugYellow "reduce, IN" stack
+    in
+    (case stack of
+        (Left (Token.Symbol ")" loc2)) :: rest ->
+            let
+                _ =
+                    debugYellow "reduceArg" rest
+
+                interior =
+                    List.Extra.takeWhile (\item -> not (Stack.symbolToString item == Just "(")) rest
+
+                n =
+                    List.length interior |> debugYellow "n, interior length"
+
+                found =
+                    List.Extra.getAt n rest |> debugYellow "found"
+            in
+            case ( List.Extra.getAt n rest, Stack.toExprList interior ) of
+                ( Nothing, _ ) ->
+                    stack
+
+                ( _, Nothing ) ->
+                    stack
+
+                ( Just stackItem, Just exprList ) ->
+                    case stackItem of
+                        Left (Token.Symbol "(" loc1) ->
+                            Right (AST.Arg exprList { begin = loc1.begin, end = loc2.end }) :: List.drop (n + 1) rest
+
+                        _ ->
+                            stack
+
+        _ ->
+            stack
+    )
+        |> debugYellow "reduceArg (OUT)"
