@@ -7,10 +7,10 @@ module Expression.ASTTools exposing
     , filterBlockByName
     , filterStrictBlock
     , getHeadings
+    , getItem
     , getText
-    , getTitle
-    , reverseContents
     , listExprMToString
+    , reverseContents
     , stringContentOfNamedBlock
     , stringValue
     , stringValueOfList
@@ -110,23 +110,25 @@ exprMToString text =
         ErrorM str ->
             str
 
+
 reverseContents : ExprM -> ExprM
 reverseContents expr =
     case expr of
-
         ExprM name textList meta ->
             ExprM name (List.reverse textList) meta
 
         ArgM textList meta ->
-           ArgM  (List.reverse textList) meta
+            ArgM (List.reverse textList) meta
 
-        _ -> expr
+        _ ->
+            expr
 
-getTitle : List Block -> Maybe String
-getTitle blocks =
+
+getItem : String -> List Block -> Maybe String
+getItem name blocks =
     let
         result =
-            filterStrictBlock Equality "title" blocks
+            filterStrictBlock Equality name blocks
     in
     if result == "" then
         Nothing

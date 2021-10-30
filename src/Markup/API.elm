@@ -2,7 +2,6 @@ module Markup.API exposing
     ( Settings
     , compile
     , defaultSettings
-    , getTitle
     , p
     , parse
     , prepareForExport
@@ -74,12 +73,6 @@ parse lang generation lines =
     }
 
 
-{-| -}
-getTitle : List Block -> Maybe String
-getTitle =
-    ASTTools.getTitle
-
-
 renderFancy : Render.Settings.Settings -> Lang -> Int -> List String -> List (Element msg)
 renderFancy settings language count source =
     let
@@ -94,7 +87,13 @@ renderFancy settings language count source =
             tableOfContents count settings parseData.accumulator ast
 
         maybeTitleString =
-            ASTTools.getTitle ast
+            ASTTools.getItem "title" ast
+
+        maybeAuthorString =
+            ASTTools.getItem "author" ast
+
+        maybeDateString =
+            ASTTools.getItem "date" ast
 
         docTitle =
             case maybeTitleString of
@@ -103,6 +102,30 @@ renderFancy settings language count source =
 
                 Just titleString ->
                     E.el [ Font.size settings.titleSize, Utility.elementAttribute "id" "title" ] (E.text (titleString |> String.replace "\n" " "))
+
+        author =
+            case maybeAuthorString of
+                Nothing ->
+                    E.none
+
+                Just authorString ->
+                    let
+                        size =
+                            round (toFloat settings.titleSize / 1.4)
+                    in
+                    E.el [ Font.size size, Utility.elementAttribute "id" "author" ] (E.text (authorString |> String.replace "\n" " "))
+
+        date =
+            case maybeDateString of
+                Nothing ->
+                    E.none
+
+                Just dateString ->
+                    let
+                        size =
+                            round (toFloat settings.titleSize / 1.6)
+                    in
+                    E.el [ Font.size size, Utility.elementAttribute "id" "date" ] (E.text (dateString |> String.replace "\n" " "))
 
         toc =
             if List.length toc_ > 1 then
@@ -116,10 +139,10 @@ renderFancy settings language count source =
             render count settings parseData.accumulator ast
     in
     if settings.showTOC then
-        docTitle :: toc :: renderedText_
+        docTitle :: author :: date :: toc :: renderedText_
 
     else
-        docTitle :: renderedText_
+        docTitle :: author :: date :: renderedText_
 
 
 tableOfContents : Int -> Settings -> Block.State.Accumulator -> List Block -> List (Element msg)

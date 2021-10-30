@@ -22,9 +22,15 @@ export language sourceText =
                 |> Utility.ifApply (language == Markdown) LaTeX.Export.Markdown.putListItemsAsChildrenOfBlock
 
         titleString =
-            Expression.ASTTools.getTitle ast |> Maybe.withDefault "Untitled"
+            Expression.ASTTools.getItem "title" ast |> Maybe.withDefault "Untitled"
+
+        authorString =
+            Expression.ASTTools.getItem "author" ast |> Maybe.withDefault ""
+
+        dateString =
+            Expression.ASTTools.getItem "date" ast |> Maybe.withDefault ""
     in
-    ast |> LaTeX.Export.Block.render titleString
+    ast |> LaTeX.Export.Block.render titleString authorString dateString
 
 
 prepareForExportWithImages : Lang -> String -> { source : String, imageUrls : List String }
@@ -38,10 +44,16 @@ prepareForExportWithImages language sourceText =
                 |> Utility.ifApply (language == Markdown) LaTeX.Export.Markdown.putListItemsAsChildrenOfBlock
 
         titleString =
-            Expression.ASTTools.getTitle ast |> Maybe.withDefault "Untitled"
+            Expression.ASTTools.getItem "title" ast |> Maybe.withDefault "Untitled"
+
+        authorString =
+            Expression.ASTTools.getItem "author" ast |> Maybe.withDefault ""
+
+        dateString =
+            Expression.ASTTools.getItem "date" ast |> Maybe.withDefault ""
 
         source =
-            ast |> LaTeX.Export.Block.render titleString
+            ast |> LaTeX.Export.Block.render titleString authorString dateString
 
         imageUrls =
             getImageURLs ast

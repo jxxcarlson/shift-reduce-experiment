@@ -7,9 +7,9 @@ import LaTeX.Export.Data
 import LaTeX.Export.Text
 
 
-render : String -> List Block -> String
-render title blocks =
-    LaTeX.Export.Data.preamble title
+render : String -> String -> String -> List Block -> String
+render title author date blocks =
+    LaTeX.Export.Data.preamble title author date
         ++ (List.map renderBlock (excludeTitle blocks) |> String.join "\n\n")
         ++ "\n\\end{document}"
 

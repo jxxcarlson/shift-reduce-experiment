@@ -3,16 +3,12 @@ module Data.MiniLaTeXTest exposing (text)
 
 text =
     """
-\\xlink{uuid:6f5a573d-5603-4470-8dc9-b0972997a6e6}{Notes on Quantum Field Theory}
+\\title{Wave packets}
 
 
+\\author{James Carlson}
 
-\\setcounter{section}{2}
-
-\\title{Wave packets and the dispersion relation}
-
-%%%%%
-
+\\date{October 1, 2021}
 
 \\image{https://psurl.s3.amazonaws.com/images/jc/sinc2-bcbf.png}{Wave packet}{width: 250, float: right}
 

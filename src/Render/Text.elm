@@ -90,7 +90,8 @@ markupDict =
         , ( "texarg", \g s a textList -> texarg g s a textList )
         , ( "abstract", \g s a textList -> abstract g s a textList )
         , ( "tags", \g s a textList -> Element.none )
-        , ( "author", \g s a textList -> author g s a textList )
+        , ( "author", \g s a textList -> Element.none )
+        , ( "date", \g s a textList -> Element.none )
         , ( "large", \g s a textList -> large g s a textList )
 
         -- MiniLaTeX stuff
