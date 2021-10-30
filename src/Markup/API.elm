@@ -123,7 +123,7 @@ renderFancy settings language count source =
                 Just dateString ->
                     let
                         size =
-                            round (toFloat settings.titleSize / 1.6)
+                            round (toFloat settings.titleSize / 1.8)
                     in
                     E.el [ Font.size size, Utility.elementAttribute "id" "date" ] (E.text (dateString |> String.replace "\n" " "))
 

@@ -77,6 +77,7 @@ preamble title author date =
 \\newtheorem{remark}{Remark}
 \\newcommand{\\comment}[1]{}
 \\newcommand{\\innertableofcontents}{}
+\\newcommand{\\nothing}[1]{}
 
 %% Theorems
 \\newtheorem{theorem}{Theorem}

@@ -42,6 +42,9 @@ nameDict =
         , ( "heading3", "subsubsection" )
         , ( "heading4", "subsubsubsection" )
         , ( "heading5", "subheading" )
+        , ( "date", "nothing" )
+        , ( "tags", "nothing" )
+        , ( "author", "nothing" )
         ]
 
 
