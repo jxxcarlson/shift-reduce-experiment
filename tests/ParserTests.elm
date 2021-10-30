@@ -1,9 +1,11 @@
 module ParserTests exposing (suiteL1, suiteMarkdown, suiteMiniLaTeX)
 
 import Block.Block exposing (BlockStatus(..))
+import Either exposing (..)
 import Expect
 import Expression.AST exposing (Expr(..))
 import Expression.Parser exposing (run)
+import Expression.Token as Token
 import Lang.Lang exposing (Lang(..))
 import Lang.Token.Common exposing (TokenState(..))
 import Markup.API as API
@@ -53,6 +55,16 @@ suiteMarkdown =
                 run Markdown "colors [!blue](BLUE) and [!violet](VIOLET) also"
                     |> Expect.equal
                         { committed = [ Text "colors " { begin = 0, end = 6 }, Expr "blue" [ Text "BLUE" { begin = 15, end = 18 } ] { begin = 14, end = 19 }, Text " and " { begin = 20, end = 24 }, Expr "violet" [ Text "VIOLET" { begin = 35, end = 40 } ] { begin = 34, end = 41 }, Text " also" { begin = 42, end = 46 } ], count = 16, end = 47, scanPointer = 47, sourceText = "colors [!blue](BLUE) and [!violet](VIOLET) also", stack = [], tokenState = TSA }
+        , test "(7)  two functions in text" <|
+            \_ ->
+                run Markdown "[!italic](Foo [!strong](Bar) Baz)"
+                    |> Expect.equal
+                        { committed = [ Expr "italic" [ Text "Foo " { begin = 10, end = 13 }, Expr "strong" [ Text "Bar" { begin = 24, end = 26 } ] { begin = 23, end = 27 }, Text " Baz" { begin = 28, end = 31 } ] { begin = 9, end = 32 } ], count = 14, end = 33, scanPointer = 33, sourceText = "[!italic](Foo [!strong](Bar) Baz)", stack = [], tokenState = TSA }
+        , test "(8)  two functions in text" <|
+            \_ ->
+                run Markdown "[!italic]([stuff)\n"
+                    |> Expect.equal
+                        { committed = [ Text "\n" { begin = 17, end = 17 }, Text "Error! I added a bracket after this: " { begin = 0, end = 0 } ], count = 9, end = 18, scanPointer = 18, sourceText = "[!italic]([stuff)\n", stack = [ Left (Token.Symbol "]" { begin = 18, end = 19 }), Left (Token.Symbol ")" { begin = 16, end = 16 }), Left (Token.Text "stuff" { begin = 11, end = 15 }), Left (Token.Symbol "[" { begin = 10, end = 10 }), Left (Token.Symbol "(" { begin = 9, end = 9 }), Right (Expr "italic" [] { begin = 0, end = 8 }) ], tokenState = TSA }
         ]
 
 

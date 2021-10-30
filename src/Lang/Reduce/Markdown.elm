@@ -99,7 +99,7 @@ reduce state =
 
         -- Transform "{" .... "}" to Right (Arg [....])
         (Left (Token.Symbol ")" loc3)) :: rest ->
-            reduce { state | stack = reduceArg state.stack } |> debugGreen "RULE 9"
+            { state | stack = reduceArg state.stack } |> debugGreen "RULE 9"
 
         (Left (MarkedText "boldItalic" str loc)) :: [] ->
             reduce (reduceAuxBOZO (Expr "boldItalic" [ AST.Text str loc ] loc) [] state) |> debugGreen "RED 10"
