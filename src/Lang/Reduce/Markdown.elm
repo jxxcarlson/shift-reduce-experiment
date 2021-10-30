@@ -48,19 +48,21 @@ reduceFinal_ state =
 reduce : State -> State
 reduce state =
     case state.stack of
+        -- ONE-TERM RULES
         -- commit lone text token
         (Left (Token.Text str loc)) :: [] ->
-            reduceAux (AST.Text str loc) [] state |> debugGreen "RED 6 (RULE 1)"
+            reduce { state | committed = AST.Text str loc :: state.committed, stack = [] } |> debugYellow "RED 1"
 
-        -- commit text :: expression
+        -- TWO-TERM RULES
+        -- text :: expression => commit
         (Left (Token.Text str loc1)) :: (Right (AST.Expr name args loc2)) :: rest ->
-            let
-                _ =
-                    debugRed "reduceFinal, RULE 2, IN" state
-            in
-            { state | committed = AST.Text str loc1 :: AST.Expr name (List.reverse args) loc2 :: state.committed, stack = rest } |> debugYellow "FINAL RULE 2"
+            reduce { state | committed = AST.Text str loc1 :: AST.Expr name (List.reverse args) loc2 :: state.committed, stack = rest } |> debugYellow "RED 2"
 
-        -- RULE R1: L S [, L  T fname, L S ] -> Right Expr fname []
+        -- arg :: expr :: rest = expr with incorporated arg :: rest
+        (Right (AST.Arg args1 loc2)) :: (Right (AST.Expr name args2 loc3)) :: rest ->
+            reduce { state | stack = Right (AST.Expr name (args1 ++ args2) { begin = loc2.begin, end = loc2.end }) :: rest } |> debugYellow "RED 3 (incorporate arg in expr)"
+
+        -- THREE-TERM RULES
         (Left (Token.Symbol "]" loc3)) :: (Left (Token.Text fName loc2)) :: (Left (Token.Symbol "[" loc1)) :: rest ->
             let
                 expr =
@@ -70,7 +72,7 @@ reduce state =
                     else
                         Right (Expr "link" [ AST.Text fName loc2 ] { begin = loc1.begin, end = loc3.end })
             in
-            { state | stack = expr :: rest } |> debugGreen "RED 1"
+            reduce { state | stack = expr :: rest } |> debugGreen "RED 4 (make function)"
 
         -- RULE R2: L S (, L  T arg, L S ) -> Right Arg [T arg]
         (Left (Token.Symbol ")" loc3)) :: (Left (Token.Text arg loc2)) :: (Left (Token.Symbol "(" loc1)) :: rest ->
@@ -78,7 +80,7 @@ reduce state =
                 expr =
                     Right (Arg [ AST.Text arg loc2 ] { begin = loc1.begin, end = loc3.end })
             in
-            { state | stack = expr :: rest } |> debugGreen "RED 2"
+            reduce { state | stack = expr :: rest } |> debugGreen "RED 5 (make arg)"
 
         -- RULE R3: L S (, R Expr fname args, L S ) -> R Arg [Expr fname  args]
         (Left (Token.Symbol ")" loc3)) :: (Right expr_) :: (Left (Token.Symbol "(" loc1)) :: rest ->
@@ -86,54 +88,45 @@ reduce state =
                 expr =
                     Right (Arg [ expr_ ] { begin = loc1.begin, end = loc3.end })
             in
-            { state | stack = expr :: rest } |> debugGreen "RED 3"
+            reduce { state | stack = expr :: rest } |> debugGreen "RED 6"
 
-        -- RULE R4: R Expr fname args1, R A args2 -> Right Arg (args2 ++ arg1))
-        (Right (Arg args2 loc2)) :: (Right (Expr fName args1 loc1)) :: rest ->
-            let
-                expr =
-                    Right (Expr fName (args2 ++ args1) { begin = loc1.begin, end = loc2.end })
-            in
-            { state | stack = expr :: rest } |> debugGreen "RED 4"
-
-        -- reduce  arg :: functionName :: rest to expr :: rest
         (Right (AST.Arg args loc2)) :: (Left (Token.FunctionName name loc1)) :: rest ->
-            { state | stack = Right (AST.Expr name args { begin = loc1.begin, end = loc2.end }) :: rest } |> debugGreen "RED 5 (RULE B)"
+            reduce { state | stack = Right (AST.Expr name args { begin = loc1.begin, end = loc2.end }) :: rest } |> debugGreen "RED 8"
 
         -- Transform "{" .... "}" to Right (Arg [....])
         (Left (Token.Symbol ")" loc3)) :: rest ->
-            { state | stack = reduceArg state.stack } |> debugGreen "RULE A"
+            reduce { state | stack = reduceArg state.stack } |> debugGreen "RULE 9"
 
         (Left (MarkedText "boldItalic" str loc)) :: [] ->
-            reduceAux (Expr "boldItalic" [ AST.Text str loc ] loc) [] state |> debugGreen "RED 7"
+            reduce (reduceAuxBOZO (Expr "boldItalic" [ AST.Text str loc ] loc) [] state) |> debugGreen "RED 10"
 
         (Left (MarkedText "strong" str loc)) :: [] ->
-            { state | committed = Expr "strong" [ AST.Text str loc ] loc :: state.committed, stack = [] } |> debugGreen "RED 8"
+            reduce { state | committed = Expr "strong" [ AST.Text str loc ] loc :: state.committed, stack = [] } |> debugGreen "RED 11"
 
         (Left (MarkedText "italic" str loc)) :: [] ->
-            { state | committed = Expr "italic" [ AST.Text str loc ] loc :: state.committed, stack = [] } |> debugGreen "RED 9"
+            reduce { state | committed = Expr "italic" [ AST.Text str loc ] loc :: state.committed, stack = [] } |> debugGreen "RED 12"
 
         (Left (MarkedText "code" str loc)) :: [] ->
-            { state | committed = AST.Verbatim "code" str loc :: state.committed, stack = [] } |> debugGreen "RED 10"
+            reduce { state | committed = AST.Verbatim "code" str loc :: state.committed, stack = [] } |> debugGreen "RED 13"
 
         (Left (MarkedText "math" str loc)) :: [] ->
-            { state | committed = AST.Verbatim "math" str loc :: state.committed, stack = [] } |> debugGreen "RED 11"
+            reduce { state | committed = AST.Verbatim "math" str loc :: state.committed, stack = [] } |> debugGreen "RED 14"
 
         (Left (AnnotatedText "image" label value loc)) :: [] ->
-            { state | committed = Expr "image" [ AST.Text value loc, AST.Text label loc ] loc :: state.committed, stack = [] } |> debugGreen "RED 12"
+            reduce { state | committed = Expr "image" [ AST.Text value loc, AST.Text label loc ] loc :: state.committed, stack = [] } |> debugGreen "RED 15"
 
         (Left (AnnotatedText "link" label value loc)) :: [] ->
-            { state | committed = Expr "link" [ AST.Text label loc, AST.Text value loc ] loc :: state.committed, stack = [] } |> debugGreen "RED 13"
+            reduce { state | committed = Expr "link" [ AST.Text label loc, AST.Text value loc ] loc :: state.committed, stack = [] } |> debugGreen "RED 16"
 
         (Left (Special name argString loc)) :: [] ->
-            { state | committed = Expr "special" [ AST.Text name loc, AST.Text argString loc ] loc :: state.committed, stack = [] } |> debugGreen "RED 14"
+            reduce { state | committed = Expr "special" [ AST.Text name loc, AST.Text argString loc ] loc :: state.committed, stack = [] } |> debugGreen "RED 17"
 
         _ ->
-            state |> debugGreen "RED 15"
+            state |> debugGreen "RED 18"
 
 
-reduceAux : Expr -> List (Either Token Expr) -> State -> State
-reduceAux expr rest state =
+reduceAuxBOZO : Expr -> List (Either Token Expr) -> State -> State
+reduceAuxBOZO expr rest state =
     if rest == [] then
         { state | stack = [], committed = normalizeExpr expr :: state.committed } |> debugGreen "reduceAux, 1"
 
