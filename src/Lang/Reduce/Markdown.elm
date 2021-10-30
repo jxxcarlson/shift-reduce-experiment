@@ -56,7 +56,11 @@ reduce state =
         -- TWO-TERM RULES
         -- text :: expression => commit
         (Left (Token.Text str loc1)) :: (Right (AST.Expr name args loc2)) :: rest ->
-            reduce { state | committed = AST.Text str loc1 :: AST.Expr name (List.reverse args) loc2 :: state.committed, stack = rest } |> debugYellow "RED 2"
+            if Stack.isStackReducible state.stack then
+                reduce { state | committed = AST.Text str loc1 :: AST.Expr name (List.reverse args) loc2 :: state.committed, stack = rest } |> debugYellow "RED 2"
+
+            else
+                state
 
         -- arg :: expr :: rest = expr with incorporated arg :: rest
         (Right (AST.Arg args1 loc2)) :: (Right (AST.Expr name args2 loc3)) :: rest ->
@@ -122,7 +126,8 @@ reduce state =
             reduce { state | committed = Expr "special" [ AST.Text name loc, AST.Text argString loc ] loc :: state.committed, stack = [] } |> debugGreen "RED 17"
 
         _ ->
-            state |> debugGreen "RED 18"
+            -- If no rule applied, stop the recursion
+            state |> debugGreen "RED 18, exit reduce"
 
 
 reduceAuxBOZO : Expr -> List (Either Token Expr) -> State -> State

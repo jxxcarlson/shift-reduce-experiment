@@ -2,9 +2,10 @@ module Expression.Stack exposing
     ( Stack
     , dump
     , isFunctionName
+    , isStackReducible
     , stackHasSymbol
-    , toExprList
     , symbolToString
+    , toExprList
     )
 
 import Either exposing (Either(..))
@@ -21,11 +22,66 @@ type alias Stack =
     List StackItem
 
 
+type StackCharacter
+    = L
+    | R
+
+
+type alias StackCharacteristic =
+    List StackCharacter
+
+
+stackCharacteristic : Stack -> StackCharacteristic
+stackCharacteristic stack =
+    List.map characteristicSymbol stack |> Maybe.Extra.values
+
+
+updateStatus : StackCharacter -> Int -> Int
+updateStatus char k =
+    case char of
+        L ->
+            k - 1
+
+        R ->
+            k + 1
+
+
+isStackReducible : Stack -> Bool
+isStackReducible stack =
+    stack |> stackCharacteristic |> isReducible
+
+
+isReducible : StackCharacteristic -> Bool
+isReducible sc =
+    List.foldl (\c acc -> updateStatus c acc) 0 sc == 0
+
+
+characteristicSymbol : StackItem -> Maybe StackCharacter
+characteristicSymbol item =
+    case item of
+        Right _ ->
+            Nothing
+
+        Left token ->
+            case token of
+                Symbol "(" _ ->
+                    Just L
+
+                Symbol ")" _ ->
+                    Just R
+
+                _ ->
+                    Nothing
+
+
 symbolToString : StackItem -> Maybe String
 symbolToString item =
     case item of
-       Left token -> Token.symbolToString token
-       Right _ -> Nothing
+        Left token ->
+            Token.symbolToString token
+
+        Right _ ->
+            Nothing
 
 
 dump : Stack -> String
