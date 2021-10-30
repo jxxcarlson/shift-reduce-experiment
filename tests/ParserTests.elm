@@ -39,6 +39,20 @@ suiteMarkdown =
             \_ ->
                 run Markdown "[N Y T](url)"
                     |> Expect.equal { committed = [ Expr "link" [ Text "N Y T" { begin = 1, end = 5 }, Text "url" { begin = 8, end = 10 } ] { begin = 7, end = 11 } ], count = 7, end = 12, scanPointer = 12, sourceText = "[N Y T](url)", stack = [], tokenState = TSA }
+        , test "(4) nested functions" <|
+            \_ ->
+                run Markdown "[!italic]([!gray](This is a way to de-emphasize text.))"
+                    |> Expect.equal { committed = [ Expr "italic" [ Expr "gray" [ Text "This is a way to de-emphasize text." { begin = 18, end = 52 } ] { begin = 17, end = 53 } ] { begin = 9, end = 54 } ], count = 12, end = 55, scanPointer = 55, sourceText = "[!italic]([!gray](This is a way to de-emphasize text.))", stack = [], tokenState = TSA }
+        , test "(5)  function, text" <|
+            \_ ->
+                run Markdown "[nyt](URL) boo!"
+                    |> Expect.equal
+                        { committed = [ Expr "link" [ Text "nyt" { begin = 1, end = 3 }, Text "URL" { begin = 6, end = 8 } ] { begin = 5, end = 9 }, Text " boo!" { begin = 10, end = 14 } ], count = 8, end = 15, scanPointer = 15, sourceText = "[nyt](URL) boo!", stack = [], tokenState = TSA }
+        , test "(6)  two functions in text" <|
+            \_ ->
+                run Markdown "colors [!blue](BLUE) and [!violet](VIOLET) also"
+                    |> Expect.equal
+                        { committed = [ Text "colors " { begin = 0, end = 6 }, Expr "blue" [ Text "BLUE" { begin = 15, end = 18 } ] { begin = 14, end = 19 }, Text " and " { begin = 20, end = 24 }, Expr "violet" [ Text "VIOLET" { begin = 35, end = 40 } ] { begin = 34, end = 41 }, Text " also" { begin = 42, end = 46 } ], count = 16, end = 47, scanPointer = 47, sourceText = "colors [!blue](BLUE) and [!violet](VIOLET) also", stack = [], tokenState = TSA }
         ]
 
 
@@ -83,6 +97,24 @@ suiteMiniLaTeX =
             \_ ->
                 run MiniLaTeX "abc \\href{1}{2} def"
                     |> Expect.equal { committed = [ Text "abc " { begin = 0, end = 3 }, Expr "href" [ Text "1" { begin = 10, end = 10 }, Text "2" { begin = 13, end = 13 } ] { begin = 4, end = 14 }, Text " def" { begin = 15, end = 18 } ], count = 10, end = 19, scanPointer = 19, sourceText = "abc \\href{1}{2} def", stack = [], tokenState = TSA }
+        , test "(10) nested macros" <|
+            \_ ->
+                run MiniLaTeX "\\italic{AAA \\bold{BBB} }"
+                    |> Expect.equal { committed = [ Expr "italic" [ Text "AAA " { begin = 8, end = 11 }, Expr "bold" [ Text "BBB" { begin = 18, end = 20 } ] { begin = 12, end = 21 }, Text " " { begin = 22, end = 22 } ] { begin = 0, end = 23 } ], count = 10, end = 24, scanPointer = 24, sourceText = "\\italic{AAA \\bold{BBB} }", stack = [], tokenState = TSA }
+        , test "(11) href + text" <|
+            \_ ->
+                run MiniLaTeX "\\href{1}{2} XYZ"
+                    |> Expect.equal
+                        { committed = [ Expr "href" [ Text "1" { begin = 6, end = 6 }, Text "2" { begin = 9, end = 9 } ] { begin = 0, end = 10 }, Text " XYZ" { begin = 11, end = 14 } ], count = 9, end = 15, scanPointer = 15, sourceText = "\\href{1}{2} XYZ", stack = [], tokenState = TSA }
+        , test "(12) text, macro, math" <|
+            \_ ->
+                run MiniLaTeX "foo \\italic{bar} $x$"
+                    |> Expect.equal
+                        { committed = [ Text "foo " { begin = 0, end = 3 }, Expr "italic" [ Text "bar" { begin = 12, end = 14 } ] { begin = 4, end = 15 }, Text " " { begin = 16, end = 16 }, Verbatim "math" "x" { begin = 17, end = 19 } ], count = 8, end = 20, scanPointer = 20, sourceText = "foo \\italic{bar} $x$", stack = [], tokenState = TSA }
+        , test "(13)  nested macro, macro, text" <|
+            \_ ->
+                run MiniLaTeX "\\italic{AAA \\strong{BBB} CCC}\n"
+                    |> Expect.equal { committed = [ Expr "italic" [ Text "AAA " { begin = 8, end = 11 }, Expr "strong" [ Text "BBB" { begin = 20, end = 22 } ] { begin = 12, end = 23 }, Text " CCC" { begin = 24, end = 27 } ] { begin = 0, end = 28 }, Text "\n" { begin = 29, end = 29 } ], count = 11, end = 30, scanPointer = 30, sourceText = "\\italic{AAA \\strong{BBB} CCC}\n", stack = [], tokenState = TSA }
         ]
 
 
