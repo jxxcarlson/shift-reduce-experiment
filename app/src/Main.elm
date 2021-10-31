@@ -12,18 +12,16 @@ import Element.Input as Input
 import Expression.ASTTools as ASTTools
 import File.Download as Download
 import Html exposing (Html)
-
-import LaTeX.Export.API
-
 import Html.Attributes as HtmlAttr exposing (attribute)
 import Html.Events
 import Json.Decode
 import Json.Encode
-
+import LaTeX.Export.API
 import LaTeX.Export.Block
 import Lang.Lang exposing (Lang(..))
 import Markup.API as API exposing (defaultSettings)
 import Process
+import Render.Msg
 import Render.Settings
 import Task
 
@@ -69,6 +67,7 @@ type Msg
     | LoadDocumentText Lang String
     | IncrementCounter
     | SetViewMode ViewMode
+    | Render Render.Msg.MarkupMsg
 
 
 identifierToLanguage : String -> Lang
@@ -159,6 +158,9 @@ update msg model =
         IncrementCounter ->
             ( model, Cmd.none )
 
+        Render msg_ ->
+            ( model, Cmd.none )
+
 
 download : String -> String -> String -> Cmd msg
 download filename mimetype content =
@@ -218,9 +220,9 @@ editor_ model =
                 |> Json.Decode.map InputText
                 |> Html.Events.on "change"
     in
-    el [ htmlAttribute onChange ]
-        <| html 
-            <| Html.node "ace-editor"
+    el [ htmlAttribute onChange ] <|
+        html <|
+            Html.node "ace-editor"
                 [ HtmlAttr.attribute "theme" "twilight"
                 , HtmlAttr.attribute "wrapmode" "true"
                 , HtmlAttr.attribute "tabsize" "2"
@@ -232,7 +234,6 @@ editor_ model =
                 , HtmlAttr.attribute "text" model.sourceText
                 ]
                 []
-        
 
 
 green =
@@ -328,16 +329,16 @@ settings =
     { defaultSettings | paragraphSpacing = 42, showErrorMessages = True }
 
 
-render : Lang -> Int -> String -> List (Element msg)
+render : Lang -> Int -> String -> List (Element Msg)
 render language count source =
---<<<<<<< HEAD
-      API.renderFancy settings language count (String.lines source)
+    --<<<<<<< HEAD
+    API.renderFancy settings language count (String.lines source) |> List.map (Element.map Render)
+
+
+
 --=======
 --    API.renderFancy { width = panelWidth_, titleSize = 34, showTOC = True } language count (String.lines source)
 -->>>>>>> ace-editor
-
-
-
 -- INPUT
 
 

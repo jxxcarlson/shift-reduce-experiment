@@ -24,6 +24,7 @@ import LaTeX.Export.Markdown
 import Lang.Lang exposing (Lang(..))
 import Markup.Simplify as Simplify
 import Render.Block
+import Render.Msg exposing (MarkupMsg(..))
 import Render.Settings exposing (Settings)
 import Render.Text
 import Utility
@@ -44,7 +45,7 @@ p lang str =
     parse lang 0 (String.lines str) |> .ast |> Simplify.blocks
 
 
-rl : String -> List (Element msg)
+rl : String -> List (Element MarkupMsg)
 rl str =
     renderFancy defaultSettings L1 0 (String.lines str)
 
@@ -73,7 +74,7 @@ parse lang generation lines =
     }
 
 
-renderFancy : Render.Settings.Settings -> Lang -> Int -> List String -> List (Element msg)
+renderFancy : Render.Settings.Settings -> Lang -> Int -> List String -> List (Element MarkupMsg)
 renderFancy settings language count source =
     let
         parseData =
@@ -82,7 +83,7 @@ renderFancy settings language count source =
         ast =
             parseData.ast
 
-        toc_ : List (Element msg)
+        toc_ : List (Element MarkupMsg)
         toc_ =
             tableOfContents count settings parseData.accumulator ast
 
@@ -134,7 +135,7 @@ renderFancy settings language count source =
             else
                 E.none
 
-        renderedText_ : List (Element msg)
+        renderedText_ : List (Element MarkupMsg)
         renderedText_ =
             render count settings parseData.accumulator ast
     in
@@ -145,13 +146,13 @@ renderFancy settings language count source =
         docTitle :: author :: date :: renderedText_
 
 
-tableOfContents : Int -> Settings -> Block.State.Accumulator -> List Block -> List (Element msg)
+tableOfContents : Int -> Settings -> Block.State.Accumulator -> List Block -> List (Element MarkupMsg)
 tableOfContents generation settings accumulator blocks =
     blocks |> ASTTools.getHeadings |> Render.Text.viewTOC generation defaultSettings accumulator
 
 
 {-| -}
-compile : Lang -> Int -> Render.Settings.Settings -> List String -> List (Element msg)
+compile : Lang -> Int -> Render.Settings.Settings -> List String -> List (Element MarkupMsg)
 compile language generation settings lines =
     let
         parseData =

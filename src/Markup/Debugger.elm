@@ -13,7 +13,7 @@ import Console
 
 
 magentaSwitch =
-    True
+    False
 
 
 cyanSwitch =
@@ -21,19 +21,19 @@ cyanSwitch =
 
 
 greenSwitch =
-    True
+    False
 
 
 yellowSwitch =
-    True
+    False
 
 
 blueSwitch =
-    True
+    False
 
 
 redSwitch =
-    True
+    False
 
 
 debugNull label =
@@ -41,7 +41,11 @@ debugNull label =
 
 
 debug3 label =
-    identity --- Debug.log (Console.black (Console.bgYellow (" " ++ label ++ " ")))
+    identity
+
+
+
+--- Debug.log (Console.black (Console.bgYellow (" " ++ label ++ " ")))
 
 
 debugMagenta label =
@@ -62,7 +66,7 @@ debugCyan label =
 
 debugGreen label =
     if greenSwitch then
-         Debug.log (Console.black (Console.bgGreen (" " ++ label ++ " ")))
+        Debug.log (Console.black (Console.bgGreen (" " ++ label ++ " ")))
 
     else
         identity
@@ -78,7 +82,7 @@ debugYellow label =
 
 debugBlue label =
     if blueSwitch then
-         Debug.log (Console.white (Console.bgBlue (" " ++ label ++ " ")))
+        Debug.log (Console.white (Console.bgBlue (" " ++ label ++ " ")))
 
     else
         identity

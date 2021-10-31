@@ -9,6 +9,7 @@ import Expression.AST exposing (Expr(..))
 import Expression.ASTTools as ASTTools
 import LaTeX.MathMacro
 import Render.Math
+import Render.Msg exposing (MarkupMsg(..))
 import Render.Settings exposing (Settings)
 import Utility
 
@@ -17,14 +18,14 @@ type alias Accumulator =
     { macroDict : LaTeX.MathMacro.MathMacroDict }
 
 
-render : Int -> Settings -> Accumulator -> ExprM -> Element msg
+render : Int -> Settings -> Accumulator -> ExprM -> Element MarkupMsg
 render generation settings accumulator text =
     case text of
         TextM string _ ->
             Element.el [] (Element.text string)
 
-        ExprM name textList _ ->
-            Element.el [] (renderMarked name generation settings accumulator textList)
+        ExprM name exprList _ ->
+            Element.el [] (renderMarked name generation settings accumulator exprList)
 
         VerbatimM name str _ ->
             renderVerbatim name generation settings accumulator str
@@ -49,60 +50,60 @@ renderVerbatim name generation settings accumulator str =
             f generation settings accumulator str
 
 
-renderMarked name generation settings accumulator textList =
+renderMarked name generation settings accumulator exprList =
     case Dict.get name markupDict of
         Nothing ->
             Element.el [ Font.color errorColor ] (Element.text name)
 
         Just f ->
-            f generation settings accumulator textList
+            f generation settings accumulator exprList
 
 
-markupDict : Dict String (Int -> Settings -> Accumulator -> List ExprM -> Element msg)
+markupDict : Dict String (Int -> Settings -> Accumulator -> List ExprM -> Element MarkupMsg)
 markupDict =
     Dict.fromList
-        [ ( "special", \g s a textList -> special g s a textList )
-        , ( "item", \g s a textList -> item g s a textList )
-        , ( "numberedItem", \g s a textList -> numberedItem g s a textList )
-        , ( "strong", \g s a textList -> strong g s a textList )
-        , ( "bold", \g s a textList -> strong g s a textList )
-        , ( "italic", \g s a textList -> italic g s a textList )
-        , ( "boldItalic", \g s a textList -> boldItalic g s a textList )
-        , ( "red", \g s a textList -> red g s a textList )
-        , ( "blue", \g s a textList -> blue g s a textList )
-        , ( "violet", \g s a textList -> violet g s a textList )
-        , ( "highlight", \g s a textList -> highlight g s a textList )
-        , ( "strike", \g s a textList -> strike g s a textList )
-        , ( "underline", \g s a textList -> underline g s a textList )
-        , ( "gray", \g s a textList -> gray g s a textList )
-        , ( "errorHighlight", \g s a textList -> errorHighlight g s a textList )
+        [ ( "special", \g s a exprList -> special g s a exprList )
+        , ( "item", \g s a exprList -> item g s a exprList )
+        , ( "numberedItem", \g s a exprList -> numberedItem g s a exprList )
+        , ( "strong", \g s a exprList -> strong g s a exprList )
+        , ( "bold", \g s a exprList -> strong g s a exprList )
+        , ( "italic", \g s a exprList -> italic g s a exprList )
+        , ( "boldItalic", \g s a exprList -> boldItalic g s a exprList )
+        , ( "red", \g s a exprList -> red g s a exprList )
+        , ( "blue", \g s a exprList -> blue g s a exprList )
+        , ( "violet", \g s a exprList -> violet g s a exprList )
+        , ( "highlight", \g s a exprList -> highlight g s a exprList )
+        , ( "strike", \g s a exprList -> strike g s a exprList )
+        , ( "underline", \g s a exprList -> underline g s a exprList )
+        , ( "gray", \g s a exprList -> gray g s a exprList )
+        , ( "errorHighlight", \g s a exprList -> errorHighlight g s a exprList )
         , ( "title", \_ _ _ _ -> Element.none )
-        , ( "heading1", \g s a textList -> heading1 g s a textList )
-        , ( "heading2", \g s a textList -> heading2 g s a textList )
-        , ( "heading3", \g s a textList -> heading3 g s a textList )
-        , ( "heading4", \g s a textList -> heading4 g s a textList )
-        , ( "heading5", \g s a textList -> italic g s a textList )
-        , ( "skip", \g s a textList -> skip g s a textList )
-        , ( "link", \g s a textList -> link g s a textList )
-        , ( "href", \g s a textList -> href g s a textList )
-        , ( "image", \g s a textList -> image g s a textList )
-        , ( "texmacro", \g s a textList -> texmacro g s a textList )
-        , ( "texarg", \g s a textList -> texarg g s a textList )
-        , ( "abstract", \g s a textList -> abstract g s a textList )
-        , ( "tags", \g s a textList -> Element.none )
-        , ( "author", \g s a textList -> Element.none )
-        , ( "date", \g s a textList -> Element.none )
-        , ( "large", \g s a textList -> large g s a textList )
+        , ( "heading1", \g s a exprList -> heading1 g s a exprList )
+        , ( "heading2", \g s a exprList -> heading2 g s a exprList )
+        , ( "heading3", \g s a exprList -> heading3 g s a exprList )
+        , ( "heading4", \g s a exprList -> heading4 g s a exprList )
+        , ( "heading5", \g s a exprList -> italic g s a exprList )
+        , ( "skip", \g s a exprList -> skip g s a exprList )
+        , ( "link", \g s a exprList -> link g s a exprList )
+        , ( "href", \g s a exprList -> href g s a exprList )
+        , ( "image", \g s a exprList -> image g s a exprList )
+        , ( "texmacro", \g s a exprList -> texmacro g s a exprList )
+        , ( "texarg", \g s a exprList -> texarg g s a exprList )
+        , ( "abstract", \g s a exprList -> abstract g s a exprList )
+        , ( "tags", \g s a exprList -> Element.none )
+        , ( "author", \g s a exprList -> Element.none )
+        , ( "date", \g s a exprList -> Element.none )
+        , ( "large", \g s a exprList -> large g s a exprList )
 
         -- MiniLaTeX stuff
-        , ( "term", \g s a textList -> term g s a textList )
-        , ( "emph", \g s a textList -> emph g s a textList )
-        , ( "eqref", \g s a textList -> eqref g s a textList )
+        , ( "term", \g s a exprList -> term g s a exprList )
+        , ( "emph", \g s a exprList -> emph g s a exprList )
+        , ( "eqref", \g s a exprList -> eqref g s a exprList )
         , ( "setcounter", \_ _ _ _ -> Element.none )
         ]
 
 
-verbatimDict : Dict String (Int -> Settings -> Accumulator -> String -> Element msg)
+verbatimDict : Dict String (Int -> Settings -> Accumulator -> String -> Element MarkupMsg)
 verbatimDict =
     Dict.fromList
         [ ( "$", \g s a str -> math g s a str )
@@ -112,9 +113,9 @@ verbatimDict =
         ]
 
 
-special : Int -> Settings -> Accumulator -> List ExprM -> Element msg
-special g s a textList =
-    case textList of
+special : Int -> Settings -> Accumulator -> List ExprM -> Element MarkupMsg
+special g s a exprList =
+    case exprList of
         (TextM functionName _) :: (TextM argString _) :: [] ->
             case Dict.get functionName specialFunctionsDict of
                 Nothing ->
@@ -132,7 +133,7 @@ special g s a textList =
                 ]
 
 
-specialFunctionsDict : Dict String (Settings -> String -> Element msg)
+specialFunctionsDict : Dict String (Settings -> String -> Element MarkupMsg)
 specialFunctionsDict =
     Dict.fromList
         [ ( "title", \s str -> title s str )
@@ -149,18 +150,18 @@ blueColor =
     Element.rgb 0 0 0.8
 
 
-texmacro : Int -> Settings -> Accumulator -> List ExprM -> Element msg
-texmacro g s a textList =
-    macro1 (\str -> Element.el [] (Element.text ("\\" ++ str))) g s a textList
+texmacro : Int -> Settings -> Accumulator -> List ExprM -> Element MarkupMsg
+texmacro g s a exprList =
+    macro1 (\str -> Element.el [] (Element.text ("\\" ++ str))) g s a exprList
 
 
-texarg g s a textList =
-    macro1 (\str -> Element.el [] (Element.text ("{" ++ str ++ "}"))) g s a textList
+texarg g s a exprList =
+    macro1 (\str -> Element.el [] (Element.text ("{" ++ str ++ "}"))) g s a exprList
 
 
-macro1 : (String -> Element msg) -> Int -> Settings -> Accumulator -> List ExprM -> Element msg
-macro1 f g s a textList =
-    case ASTTools.exprListToStringList textList of
+macro1 : (String -> Element MarkupMsg) -> Int -> Settings -> Accumulator -> List ExprM -> Element MarkupMsg
+macro1 f g s a exprList =
+    case ASTTools.exprListToStringList exprList of
         -- TODO: temporary fix: parse is producing the args in reverse order
         arg1 :: _ ->
             f arg1
@@ -169,9 +170,9 @@ macro1 f g s a textList =
             el [ Font.color errorColor ] (Element.text "Invalid arguments")
 
 
-macro2 : (String -> String -> Element msg) -> Int -> Settings -> Accumulator -> List ExprM -> Element msg
-macro2 element g s a textList =
-    case ASTTools.exprListToStringList textList of
+macro2 : (String -> String -> Element MarkupMsg) -> Int -> Settings -> Accumulator -> List ExprM -> Element MarkupMsg
+macro2 element g s a exprList =
+    case ASTTools.exprListToStringList exprList of
         -- TODO: temporary fix: parse is producing the args in reverse order
         arg1 :: arg2 :: _ ->
             element arg1 arg2
@@ -180,16 +181,16 @@ macro2 element g s a textList =
             el [ Font.color errorColor ] (Element.text "Invalid arguments")
 
 
-large g s a textList =
-    simpleElement [ Font.size 18 ] g s a textList
+large g s a exprList =
+    simpleElement [ Font.size 18 ] g s a exprList
 
 
-author g s a textList =
-    simpleElement [ Font.size 18 ] g s a textList
+author g s a exprList =
+    simpleElement [ Font.size 18 ] g s a exprList
 
 
-abstract g s a textList =
-    Element.paragraph [] [ Element.el [ Font.size 18 ] (Element.text "Abstract."), simpleElement [] g s a textList ]
+abstract g s a exprList =
+    Element.paragraph [] [ Element.el [ Font.size 18 ] (Element.text "Abstract."), simpleElement [] g s a exprList ]
 
 
 link g s a exprList =
@@ -201,7 +202,7 @@ link g s a exprList =
             el [ Font.color errorColor ] (Element.text "bad data for link")
 
 
-link_ : String -> String -> Element msg
+link_ : String -> String -> Element MarkupMsg
 link_ url label =
     newTabLink []
         { url = url
@@ -209,11 +210,11 @@ link_ url label =
         }
 
 
-href g s a textList =
-    macro2 href_ g s a textList
+href g s a exprList =
+    macro2 href_ g s a exprList
 
 
-href_ : String -> String -> Element msg
+href_ : String -> String -> Element MarkupMsg
 href_ url label =
     newTabLink []
         { url = url
@@ -222,7 +223,7 @@ href_ url label =
 
 
 
---         , ( "href", \g s a textList -> href g s a textList )
+--         , ( "href", \g s a exprList -> href g s a exprList )
 
 
 image generation settings accumuator body =
@@ -295,9 +296,9 @@ linkColor =
     Element.rgb 0 0 0.8
 
 
-simpleElement : List (Element.Attribute msg) -> Int -> Settings -> Accumulator -> List ExprM -> Element msg
-simpleElement formatList g s a textList =
-    Element.paragraph formatList (List.map (render g s a) textList)
+simpleElement : List (Element.Attribute MarkupMsg) -> Int -> Settings -> Accumulator -> List ExprM -> Element MarkupMsg
+simpleElement formatList g s a exprList =
+    Element.paragraph formatList (List.map (render g s a) exprList)
 
 
 verbatimElement formatList g s a str =
@@ -322,17 +323,17 @@ codeStyle =
     ]
 
 
-mathElement : Int -> Settings -> Accumulator -> String -> Element msg
+mathElement : Int -> Settings -> Accumulator -> String -> Element MarkupMsg
 mathElement generation settings accumulator str =
     Render.Math.mathText generation Render.Math.InlineMathMode (LaTeX.MathMacro.evalStr accumulator.macroDict str)
 
 
-item : Int -> Settings -> Accumulator -> List ExprM -> Element msg
+item : Int -> Settings -> Accumulator -> List ExprM -> Element MarkupMsg
 item generation settings accumulator str =
     Element.paragraph [ Element.width Element.fill ] [ Element.text (ASTTools.exprListToStringList str |> String.join " ") ]
 
 
-numberedItem : Int -> Settings -> Accumulator -> List ExprM -> Element msg
+numberedItem : Int -> Settings -> Accumulator -> List ExprM -> Element MarkupMsg
 numberedItem generation settings accumulator str =
     Element.paragraph [ Element.width Element.fill ] [ Element.text (ASTTools.exprListToStringList str |> String.join " ") ]
 
@@ -350,7 +351,7 @@ tocColor =
     Element.rgb 0.1 0 0.8
 
 
-viewTOC : Int -> Settings -> Accumulator -> List ExprM -> List (Element msg)
+viewTOC : Int -> Settings -> Accumulator -> List ExprM -> List (Element MarkupMsg)
 viewTOC generation settings accumulator items =
     Element.el [ Font.size 18 ] (Element.text "Contents") :: List.map (viewTOCItem generation settings accumulator) items
 
@@ -360,39 +361,39 @@ internalLink str =
     "#" ++ str |> makeSlug
 
 
-tocLink : List ExprM -> Element msg
-tocLink textList =
+tocLink : List ExprM -> Element MarkupMsg
+tocLink exprList =
     let
         t =
-            ASTTools.stringValueOfList textList
+            ASTTools.stringValueOfList exprList
     in
     Element.link [] { url = internalLink t, label = Element.text t }
 
 
-viewTOCItem : Int -> Settings -> Accumulator -> ExprM -> Element msg
+viewTOCItem : Int -> Settings -> Accumulator -> ExprM -> Element MarkupMsg
 viewTOCItem generation settings accumulator block =
     case block of
-        ExprM "heading1" textList _ ->
-            el (tocStyle 1 textList) (tocLink textList)
+        ExprM "heading1" exprList _ ->
+            el (tocStyle 1 exprList) (tocLink exprList)
 
-        ExprM "heading2" textList _ ->
-            el (tocStyle 2 textList) (tocLink textList)
+        ExprM "heading2" exprList _ ->
+            el (tocStyle 2 exprList) (tocLink exprList)
 
-        ExprM "heading3" textList _ ->
-            el (tocStyle 3 textList) (tocLink textList)
+        ExprM "heading3" exprList _ ->
+            el (tocStyle 3 exprList) (tocLink exprList)
 
-        ExprM "heading4" textList _ ->
-            el (tocStyle 4 textList) (tocLink textList)
+        ExprM "heading4" exprList _ ->
+            el (tocStyle 4 exprList) (tocLink exprList)
 
-        ExprM "heading5" textList _ ->
-            el (tocStyle 5 textList) (tocLink textList)
+        ExprM "heading5" exprList _ ->
+            el (tocStyle 5 exprList) (tocLink exprList)
 
         _ ->
             Element.none
 
 
-tocStyle k textList =
-    [ Font.size 14, Font.color tocColor, leftPadding (k * tocPadding), makeId textList ]
+tocStyle k exprList =
+    [ Font.size 14, Font.color tocColor, leftPadding (k * tocPadding), makeId exprList ]
 
 
 leftPadding k =
@@ -408,12 +409,12 @@ makeSlug str =
     str |> String.toLower |> String.replace " " "-"
 
 
-makeId : List ExprM -> Element.Attribute msg
-makeId textList =
-    Utility.elementAttribute "id" (ASTTools.stringValueOfList textList |> String.trim |> makeSlug)
+makeId : List ExprM -> Element.Attribute MarkupMsg
+makeId exprList =
+    Utility.elementAttribute "id" (ASTTools.stringValueOfList exprList |> String.trim |> makeSlug)
 
 
-title : Settings -> String -> Element msg
+title : Settings -> String -> Element MarkupMsg
 title s titleText =
     -- el [ Font.size s.titleSize, Utility.elementAttribute "id" titleText ] (Element.text titleText)
     Element.none
@@ -434,105 +435,105 @@ headingFontSize settings level =
     Font.size size
 
 
-heading1 g s a textList =
+heading1 g s a exprList =
     Element.column [ headingFontSize s 1, verticalPadding 14 0 ]
-        [ Element.link [ makeId textList ]
-            { url = internalLink "TITLE", label = Element.paragraph [] (List.map (render g s a) textList) }
+        [ Element.link [ makeId exprList ]
+            { url = internalLink "TITLE", label = Element.paragraph [] (List.map (render g s a) exprList) }
         ]
 
 
-heading2 g s a textList =
+heading2 g s a exprList =
     Element.column [ headingFontSize s 2, verticalPadding 14 0 ]
-        [ Element.link [ makeId textList ]
-            { url = internalLink "TITLE", label = Element.paragraph [] (List.map (render g s a) textList) }
+        [ Element.link [ makeId exprList ]
+            { url = internalLink "TITLE", label = Element.paragraph [] (List.map (render g s a) exprList) }
         ]
 
 
-heading3 g s a textList =
+heading3 g s a exprList =
     Element.column [ headingFontSize s 3, verticalPadding 14 0 ]
-        [ Element.link [ makeId textList ]
-            { url = internalLink "TITLE", label = Element.paragraph [] (List.map (render g s a) textList) }
+        [ Element.link [ makeId exprList ]
+            { url = internalLink "TITLE", label = Element.paragraph [] (List.map (render g s a) exprList) }
         ]
 
 
-heading4 g s a textList =
+heading4 g s a exprList =
     Element.column [ headingFontSize s 4, verticalPadding 14 0 ]
-        [ Element.link [ makeId textList ]
-            { url = internalLink "TITLE", label = Element.paragraph [] (List.map (render g s a) textList) }
+        [ Element.link [ makeId exprList ]
+            { url = internalLink "TITLE", label = Element.paragraph [] (List.map (render g s a) exprList) }
         ]
 
 
-heading5 g s a textList =
+heading5 g s a exprList =
     Element.column [ headingFontSize s 5, verticalPadding 14 0 ]
-        [ Element.link [ makeId textList ]
-            { url = internalLink "TITLE", label = Element.paragraph [] (List.map (render g s a) textList) }
+        [ Element.link [ makeId exprList ]
+            { url = internalLink "TITLE", label = Element.paragraph [] (List.map (render g s a) exprList) }
         ]
 
 
-skip g s a textList =
+skip g s a exprList =
     let
         numVal : String -> Int
         numVal str =
             String.toInt str |> Maybe.withDefault 0
 
-        f : String -> Element msg
+        f : String -> Element MarkupMsg
         f str =
             column [ Element.spacingXY 0 (numVal str) ] [ Element.text "" ]
     in
-    macro1 f g s a textList
+    macro1 f g s a exprList
 
 
-strong g s a textList =
-    simpleElement [ Font.bold ] g s a textList
+strong g s a exprList =
+    simpleElement [ Font.bold ] g s a exprList
 
 
-italic g s a textList =
-    simpleElement [ Font.italic, Element.paddingEach { left = 0, right = 2, top = 0, bottom = 0 } ] g s a textList
+italic g s a exprList =
+    simpleElement [ Font.italic, Element.paddingEach { left = 0, right = 2, top = 0, bottom = 0 } ] g s a exprList
 
 
-boldItalic g s a textList =
-    simpleElement [ Font.italic, Font.bold, Element.paddingEach { left = 0, right = 2, top = 0, bottom = 0 } ] g s a textList
+boldItalic g s a exprList =
+    simpleElement [ Font.italic, Font.bold, Element.paddingEach { left = 0, right = 2, top = 0, bottom = 0 } ] g s a exprList
 
 
-term g s a textList =
-    simpleElement [ Font.italic, Element.paddingEach { left = 0, right = 2, top = 0, bottom = 0 } ] g s a textList
+term g s a exprList =
+    simpleElement [ Font.italic, Element.paddingEach { left = 0, right = 2, top = 0, bottom = 0 } ] g s a exprList
 
 
-eqref g s a textList =
-    simpleElement [ Font.italic, Element.paddingEach { left = 0, right = 2, top = 0, bottom = 0 } ] g s a textList
+eqref g s a exprList =
+    simpleElement [ Font.italic, Element.paddingEach { left = 0, right = 2, top = 0, bottom = 0 } ] g s a exprList
 
 
-emph g s a textList =
-    simpleElement [ Font.italic, Element.paddingEach { left = 0, right = 2, top = 0, bottom = 0 } ] g s a textList
+emph g s a exprList =
+    simpleElement [ Font.italic, Element.paddingEach { left = 0, right = 2, top = 0, bottom = 0 } ] g s a exprList
 
 
-red g s a textList =
-    simpleElement [ Font.color (Element.rgb255 200 0 0) ] g s a textList
+red g s a exprList =
+    simpleElement [ Font.color (Element.rgb255 200 0 0) ] g s a exprList
 
 
-blue g s a textList =
-    simpleElement [ Font.color (Element.rgb255 0 0 200) ] g s a textList
+blue g s a exprList =
+    simpleElement [ Font.color (Element.rgb255 0 0 200) ] g s a exprList
 
 
-violet g s a textList =
-    simpleElement [ Font.color (Element.rgb255 150 100 255) ] g s a textList
+violet g s a exprList =
+    simpleElement [ Font.color (Element.rgb255 150 100 255) ] g s a exprList
 
 
-highlight g s a textList =
-    simpleElement [ Background.color (Element.rgb255 255 255 0) ] g s a textList
+highlight g s a exprList =
+    simpleElement [ Background.color (Element.rgb255 255 255 0) ] g s a exprList
 
 
-strike g s a textList =
-    simpleElement [ Font.strike ] g s a textList
+strike g s a exprList =
+    simpleElement [ Font.strike ] g s a exprList
 
 
-underline g s a textList =
-    simpleElement [ Font.underline ] g s a textList
+underline g s a exprList =
+    simpleElement [ Font.underline ] g s a exprList
 
 
-gray g s a textList =
-    simpleElement [ Font.color (Element.rgb 0.5 0.5 0.5) ] g s a textList
+gray g s a exprList =
+    simpleElement [ Font.color (Element.rgb 0.5 0.5 0.5) ] g s a exprList
 
 
-errorHighlight g s a textList =
-    simpleElement [ Background.color (Element.rgb255 255 200 200), Element.paddingXY 2 2 ] g s a textList
+errorHighlight g s a exprList =
+    simpleElement [ Background.color (Element.rgb255 255 200 200), Element.paddingXY 2 2 ] g s a exprList
