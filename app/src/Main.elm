@@ -20,6 +20,7 @@ import LaTeX.Export.API
 import LaTeX.Export.Block
 import Lang.Lang exposing (Lang(..))
 import Markup.API as API exposing (defaultSettings)
+import Markup.Meta
 import Process
 import Render.Msg
 import Render.Settings
@@ -42,6 +43,8 @@ type alias Model =
     , windowHeight : Int
     , windowWidth : Int
     , viewMode : ViewMode
+    , message : String
+    , lineNumber : Int
     }
 
 
@@ -102,6 +105,8 @@ init flags =
       , windowHeight = flags.height
       , windowWidth = flags.width
       , viewMode = StandardView
+      , message = ""
+      , lineNumber = 0
       }
     , Process.sleep 100 |> Task.perform (always IncrementCounter)
     )
@@ -159,7 +164,16 @@ update msg model =
             ( model, Cmd.none )
 
         Render msg_ ->
-            ( model, Cmd.none )
+            case msg_ of
+                Render.Msg.SendMeta m ->
+                    let
+                        _ =
+                            Debug.log "MESSAGE" m
+                    in
+                    ( { model | message = Debug.toString m, lineNumber = m.loc.begin.row }, Cmd.none )
+
+                _ ->
+                    ( model, Cmd.none )
 
 
 download : String -> String -> String -> Cmd msg
@@ -191,10 +205,10 @@ mainColumn model =
     column (mainColumnStyle model)
         [ column [ centerY, paddingEach { top = 46, bottom = 0, left = 0, right = 0 }, spacing 8, width (px appWidth_), height (px (appHeight_ model)) ]
             [ -- title "L3 Demo App"
-              column [ height fill, spacing 12 ]
+              column [ height (px 600), spacing 12 ]
                 [ row [ spacing 12 ] [ editor model, rhs model ]
                 ]
-            , row [ Font.size 14, Font.color whiteColor ] []
+            , row [ Font.size 14 ] [ Element.text model.message ]
             ]
         ]
 
@@ -226,6 +240,8 @@ editor_ model =
                 [ HtmlAttr.attribute "theme" "twilight"
                 , HtmlAttr.attribute "wrapmode" "true"
                 , HtmlAttr.attribute "tabsize" "2"
+
+                -- , HtmlAttr.attribute "lineNumber" (String.fromInt model.lineNumber)
                 , HtmlAttr.attribute "softtabs" "true"
                 , HtmlAttr.attribute "navigateWithinSoftTabs" "true"
                 , HtmlAttr.attribute "fontsize" "12"
@@ -336,9 +352,6 @@ render language count source =
 
 
 
---=======
---    API.renderFancy { width = panelWidth_, titleSize = 34, showTOC = True } language count (String.lines source)
--->>>>>>> ace-editor
 -- INPUT
 
 
