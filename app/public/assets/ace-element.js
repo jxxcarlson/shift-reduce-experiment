@@ -135,6 +135,12 @@ window.customElements.define("ace-editor", class AceEditor extends HTMLElement {
         if (this.hasAttribute("placeholder")) {
             editor.setOption("placeholder", this.getAttribute("placeholder"))
         }
+        // EXPERIMENTAL, NOT WORKING
+        if (this.hasAttribute("lineNumber")) {
+                    var lineNumber = this.getAttribute("lineNumber")
+                    editor.scrollToLine(lineNumber, true, true, function () {});
+                    editor.gotoLine(lineNumber, 0, true);
+                }
 
         // non-Ace specific
         if (this.hasAttribute("shadow-style")) {
@@ -162,11 +168,19 @@ window.customElements.define("ace-editor", class AceEditor extends HTMLElement {
         this._attached = false
     }
 
+
+
     attributeChangedCallback(attr, oldVal, newVal) {
         if (!this._attached) {
             return false
         }
         switch (attr) {
+            // EXPERIMENTAL, NOT WORKING
+            case "lineNumber":
+               this.editor.scrollToLine(newVal, true, true, function () {});
+               this.editor.gotoLine(newVal, 0, true);
+               this.editor.console.log(newVal)
+               break
             case "theme":
                 this.editor.setTheme(newVal)
                 break

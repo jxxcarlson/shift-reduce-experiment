@@ -168,9 +168,9 @@ update msg model =
                 Render.Msg.SendMeta m ->
                     let
                         _ =
-                            Debug.log "MESSAGE" m
+                            Debug.log "XXXX, ROWS (first, last)" ( m.loc.begin.row + 1, m.loc.end.row + 1 )
                     in
-                    ( { model | message = Debug.toString m, lineNumber = m.loc.begin.row }, Cmd.none )
+                    ( { model | lineNumber = m.loc.begin.row }, Cmd.none )
 
                 _ ->
                     ( model, Cmd.none )
@@ -227,6 +227,9 @@ editor model =
 editor_ : Model -> Element Msg
 editor_ model =
     let
+        _ =
+            Debug.log "XXXX, LINE" model.lineNumber
+
         onChange : Html.Attribute Msg
         onChange =
             Json.Decode.string
@@ -240,8 +243,7 @@ editor_ model =
                 [ HtmlAttr.attribute "theme" "twilight"
                 , HtmlAttr.attribute "wrapmode" "true"
                 , HtmlAttr.attribute "tabsize" "2"
-
-                -- , HtmlAttr.attribute "lineNumber" (String.fromInt model.lineNumber)
+                , HtmlAttr.attribute "lineNumber" (String.fromInt model.lineNumber |> Debug.log "XXXX, also lineNumber")
                 , HtmlAttr.attribute "softtabs" "true"
                 , HtmlAttr.attribute "navigateWithinSoftTabs" "true"
                 , HtmlAttr.attribute "fontsize" "12"

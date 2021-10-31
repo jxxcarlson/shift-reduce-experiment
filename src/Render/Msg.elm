@@ -5,4 +5,4 @@ import Markup.Meta
 
 type MarkupMsg
     = SendMeta Markup.Meta.ExpressionMeta
-    | NoMsg
+    | GetPublicDocument String

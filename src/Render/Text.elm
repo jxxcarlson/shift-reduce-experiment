@@ -6,6 +6,7 @@ import Element exposing (Element, alignLeft, alignRight, centerX, column, el, ne
 import Element.Background as Background
 import Element.Events as Events
 import Element.Font as Font
+import Element.Input as Input
 import Expression.AST exposing (Expr(..))
 import Expression.ASTTools as ASTTools
 import LaTeX.MathMacro
@@ -86,6 +87,7 @@ markupDict =
         , ( "heading5", \g s a exprList -> italic g s a exprList )
         , ( "skip", \g s a exprList -> skip g s a exprList )
         , ( "link", \g s a exprList -> link g s a exprList )
+        , ( "xlink", \g s a exprList -> xlink g s a exprList )
         , ( "href", \g s a exprList -> href g s a exprList )
         , ( "image", \g s a exprList -> image g s a exprList )
         , ( "texmacro", \g s a exprList -> texmacro g s a exprList )
@@ -192,6 +194,23 @@ author g s a exprList =
 
 abstract g s a exprList =
     Element.paragraph [] [ Element.el [ Font.size 18 ] (Element.text "Abstract."), simpleElement [] g s a exprList ]
+
+
+xlink g s a exprList =
+    case exprList of
+        (TextM label _) :: (TextM docId _) :: _ ->
+            xlink_ docId label
+
+        _ ->
+            el [ Font.color errorColor ] (Element.text "bad data for link")
+
+
+xlink_ : String -> String -> Element MarkupMsg
+xlink_ docId label =
+    Input.button []
+        { onPress = Just (GetPublicDocument docId)
+        , label = Element.el [ Element.centerX, Element.centerY, Font.size 14, Font.color (Element.rgb 0 0 0.8) ] (Element.text label)
+        }
 
 
 link g s a exprList =
