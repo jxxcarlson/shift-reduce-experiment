@@ -4,6 +4,7 @@ import Block.Block exposing (ExprM(..))
 import Dict exposing (Dict)
 import Element exposing (Element, alignLeft, alignRight, centerX, column, el, newTabLink, px, spacing)
 import Element.Background as Background
+import Element.Events as Events
 import Element.Font as Font
 import Expression.AST exposing (Expr(..))
 import Expression.ASTTools as ASTTools
@@ -21,8 +22,8 @@ type alias Accumulator =
 render : Int -> Settings -> Accumulator -> ExprM -> Element MarkupMsg
 render generation settings accumulator text =
     case text of
-        TextM string _ ->
-            Element.el [] (Element.text string)
+        TextM string meta ->
+            Element.el [ Events.onClick (SendMeta (Debug.log "META" meta)) ] (Element.text string)
 
         ExprM name exprList _ ->
             Element.el [] (renderMarked name generation settings accumulator exprList)

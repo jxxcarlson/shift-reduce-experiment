@@ -1,6 +1,8 @@
 module Render.Msg exposing (MarkupMsg(..))
 
+import Markup.Meta
+
 
 type MarkupMsg
-    = MetaMsg
+    = SendMeta Markup.Meta.ExpressionMeta
     | NoMsg
