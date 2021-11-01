@@ -57,7 +57,7 @@ window.customElements.define("ace-editor", class AceEditor extends HTMLElement {
     // List of observed attributes
     static get observedAttributes() {
         return ["theme", "mode", "fontsize", "softtabs", "tabsize", "readonly", "placeholder",
-            "wrapmode", "min-lines", "max-lines", "line-numbers", "shadow-style", "text"]
+            "wrapmode", "min-lines", "max-lines", "line-numbers", "shadow-style", "text", "linenumber"]
     }
 
     // Fires when an instance of the element is created
@@ -112,6 +112,7 @@ window.customElements.define("ace-editor", class AceEditor extends HTMLElement {
             editor.getSession().on("change", (event) => {
                 element.dispatchEvent(new CustomEvent("change", { bubbles: true, composed: true, detail: event }))
             })
+
         }
 
         // Handle theme changes
@@ -136,11 +137,11 @@ window.customElements.define("ace-editor", class AceEditor extends HTMLElement {
             editor.setOption("placeholder", this.getAttribute("placeholder"))
         }
         // EXPERIMENTAL, NOT WORKING
-        if (this.hasAttribute("lineNumber")) {
-                    var lineNumber = this.getAttribute("lineNumber")
-                    editor.scrollToLine(lineNumber, true, true, function () {});
-                    editor.gotoLine(lineNumber, 0, true);
-                }
+//        if (this.hasAttribute("linenumber")) {
+//                    var linenumber = this.getAttribute("linenumber")
+//                    this.editor.scrollToLine(100, true, true, function () {});
+//                    this.editor.gotoLine(100, 0, true);
+//                }
 
         // non-Ace specific
         if (this.hasAttribute("shadow-style")) {
@@ -175,11 +176,9 @@ window.customElements.define("ace-editor", class AceEditor extends HTMLElement {
             return false
         }
         switch (attr) {
-            // EXPERIMENTAL, NOT WORKING
-            case "lineNumber":
+            case "linenumber":
                this.editor.scrollToLine(newVal, true, true, function () {});
                this.editor.gotoLine(newVal, 0, true);
-               this.editor.console.log(newVal)
                break
             case "theme":
                 this.editor.setTheme(newVal)

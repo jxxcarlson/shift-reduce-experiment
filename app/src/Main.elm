@@ -166,7 +166,7 @@ update msg model =
         Render msg_ ->
             case msg_ of
                 Render.Msg.SendMeta m ->
-                    ( { model | lineNumber = m.loc.begin.row }, Cmd.none )
+                    ( { model | lineNumber = m.loc.begin.row, message = "line " ++ String.fromInt (m.loc.begin.row + 1) }, Cmd.none )
 
                 _ ->
                     ( model, Cmd.none )
@@ -201,10 +201,10 @@ mainColumn model =
     column (mainColumnStyle model)
         [ column [ centerY, paddingEach { top = 46, bottom = 0, left = 0, right = 0 }, spacing 8, width (px appWidth_), height (px (appHeight_ model)) ]
             [ -- title "L3 Demo App"
-              column [ height (px 600), spacing 12 ]
+              column [ height fill, spacing 12 ]
                 [ row [ spacing 12 ] [ editor model, rhs model ]
                 ]
-            , row [ Font.size 14 ] [ Element.text model.message ]
+            , row [ Element.paddingXY 8 0, Element.height (px 30), Element.width fill, Font.size 14, Background.color (Element.rgb 0.3 0.3 0.3), Font.color (Element.rgb 1 1 1) ] [ Element.text model.message ]
             ]
         ]
 
@@ -236,7 +236,7 @@ editor_ model =
                 [ HtmlAttr.attribute "theme" "twilight"
                 , HtmlAttr.attribute "wrapmode" "true"
                 , HtmlAttr.attribute "tabsize" "2"
-                , HtmlAttr.attribute "lineNumber" (String.fromInt model.lineNumber)
+                , HtmlAttr.attribute "linenumber" (String.fromInt (model.lineNumber + 1))
                 , HtmlAttr.attribute "softtabs" "true"
                 , HtmlAttr.attribute "navigateWithinSoftTabs" "true"
                 , HtmlAttr.attribute "fontsize" "12"
