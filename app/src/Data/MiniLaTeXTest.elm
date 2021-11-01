@@ -3,263 +3,304 @@ module Data.MiniLaTeXTest exposing (text)
 
 text =
     """
-\\title{Wave packets}
+\\title{The Fourier Transform}
+\\author{James Carlson} \\date{October 30, 2021} \\tags{quantum}
 
 
-\\author{James Carlson}
+\\begin{mathmacro}
+   \\newcommand{\\bra}[0]{\\langle}
+   \\newcommand{\\ket}[0]{\\rangle}
+   \\newcommand{\\caF}[0]{\\mathcal{F}}
+   \\newcommand{\\boR}[0]{\\bf{R}}
+\\end{mathmacro}
 
-\\date{October 1, 2021}
+\\setcounter{section}{9}
 
-\\image{https://psurl.s3.amazonaws.com/images/jc/sinc2-bcbf.png}{Wave packet}{width: 250, float: right}
-
-As we have seen with the sinc packet, wave packets can be localized in space.  A key feature of such packets is their \\italic{group velocity} $v_g$.  This is the velocity which which the "body" of the wave packet travels.  Now a wave packet is synthesized by superposing many plane waves, so the natural question is how is the group velocity of the packet related to the phase velocities of its constituent plane waves.  We will answer this first in the simplest possible situation -- a superposition of two sine waves.  Next, we will reconsider the case of the sinc packet.  Finally, we will study a more realistic approximation to actual wave packets which gives insight into the manner and speed with which wave packets change shape as they evolve in time.  We end by applying this to an electron in a thought experiment in which it has been momentarily confned to an atom-size box -- about one Angstrom, or $10^{-10}\\text{ meter}$.
-
-
-
-\\subsection{A two-frequency packet: beats}
-
-\\image{https://psurl.s3.amazonaws.com/images/jc/beats-eca1.png}{Two-frequency beats}{width: 350, float: right}
-Consider a wave
-$\\psi = \\psi_1 + \\psi_2$ which is the sum of two terms with slightly different frequencies.  If the waves are sound waves, then then what one will hear is a pitch that corresponding to the average of the two frequencies modulated in such a way that the volume goes up and down at a frequency corresponding to their difference.
-
-Let us analyze this phenomenon mathematically, setting
+\\section{Fourier transform}
 
 
+The \\term{Fourier transform} is defined by
 
 \\begin{equation}
-   \\psi_1(x,t)  = \\cos((k - \\Delta k/2)x - (\\omega - \\Delta \\omega/2)t)
+    (\\caF g )(k) = \\frac{1}{\\sqrt{2\\pi}} \\int_{-\\infty}^\\infty g(x) e^{-ikx} dx
 \\end{equation}
 
-and
+The Fourier transform is a unitary operator on $L^2(\\boR )$ with inverse
 
 \\begin{equation}
-   \\psi_2(x,t)  = \\cos((k + \\Delta k/2)x - (\\omega + \\Delta \\omega/2)t)
+   (\\caF^{-1} g)(x) =  \\frac{1}{\\sqrt{2\\pi}} \\int_{\\infty}^\\infty g(k) e^{-ikx} dk
 \\end{equation}
 
-By the addition law for the sine, this can be rewritten as
+One often writes $\\hat g$ for $\\caF(g)$. 
+
+The fact that $\\caF$ is invertible allows us to write
 
 \\begin{equation}
-   \\psi(x,t) = 2\\sin(kx - \\omega t)\\sin((\\Delta k)x - (\\Delta \\omega)t)
+   g(x) = (\\caF^{-1} \\caF g)(x) =  \\frac{1}{\\sqrt{2\\pi}}  \\int_{-\\infty}^\\infty \\hat g(k)  e^{ikx} dk
 \\end{equation}
 
-
-The resultant wave -- the sum -- consists of of a high-frequency sine wave oscillating according to the average of the component wave numbers and angular frequencies, modulated by a cosine factor that oscillates according to the difference of the wave numbers and the angular frequencies, respectively.  The velocity associated to the high frequency factor is
+The fact that the Fourier transform is unitary is \\term{Plancherel's theorem}.  Thus $g(x)$ 
+isa superposition of  functions $e^{ikx}$ which appear with weight $\\hat g(k)$.  In Dirac's notation, we proceed formally to write this equation as
 
 \\begin{equation}
-   v_{phase} = \\frac{\\omega}{k},
+   g(x)  = \\frac{1}{\\sqrt{2\\pi}} \\int_{-\\infty}^\\infty \\hat g(k) | k \\ket dk
 \\end{equation}
 
-whereas the velocity associated with the low-frequency factor is
+where $| k \\ket = e^{ikx}$. Now $\\hat g(k) = (1/\\sqrt{2\\pi} )\\bra k | g \\ket$, so the integral can be written as
 
 \\begin{equation}
-   v_{group} = \\frac{\\Delta \\omega}{\\Delta k}
+   g(x)  = \\frac{1}{2\\pi} \\int_{-\\infty}^\\infty  | k \\ket \\bra k | g \\ket dk
 \\end{equation}
 
-This is the simplest situation in which one observes the phenomenon of the group velocity.  Take a look at this \\href{https://galileo.phys.virginia.edu/classes/109N/more_stuff/Applets/wavepacket/wavepacket.html}{animation}.
-
-
-\\subsection{Step function approximation}
-
-
-We will now find an an approximation to
+Still proceeding formally, we write his as
 
 \\begin{equation}
-   \\psi(x,t) = \\int_{-\\infty}^\\infty a(k) e^{i(kx - \\omega(k)t)} dk
+   {\\bf 1} = \\frac{1}{2\\pi} \\int_{-\\infty}^\\infty dk | k \\ket \\bra k |  
 \\end{equation}
 
-under the assumption that $a(k)$ is nearly constant over an interval from $k_0 -\\Delta k/2$ to $k_0 + \\Delta k/2$ and that outside of that interval it approaches zero at a rapid rate.  In that case the Fourier integral is approximated by
+This is the resolution of the identity in the case of continuous spectrum.
+
+
+
+
+\\section{Examples}
+
+Let $f(x) = e^{-\\lambda x}$ for $x > 0$, $f(x) = 0$ for $x < 0$.  This is a sudden but exponentially decaying pulse. Then
+
+\\begin{align}
+   \\hat f(k) &= \\frac{1}{\\sqrt{2\\pi}}\\int_0^\\infty e^{-\\lambda x} e^{ikx} dx \\
+   &= \\frac{1}{\\sqrt{2\\pi}} \\frac{-1}{ik + \\lambda}\\Big\\vert_0^\\infty \\
+    &= \\frac{1}{\\sqrt{2\\pi}(ik + \\lambda)}
+\\end{align}
+
+In the same manner, we find that if $f(x) = e^{\\lambda x}$ for $x < 0$, $f(x) = 0$ for $x > 0$, then
 
 \\begin{equation}
-    \\int_{k_0 - \\Delta k/2}^{k_0 + \\Delta k/2}  a(k_0)e^{i((k_0 + (k - k_0)x - (\\omega_0t + \\omega_0'(k - k_0)t))}dk,
-\\end{equation}
-
-where $\\omega_0 = \\omega(k_0)$ and $\\omega_0' = \\omega'(k_0)$.
-This integral can be written as a product $F(x,t)S(x,t)$, where the first factor is "fast" and the second is "slow."  The fast factor is just
-
-\\begin{equation}
-   F(x,t) = a(k_0)e^{ i(k_0x - \\omega(k_0)t) }
-\\end{equation}
-
-It travels with velocity $v_{phase} = \\omega(k_0)/k_0$.  Setting $k; = k- k_0$, the slow factor is
-
-\\begin{equation}
-   S(x,t) = \\int_{-\\Delta k/2}^{\\Delta k/2} e^{ik'\\left(x - \\omega'(k_0)t\\right)} dk',
-\\end{equation}
-
-The slow factor be evaluated explicitly:
-
-\\begin{equation}
-   I = \\int_{-\\Delta k/2}^{\\Delta k/2} e^{ik'u} dk' = \\frac{1}{iu} e^{ik'u}\\Big\\vert_{k' = - \\Delta k/2}^{k' = +\\Delta k/2}.
-\\end{equation}
-
-We find that
-
-\\begin{equation}
-   I = \\Delta k\\thinspace \\text{sinc}\\frac{\\Delta k}{2}u
-\\end{equation}
-
-where $\\text{sinc } x = (\\sin x )/x$.  Thus the slow factor is
-
-\\begin{equation}
-   S(x,t) = \\Delta k\\, \\text{sinc}(  (\\Delta k/2)(x - \\omega'(k_0)t)  )
+   \\hat f(k) =  \\frac{1}{\\sqrt{2\\pi}(ik - \\lambda)}
 \\end{equation}
 
 
-Putting this all together, we have
+These are functions which decay exponentially at infinity.  Consider next a rectangular pulse $r_a(x)$, where $r_a(x) = 1/a$ for $x \\in [-a/2,a/2]$,  and where $r_a(x) = 0$ in the complement of the interval $[-a/2,a/2]$.  The height of the pulse is chosen so that the area under the graph is 1.  With this choice
 
 \\begin{equation}
-   \\psi(x,t) \\sim a(k_0)\\Delta k_0\\, e^{i(k_0x - \\omega(k_0)t)}\\text{sinc}(  (\\Delta k/2)(x -
-   \\omega'(k_0)t)  )
+   \\int_{-\\infty}^\\infty r_a(x-\\xi)f(x) dx = \\text{av}_{a, \\xi}(g)
 \\end{equation}
 
-Thus the body of the sinc packet moves steadily to the right at velocity $v_{group} = \\omega'(k_0)$
+where the average is the average of the function on an interval of width $a$ with center $\\xi$.  The Fourier transform is given by 
 
+\\begin{align}
+   \\frac{1}{a}\\int_{-a/2}^{a/2} e^{-ikx} dx
+   &= \\frac{1}{-ika} e^{-ikx} \\Big\\vert_{x=-a/2}^{x=a/2} \\
+   &= (2/ka)\\sin ka/2 \\
+   &= \\text{sinc}(ka/2)
+\\end{align}
 
-\\subsection{Gaussian approximation}
-
-The approximation used in the preceding section is good enough to capture and explain the group velocity of a wave packet.  However, it is not enough to explain how wave packets change shape as they evolve with time.  To understand this phenomenon, we begin with  an arbitrary packet
+Thus the Fourier transform of the rectangular pulse is the sinc function, up to a scale factor:
 
 \\begin{equation}
-   \\psi(x,t) = \\int_{\\infty}^\\infty a(k) e^{i\\phi(k)}\\,dk,
+   \\hat r_a(k) = \\frac{1}{\\sqrt{2\\pi}}\\text{sinc}(ka/2).
 \\end{equation}
 
-where $\\phi(k) = kx - \\omega(k)t$.  We shall assume that the spectrum $a(k)$ is has a maximum at $k = k_0$ and decays fairly rapidly away from the maximum.  Thus we assume that the Gaussian function
+Consider now the limit
 
 \\begin{equation}
-    a(k) = e^{ -(k-k_0)^2/ 4(\\Delta k)^2}
+   \\lim_{a \\to 0}\\int_{-\\infty}^\\infty r_a(x-\\xi) f(x) dx = \\lim_{a\\to 0} av_{a,\\xi} f = f(\\xi)
 \\end{equation}
 
-is a good approximation.  To analyze the Fourier integral
+We ask: \\emph{can we pass the limit under the integral sign, and if so, what is that limit?} The answer is yes, provided that we view convergence in the sense of convergence for linear functionals, the functional being
 
 \\begin{equation}
-   \\psi(x,t) = \\int_{-\\infty}^{\\infty} e^{ -(k-k_0)^2/ 4(\\Delta k)^2} e^{i(kx - \\omega(k) t)},
+   f \\mapsto \\int_{-\\infty}^\\infty r_a(x-\\xi) f(x) dx 
 \\end{equation}
 
-we expand $\\omega(k)$ in a Taylor series up to order two, so that
+Given that caveat, we write
 
 \\begin{equation}
-   \\phi(k) = k_0x + (k - k_0)x - \\omega_0t - \\frac{d\\omega}{dk}(k_0) t- \\frac{1}{2}\\frac{ d^2\\omega }{ dk^2 }(k_0)( k - k_0)^2 t
+   \\lim_{a \\to 0} r_a(x-\\xi)  = \\delta(x - \\xi)
 \\end{equation}
 
-Writing $\\phi(k) = k_0x - \\omega_0t + \\phi_2(k,x,t)$, we find that
+This is the famous Dirac delta function, which we view mathematically as a distribution and physically as the idealization of a unit area spike concentrated near $\\xi$.
+It is characterized by its action on functions:
 
 \\begin{equation}
-   \\psi(x,t) = e^{i(k_0x - \\omega_0 t)} \\int_{-\\infty}^{\\infty} e^{ -(k-k_0)^2/ 4(\\Delta k)^2} e^{i\\phi_2(k,x,t)}.
+   \\label{diracdelta1}
+    \\int_{-\\infty}^\\infty \\delta(x-\\xi)f(x)dx = f(\\xi)
 \\end{equation}
 
-Make the change of variables $k - k_0 = 2\\Delta k u$, and write $\\phi_2(k,x,t) = Q(u,x,t)$, where $Q$ is a quadratic polynomial in $u$ of the form $au + b$. One finds that
+
+
+We ask next: \\emph{what is the Fourier transform of} $\\delta$?
+A tentative answer is that it is the limit of the Fourier transforms of the rectangular pulses $r_a(x)$.  Therefore let us think about the limit of the functions $\\text{sinc}(ak/2)$ as $a$ tends to zero.  The first node to the right of the origin occurs at $k = 2\\pi/a$.  Thus the width of the principal lobe of the sinc function, which has height 1, increases without bound as $a$ tends to zero.  In other words, 
 
 \\begin{equation}
-   a  = -(1 + 2i\\alpha t  (\\Delta k)^2),
+   \\lim_{a\\to 0} \\text{sinc}(ka/2)  = 1
 \\end{equation}
 
-where
+We conclude that 
 
 \\begin{equation}
-   \\alpha = \\frac{ d^2\\omega }{ dk^2 }(k_0)
+   \\hat \\delta = \\frac{1}{\\sqrt{2\\pi}}
 \\end{equation}
 
-One also finds that
+where equality is equality of distributions.
+
+\\section{ODE's and Green's functions}
+
+The Fourier transform satisfies a plethora of beautiful and useful identities.  We discuss just a few of these here, then give an application to solving ODE's with constant coefficients.  First, the Fourier transform of a derivative:
+
+\\begin{align}
+   \\caF(f')(k) &= \\frac{1}{\\sqrt{2\\pi}}\\int_{\\infty}^{\\infty} f'(x) e^{-ikx}dx \\
+   &= -ik\\frac{1}{\\sqrt{2\\pi}}\\int_{\\infty}^{\\infty} f'(x) e^{-ikx}dx
+\\end{align}
+
+We integrated by parts, assuming that the function $f(x)$ and its derivative decay at infinity at least as fast as $(1 + |x|)^{1/2 + \\epsilon}$.  Thus differentiation of a function corresponds to multiplication of its Fourier transform by $-ik$:
 
 \\begin{equation}
-   b = 2i\\Delta k(x - v_g t),
+   \\caF(f')(k) = -ik\\caF(f)
 \\end{equation}
 
-where $v_g = d\\omega/dk$ is the group velocity.  The integral is a standard one, of the form
+More generally, consider any polynomial $P(s)$.  The $P(d/dx)$ is a constant-coefficient differential operator.  We have
 
 \\begin{equation}
-   \\int_{-\\infty}^\\infty e^{- au^2 + bu} = \\sqrt{\\frac{\\pi}{a}}\\; e^{ b^2/4a }.
+   \\caF(P(d/dx)f)(k) = P(-ik)\\caF(f)
 \\end{equation}
 
-Using this integral  formula and the reciprocity $\\Delta x\\Delta k = 1/2$, which we may take as a definition of $\\Delta x$, we find, after some algebra, that
+The fact the Fourier transform converts differentiation into multiplication means that differential equations can be solved by a combination of ordinary algebra and Fourier analysis.  Consider, for example, the first order equation 
 
 \\begin{equation}
-   \\psi(x,t) \\sim A e^{-B} \\,e^{i(k_0 - \\omega_0t)}
+   \\label{ode1}
+    u' - \\lambda u = f
 \\end{equation}
 
-where
+Its Fourier transform is
 
 \\begin{equation}
-   A = 2\\Delta k \\sqrt{\\frac{\\pi}{1 + 2i\\alpha \\Delta k^2 t}}
+   -ik \\hat u - \\lambda \\hat u = \\hat f
 \\end{equation}
 
-and
+Solving for $\\hat u$, we have
 
 \\begin{equation}
-   B = \\frac{( x-v_gt )^2 (1 - 2i\\alpha \\Delta k^2 t)}{4\\sigma^2}
+   \\hat u = \\frac{-\\hat f}{ik + \\lambda}
 \\end{equation}
 
-with
+Applying the inverse Fourier transform, we have
+
+\\begin{align}
+   u(x) &= \\caF^{-1}\\frac{-\\hat f}{ik + \\lambda} \\
+   &= \\frac{-1}{\\sqrt{2\\pi}} \\int_{-\\infty}^{\\infty} \\frac{ \\hat f(k) }{ik + \\lambda}e^{ikx} dk \\
+   &= \\frac{-1}{2\\pi} \\int_{-\\infty}^{\\infty} \\left[  \\int_{-\\infty}^{\\infty} f(x')e^{-ikx} dx' \\right] 
+   \\frac{e^{ikx}}{ik + \\lambda}dk \\
+   &=  \\frac{-1}{2\\pi} \\int_{-\\infty}^{\\infty} \\left[  \\int_{-\\infty}^{\\infty} \\frac{e^{ik(x-x')}} {ik + \\lambda} dk \\right] f(x')dx'
+\\end{align}
+
+Thus we have
 
 \\begin{equation}
-   \\sigma^2 = \\Delta x^2 + \\frac{\\alpha^2 t^2}{4 \\Delta x^2}
+   \\label{convolution1}
+   u(x) = \\int_{-\\infty}^{\\infty} G(x-x') f(x') dx'
 \\end{equation}
 
-Look at the expression $B$. The first factor in the numerator controls the motion of motion of the packet and is what guides it to move with group velocity $v_g$.  The second factor is generally a small real term and a much larger imaginary one, and so only affects the phase.  The denominator controls the width of the packet, and as we can see, it increases with $t$ so long as $\\alpha$, the second derivative of $\\omega(k)$ at the center of the packet, is nonzero.
-
-\\subsection{The electron}
-
-Let us apply what we have learned to an electron which has been confined to a box about the size of an atom, about $10^{-10}$ meters. That is, $\\Delta x \\sim 10^{-10}\\text{ m}$.  The extent of its wave packet will double when
+where 
 
 \\begin{equation}
-   \\frac{\\alpha^2 t^2}{4 \\Delta x^2} \\sim \\Delta x^2,
+   \\label{green1}
+   G(x-x')  = \\frac{-1}{2\\pi} \\int_{-\\infty}^{\\infty} \\frac{e^{ik(x-x')}} {ik + \\lambda}dk
 \\end{equation}
 
-that is, after a time
+From this solution to a simple problem, many lessons can be learned.  First, notice the form of  \\eqref{convolution1}/  It is the \\term{convolution} of two functions $G(x)$ and $f(x)$.
+
+The general definition is
 
 \\begin{equation}
-   t_{double} \\sim \\frac{\\Delta x^2}{\\alpha}
+   f*g(x) = \\int_{-\\infty}^{\\infty} f(x-y)g(y)dy
 \\end{equation}
 
-The dispersion relation for a free particle is
+The function $G(x)$ in \\eqref{green1} is called the \\term{Green's function}.  Thus the solution to equation \\eqref{ode1} is given by convolution with the Green's function:
 
 \\begin{equation}
-   \\omega(k) = \\hbar \\frac{k^2}{2m},
+   u = G*f
 \\end{equation}
 
-so that $\\alpha = \\hbar/m$.  Then
+There is more to say about the Green's function.  First, note what happens when we differentiate a convolution:
+
+\\begin{align}
+   (f*g)'(x) &= \\frac{d}{dx} \\int_{-\\infty}^{\\infty} f(x-y)g(y)dy \\
+   &= \\int_{-\\infty}^{\\infty} \\frac{d}{dx}  f(x-y)g(y)dy \\
+\\end{align}
+
+so that 
 
 \\begin{equation}
-   t_{double} \\sim \\frac{m}{h}\\, \\Delta x^2 .
+   (f*g)'(x)= f'*g(x)
 \\end{equation}
 
-In the case of our electron, we find that $t_{double} \\sim 10^{-16}\\,\\text{sec}$.
+This identity holds more generally for any differential operator with constant coefficients:
 
-\\subsection{ Code}
+\\begin{equation}
+   L(f*g)(x)= (Lf)*g(x)
+\\end{equation}
 
+Returning to our equation $Lu = f$, where $Lu  = u' -\\lambda u$, we have $u = G*f$ as general solution.  Substitute back into the ODE to obtain $L(G*f) = f$.  
+Apply the above identity to write this as $LG*f = f$.
+Here $f$ is abitrary (within reason) and so $LG$ reveals itself as the identity element for the operation of convolution.  The question is: \\emph{is there such an object?}
+There is  a hint in equation  \\eqref{diracdelta1}, which looks almost like a convolution.  Now the delta function is (among other things) the limit of a sequence of even functions, and therefore is itself even: $\\delta(-x) = \\delta(x)$.  Thus we may write \\eqref{diracdelta1}as
 
+\\begin{equation}
+   \\label{diracdelta2}
+    \\int_{-\\infty}^\\infty \\delta(\\xi-x)f(x)dx =  f(\\xi)
+\\end{equation}
 
-\\begin{verbatim}
-   # jupyter/python
+In other words,
 
-   matplotlib inline
+\\begin{equation}
+    \\delta*f = f.
+\\end{equation}
 
-   # code for sinc(x)
-   import numpy as np
-   import matplotlib.pyplot as plt
+If $(LG)* f = f$ for all $f$, then $LG = \\delta$.  We conclude that \\emph{the Green's function for} $Lu = f$ 
 
-   # sinc function
-   x = np.arange(-30, 30, 0.1);
-   y = np.sin(x)/x
-   plt.plot(x, y)
-
-   # beats
-   x = np.arange(-50, 250, 0.1);
-   y = np.cos(0.5*x) + np.sin(0.55*x)
-   plt.plot(x, y)
-\\end{verbatim}
-
-
-
-\\subsection{References}
-
-\\href{https://www.eng.fsu.edu/~dommelen/quantum/style_a/packets.html}{Quantum Mechanics for Engineers: Wave Packets}
-
-\\href{https://users.physics.harvard.edu/~schwartz/15cFiles/Lecture11-WavePackets.pdf}{Wave Packets, Harvard Physics}
-
-\\href{https//ocw.mit.edu/courses/nuclear-engineering/22-02-introduction-to-applied-nuclear-physics-spring-2012/lecture-notes/MIT22_02S12_lec_ch6.pdf}{Time evolution in QM - MIT}
+\\emph{ is a solution of} $LG = \\delta$.  This solution, which is not be unique if $L$ has a null space, is called the \\term{fundamental solution}.  From it, all other solutions are deduced by convolution.
 
 
+\\section{More about convolution}
+
+The operation of convolution satisfies many pleasant and useful properties.  One is that convolution of $g$ with $f$ tends to smooth out $g$ and increase its support.  
+To illustrate this, let $f = r_a$ be  rectangular pulse of unit area supported on $[-a/2, a/2]$ considered above.  For any even function $f$, we have 
+
+\\begin{align}
+   (f*g)(x) &= \\int_{-\\infty}^\\infty  f(x - y) g(y) dy \\
+    &= \\int_{-\\infty}^\\infty  f(y -x) g(y) dy
+\\end{align}
+
+Let $(T_a f)(y) = f(x-a)$ be the translation operator.  Thus the graph of $T_af$ is the graph of $f$ shifted $a$ units to the right, and the integral above can be written as
+
+\\begin{equation}
+   (f*g)(x) = \\int_{-\\infty}^\\infty T_x(f)(y)g(y)  dy
+\\end{equation}
+
+Therefore
+
+\\begin{equation}
+   (r_af*g)(x) =\\frac{1}{a} \\int_{x - a/2 }^{x + a/2 } f(y)g(y)  dy = \\overline{g_a}(x),
+\\end{equation}
+
+where $ \\overline{g_a}(x) $ is the average of $g(x)$ on $[x - a/2, x + a/2]$.  Averaging a function smooths it out, addressing the first stated property.  It also increases support.  If $g$ is supported on the interval $[b,c]$, then $r_a*g$ is supported on the larger interval $b - a, c + a]$.  In general, the large the support of $f$, where $f(x) \\ge 0$ for all $x$, the large is the support of $f*g$.  Indeed, if $f$ is supported on $[b,c]$ and the width of the support of $f$ is $d$, then $f*g$ is supported on $[b - d, c + d]$ -- an interval larger by $2d$ units
+
+\\image{http://psurl.s3.amazonaws.com/images/jc/convolution2-4598.png}
+
+\\section{References}
+
+\\href{http://ocw.mit.edu/courses/physics/8-05-quantum-physics-ii-fall-2013/lecture-notes/MIT8_05F13_Chap_04.pdf}{Dirac's Bra and Ket notation} -- Notes from B. Zwiebach's course at MIT
+
+\\href{http://www.physics.iitm.ac.in/~labs/dynamical/pedagogy/vb/delta.pdf}{All about the Dirac delta function} -- V. Balakrishnan, IIT Madras
+
+\\href{http://math.arizona.edu/~kglasner/math456/fouriertransform.pdf}{Fourier transform techniques} -- U. Arizona notes
+
+\\href{https://www.math.utah.edu/~gustafso/s2013/3150/pdeNotes/fourierTransorm-PeterOlver2013.pdf}{Fourier transform} -- 
+
+\\href{http://www.physics.rutgers.edu/~steves/501/Lectures_Final/Lec06_Propagator.pdf}{Olver notes, Free particle propagator}
+
+\\href{http://www.reed.edu/physics/faculty/wheeler/documents/Miscellaneous%20Math/Delta%20Functions/Simplified%20Dirac%20Delta.pdf}{Delta function} -- Reed college notes
 
 
 

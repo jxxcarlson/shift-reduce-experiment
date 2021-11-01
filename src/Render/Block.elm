@@ -1,5 +1,6 @@
 module Render.Block exposing (render)
 
+import Block.Accumulator exposing (Accumulator)
 import Block.Block as Block exposing (Block(..), BlockStatus(..))
 import Block.BlockTools as Block
 import Block.State
@@ -24,12 +25,12 @@ import Utility
 -- Internal.MathMacro.evalStr latexState.mathMacroDictionary str
 
 
-render : Int -> Settings -> Block.State.Accumulator -> List Block -> List (Element MarkupMsg)
+render : Int -> Settings -> Accumulator -> List Block -> List (Element MarkupMsg)
 render generation settings accumulator blocks =
     List.map (renderBlock generation settings accumulator) blocks
 
 
-renderBlock : Int -> Settings -> Block.State.Accumulator -> Block -> Element MarkupMsg
+renderBlock : Int -> Settings -> Accumulator -> Block -> Element MarkupMsg
 renderBlock generation settings accumulator block =
     case block of
         Paragraph textList _ ->
@@ -170,7 +171,7 @@ error str =
     paragraph [ Background.color (rgb255 250 217 215) ] [ text str ]
 
 
-verbatimBlockDict : Dict String (Int -> Settings -> Block.State.Accumulator -> List String -> Element MarkupMsg)
+verbatimBlockDict : Dict String (Int -> Settings -> Accumulator -> List String -> Element MarkupMsg)
 verbatimBlockDict =
     Dict.fromList
         [ ( "code", \g s a lines -> codeBlock g s a lines )
@@ -182,7 +183,7 @@ verbatimBlockDict =
         ]
 
 
-blockDict : Dict String (Int -> Settings -> Block.State.Accumulator -> List Block -> Element MarkupMsg)
+blockDict : Dict String (Int -> Settings -> Accumulator -> List Block -> Element MarkupMsg)
 blockDict =
     Dict.fromList
         [ ( "indent", \g s a blocks -> indent g s a blocks )
@@ -218,19 +219,19 @@ heading2 g s a textList =
         { url = internalLink "TITLE", label = Element.paragraph [] (render g s a textList) }
 
 
-heading3 : Int -> Settings -> Block.State.Accumulator -> List Block -> Element MarkupMsg
+heading3 : Int -> Settings -> Accumulator -> List Block -> Element MarkupMsg
 heading3 g s a textList =
     Element.link [ Font.size 18, makeId textList, verticalPadding 18 18 ]
         { url = internalLink "TITLE", label = Element.paragraph [] (render g s a textList) }
 
 
-heading4 : Int -> Settings -> Block.State.Accumulator -> List Block -> Element MarkupMsg
+heading4 : Int -> Settings -> Accumulator -> List Block -> Element MarkupMsg
 heading4 g s a textList =
     Element.link [ Font.size 14, makeId textList, verticalPadding 14 14 ]
         { url = internalLink "TITLE", label = Element.paragraph [] (render g s a textList) }
 
 
-indent : Int -> Settings -> Block.State.Accumulator -> List Block -> Element MarkupMsg
+indent : Int -> Settings -> Accumulator -> List Block -> Element MarkupMsg
 indent g s a textList =
     Element.column [ spacing 18, Font.size 14, makeId textList, paddingEach { left = 18, right = 0, top = 0, bottom = 0 } ]
         (List.map (renderBlock g s a) textList)
@@ -246,7 +247,7 @@ makeSlug str =
     str |> String.toLower |> String.replace " " "-"
 
 
-codeBlock : Int -> Settings -> Block.State.Accumulator -> List String -> Element MarkupMsg
+codeBlock : Int -> Settings -> Accumulator -> List String -> Element MarkupMsg
 codeBlock generation settings accumulator textList =
     column
         [ Font.family
@@ -260,7 +261,7 @@ codeBlock generation settings accumulator textList =
         (List.map (\t -> el [] (text t)) (List.map (String.dropLeft 0) textList))
 
 
-mathBlock : Int -> Settings -> Block.State.Accumulator -> List String -> Element MarkupMsg
+mathBlock : Int -> Settings -> Accumulator -> List String -> Element MarkupMsg
 mathBlock generation settings accumulator textList =
     Render.Math.mathText generation Render.Math.DisplayMathMode (String.join "\n" textList |> LaTeX.MathMacro.evalStr accumulator.macroDict)
 
@@ -269,7 +270,7 @@ mathBlock generation settings accumulator textList =
 -- Internal.MathMacro.evalStr latexState.mathMacroDictionary str
 
 
-prepareMathLines : Block.State.Accumulator -> List String -> String
+prepareMathLines : Accumulator -> List String -> String
 prepareMathLines accumulator stringList =
     stringList
         |> List.filter (\line -> String.left 6 (String.trimLeft line) /= "\\label")
@@ -277,18 +278,18 @@ prepareMathLines accumulator stringList =
         |> LaTeX.MathMacro.evalStr accumulator.macroDict
 
 
-equation : Int -> Settings -> Block.State.Accumulator -> List String -> Element MarkupMsg
+equation : Int -> Settings -> Accumulator -> List String -> Element MarkupMsg
 equation generation settings accumulator textList =
     -- Render.Math.mathText generation Render.Math.DisplayMathMode (String.join "\n" textList |> MiniLaTeX.MathMacro.evalStr accumulator.macroDict)
     Render.Math.mathText generation Render.Math.DisplayMathMode (prepareMathLines accumulator textList)
 
 
-aligned : Int -> Settings -> Block.State.Accumulator -> List String -> Element MarkupMsg
+aligned : Int -> Settings -> Accumulator -> List String -> Element MarkupMsg
 aligned generation settings accumulator textList =
     Render.Math.mathText generation Render.Math.DisplayMathMode ("\\begin{aligned}\n" ++ (String.join "\n" textList |> LaTeX.MathMacro.evalStr accumulator.macroDict) ++ "\n\\end{aligned}")
 
 
-quotationBlock : Int -> Settings -> Block.State.Accumulator -> List Block -> Element MarkupMsg
+quotationBlock : Int -> Settings -> Accumulator -> List Block -> Element MarkupMsg
 quotationBlock generation settings accumulator blocks =
     column
         [ paddingEach { left = 18, right = 0, top = 0, bottom = 8 }
@@ -296,7 +297,7 @@ quotationBlock generation settings accumulator blocks =
         (List.map (renderBlock generation settings accumulator) (debugYellow "XX, block in quotation" blocks))
 
 
-renderTheoremLikeBlock : Int -> Settings -> Block.State.Accumulator -> String -> List Block -> Element MarkupMsg
+renderTheoremLikeBlock : Int -> Settings -> Accumulator -> String -> List Block -> Element MarkupMsg
 renderTheoremLikeBlock generation settings accumulator name blocks =
     column [ Element.spacing 8 ]
         [ row [ Font.bold ] [ Element.text (String.Extra.toTitleCase name) ]
@@ -311,7 +312,7 @@ listSpacing =
     8
 
 
-itemize : Int -> Settings -> Block.State.Accumulator -> List Block -> Element MarkupMsg
+itemize : Int -> Settings -> Accumulator -> List Block -> Element MarkupMsg
 itemize generation settings accumulator blocks =
     let
         _ =
@@ -331,7 +332,7 @@ blockIsNonempty block =
     String.length (ASTTools.stringContentOfNamedBlock block |> String.trim) > 0
 
 
-item_ : Int -> Settings -> Block.State.Accumulator -> Block -> Element MarkupMsg
+item_ : Int -> Settings -> Accumulator -> Block -> Element MarkupMsg
 item_ generation settings accumulator block =
     let
         blocks =
@@ -356,13 +357,13 @@ item_ generation settings accumulator block =
         ]
 
 
-enumerate : Int -> Settings -> Block.State.Accumulator -> List Block -> Element MarkupMsg
+enumerate : Int -> Settings -> Accumulator -> List Block -> Element MarkupMsg
 enumerate generation settings accumulator blocks =
     column [ spacing listSpacing ]
         (List.indexedMap (\k -> numberedItem_ k generation settings accumulator) (nonEmptyBlocks blocks))
 
 
-numberedItem_ : Int -> Int -> Settings -> Block.State.Accumulator -> Block -> Element MarkupMsg
+numberedItem_ : Int -> Int -> Settings -> Accumulator -> Block -> Element MarkupMsg
 numberedItem_ index generation settings accumulator block =
     let
         -- TODO: simplify the below, eliminating the case 'numberedItem' by takking care of these in putListItemsAsChildrenOfBlock

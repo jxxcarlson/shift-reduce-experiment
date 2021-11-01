@@ -1,5 +1,6 @@
-module Render.Text exposing (render, viewTOC)
+module Render.Text exposing (heading1, render, viewTOC)
 
+import Block.Accumulator exposing (Accumulator)
 import Block.Block exposing (ExprM(..))
 import Dict exposing (Dict)
 import Element exposing (Element, alignLeft, alignRight, centerX, column, el, newTabLink, px, spacing)
@@ -14,10 +15,6 @@ import Render.Math
 import Render.Msg exposing (MarkupMsg(..))
 import Render.Settings exposing (Settings)
 import Utility
-
-
-type alias Accumulator =
-    { macroDict : LaTeX.MathMacro.MathMacroDict }
 
 
 render : Int -> Settings -> Accumulator -> ExprM -> Element MarkupMsg
@@ -381,32 +378,32 @@ internalLink str =
     "#" ++ str |> makeSlug
 
 
-tocLink : List ExprM -> Element MarkupMsg
-tocLink exprList =
+tocLink : String -> List ExprM -> Element MarkupMsg
+tocLink label exprList =
     let
         t =
             ASTTools.stringValueOfList exprList
     in
-    Element.link [] { url = internalLink t, label = Element.text t }
+    Element.link [] { url = internalLink t, label = Element.text (label ++ " " ++ t) }
 
 
 viewTOCItem : Int -> Settings -> Accumulator -> ExprM -> Element MarkupMsg
 viewTOCItem generation settings accumulator block =
     case block of
-        ExprM "heading1" exprList _ ->
-            el (tocStyle 1 exprList) (tocLink exprList)
+        ExprM "heading1" exprList meta ->
+            el (tocStyle 1 exprList) (tocLink meta.label exprList)
 
-        ExprM "heading2" exprList _ ->
-            el (tocStyle 2 exprList) (tocLink exprList)
+        ExprM "heading2" exprList meta ->
+            el (tocStyle 2 exprList) (tocLink meta.label exprList)
 
-        ExprM "heading3" exprList _ ->
-            el (tocStyle 3 exprList) (tocLink exprList)
+        ExprM "heading3" exprList meta ->
+            el (tocStyle 3 exprList) (tocLink meta.label exprList)
 
-        ExprM "heading4" exprList _ ->
-            el (tocStyle 4 exprList) (tocLink exprList)
+        ExprM "heading4" exprList meta ->
+            el (tocStyle 4 exprList) (tocLink meta.label exprList)
 
-        ExprM "heading5" exprList _ ->
-            el (tocStyle 5 exprList) (tocLink exprList)
+        ExprM "heading5" exprList meta ->
+            el (tocStyle 5 exprList) (tocLink meta.label exprList)
 
         _ ->
             Element.none
@@ -455,38 +452,57 @@ headingFontSize settings level =
     Font.size size
 
 
+heading1 : Int -> Settings -> Accumulator -> List ExprM -> Element MarkupMsg
 heading1 g s a exprList =
     Element.column [ headingFontSize s 1, verticalPadding 14 0, makeId exprList ]
         [ Element.link []
-            { url = internalLink "TITLE", label = Element.paragraph [] (List.map (render g s a) exprList) }
+            { url = internalLink "TITLE", label = Element.paragraph [] (elementLabel exprList :: List.map (render g s a) exprList) }
         ]
+
+
+elementLabel : List ExprM -> Element msg
+elementLabel expressions =
+    Element.el [] (Element.text (labelOf expressions ++ " "))
+
+
+labelOf : List ExprM -> String
+labelOf expressions =
+    case List.head expressions of
+        Nothing ->
+            ""
+
+        Just (TextM _ meta) ->
+            meta.label
+
+        _ ->
+            ""
 
 
 heading2 g s a exprList =
     Element.column [ headingFontSize s 2, verticalPadding 14 0, makeId exprList ]
         [ Element.link []
-            { url = internalLink "TITLE", label = Element.paragraph [] (List.map (render g s a) exprList) }
+            { url = internalLink "TITLE", label = Element.paragraph [] (elementLabel exprList :: List.map (render g s a) exprList) }
         ]
 
 
 heading3 g s a exprList =
     Element.column [ headingFontSize s 3, verticalPadding 14 0, makeId exprList ]
         [ Element.link []
-            { url = internalLink "TITLE", label = Element.paragraph [] (List.map (render g s a) exprList) }
+            { url = internalLink "TITLE", label = Element.paragraph [] (elementLabel exprList :: List.map (render g s a) exprList) }
         ]
 
 
 heading4 g s a exprList =
     Element.column [ headingFontSize s 4, verticalPadding 14 0, makeId exprList ]
         [ Element.link []
-            { url = internalLink "TITLE", label = Element.paragraph [] (List.map (render g s a) exprList) }
+            { url = internalLink "TITLE", label = Element.paragraph [] (elementLabel exprList :: List.map (render g s a) exprList) }
         ]
 
 
 heading5 g s a exprList =
     Element.column [ headingFontSize s 5, verticalPadding 14 0, makeId exprList ]
         [ Element.link []
-            { url = internalLink "TITLE", label = Element.paragraph [] (List.map (render g s a) exprList) }
+            { url = internalLink "TITLE", label = Element.paragraph [] (elementLabel exprList :: List.map (render g s a) exprList) }
         ]
 
 

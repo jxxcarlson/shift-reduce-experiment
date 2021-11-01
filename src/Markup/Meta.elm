@@ -17,12 +17,13 @@ import List.Extra
 type alias ExpressionMeta =
     { id : String
     , loc : { begin : { row : Int, col : Int }, end : { row : Int, col : Int } }
+    , label : String
     }
 
 
 dummy : ExpressionMeta
 dummy =
-    { id = "dummy", loc = { begin = { row = 0, col = 0 }, end = { row = 0, col = 0 } } }
+    { id = "dummy", loc = { begin = { row = 0, col = 0 }, end = { row = 0, col = 0 } }, label = "" }
 
 
 type alias BlockData =
@@ -118,6 +119,7 @@ make getBlockData_ count tokenLoc lines blockFirstLine id =
     in
     { id = blockData.id ++ "." ++ String.fromInt count
     , loc = loc
+    , label = ""
     }
 
 

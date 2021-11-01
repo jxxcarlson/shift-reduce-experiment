@@ -168,14 +168,14 @@ filter_ filterType key block =
             case filterType of
                 Equality ->
                     if key == name then
-                        [ ExprM name (List.map extractContents blocks |> List.concat) { id = "??", loc = { begin = { row = 0, col = 0 }, end = { row = 0, col = 0 } } } ]
+                        [ ExprM name (List.map extractContents blocks |> List.concat) { id = "??", loc = { begin = { row = 0, col = 0 }, end = { row = 0, col = 0 } }, label = "" } ]
 
                     else
                         []
 
                 Contains ->
                     if String.contains key name then
-                        [ ExprM name (List.map extractContents blocks |> List.concat) { id = "??", loc = { begin = { row = 0, col = 0 }, end = { row = 0, col = 0 } } } ]
+                        [ ExprM name (List.map extractContents blocks |> List.concat) { id = "??", loc = { begin = { row = 0, col = 0 }, end = { row = 0, col = 0 } }, label = "" } ]
 
                     else
                         []
