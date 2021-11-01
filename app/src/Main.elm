@@ -13,7 +13,7 @@ import Expression.ASTTools as ASTTools
 import File.Download as Download
 import Html exposing (Html)
 import Html.Attributes as HtmlAttr exposing (attribute)
-import Html.Events
+import Html.Events exposing (keyCode, on, onClick, onInput)
 import Json.Decode
 import Json.Encode
 import LaTeX.Export.API
@@ -68,6 +68,7 @@ type Msg
     = NoOp
     | InputText String
     | InputSearch String
+    | Search
     | ClearText
     | LoadDocumentText Lang String
     | IncrementCounter
@@ -154,6 +155,9 @@ update msg model =
 
         InputSearch str ->
             ( { model | searchText = str }, Cmd.none )
+
+        Search ->
+            ( model, Cmd.none )
 
         ClearText ->
             ( { model
@@ -257,12 +261,24 @@ editor model =
 
 searchField : Model -> Element Msg
 searchField model =
-    inputFieldTemplate Element.fill "Search ..." InputSearch model.searchText
+    inputFieldTemplate [ onEnter Search |> Element.htmlAttribute ] Element.fill "Search ..." InputSearch model.searchText
 
 
-inputFieldTemplate : Element.Length -> String -> (String -> msg) -> String -> Element msg
-inputFieldTemplate width_ default msg text =
-    Input.text [ Element.moveUp 5, Font.size 16, Element.height (px 33), Element.width width_ ]
+onEnter : Msg -> Html.Attribute Msg
+onEnter msg =
+    let
+        isEnter code =
+            if code == 13 then
+                Json.Decode.succeed msg
+
+            else
+                Json.Decode.fail "not ENTER"
+    in
+    on "keydown" (keyCode |> Json.Decode.andThen isEnter)
+
+
+inputFieldTemplate attr width_ default msg text =
+    Input.text ([ Element.moveUp 5, Font.size 16, Element.height (px 33), Element.width width_ ] ++ attr)
         { onChange = msg
         , text = text
         , label = Input.labelHidden default
@@ -293,6 +309,7 @@ editor_ model =
                 , HtmlAttr.style "height" (String.fromInt (innerPanelHeight model) ++ "px")
                 , HtmlAttr.style "width" (String.fromInt panelWidth_ ++ "px")
                 , HtmlAttr.attribute "text" model.sourceText
+                , HtmlAttr.attribute "searchkey" model.searchText
                 ]
                 []
 

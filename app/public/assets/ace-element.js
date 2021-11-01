@@ -1,6 +1,8 @@
 // This implementation is based on http://juicy.github.io/juicy-ace-editor/ 
 // and https://github.com/LostInBrittany/ace-widget
 
+// Search: https://stackoverflow.com/questions/26555492/ace-editor-find-text-select-row-and-replace-text
+
 let template = document.createElement("template")
 template.innerHTML = `    
     <style>
@@ -57,7 +59,7 @@ window.customElements.define("ace-editor", class AceEditor extends HTMLElement {
     // List of observed attributes
     static get observedAttributes() {
         return ["theme", "mode", "fontsize", "softtabs", "tabsize", "readonly", "placeholder",
-            "wrapmode", "min-lines", "max-lines", "line-numbers", "shadow-style", "text", "linenumber"]
+            "wrapmode", "min-lines", "max-lines", "line-numbers", "shadow-style", "text", "linenumber", "searchkey"]
     }
 
     // Fires when an instance of the element is created
@@ -118,6 +120,16 @@ window.customElements.define("ace-editor", class AceEditor extends HTMLElement {
         // Handle theme changes
         editor.renderer.addEventListener("themeLoaded", this.onThemeLoaded.bind(this))
 
+
+        editor.find('needle',{
+                backwards: false,
+                wrap: true,
+                caseSensitive: true,
+                range: null,
+                wholeWord: false,
+                regExp: false
+            });
+
         // Initial attributes
         editor.setOption("printMargin", false)
         // editor.setOption("highlightActiveLine", true)
@@ -138,12 +150,6 @@ window.customElements.define("ace-editor", class AceEditor extends HTMLElement {
         if (this.hasAttribute("placeholder")) {
             editor.setOption("placeholder", this.getAttribute("placeholder"))
         }
-        // EXPERIMENTAL, NOT WORKING
-//        if (this.hasAttribute("linenumber")) {
-//                    var linenumber = this.getAttribute("linenumber")
-//                    this.editor.scrollToLine(100, true, true, function () {});
-//                    this.editor.gotoLine(100, 0, true);
-//                }
 
         // non-Ace specific
         if (this.hasAttribute("shadow-style")) {
@@ -173,6 +179,8 @@ window.customElements.define("ace-editor", class AceEditor extends HTMLElement {
 
 
 
+
+
     attributeChangedCallback(attr, oldVal, newVal) {
         if (!this._attached) {
             return false
@@ -181,6 +189,13 @@ window.customElements.define("ace-editor", class AceEditor extends HTMLElement {
             case "linenumber":
                this.editor.scrollToLine(newVal, true, true, function () {});
                this.editor.gotoLine(newVal, 0, true);
+               break
+            case "searchkey":
+               this.editor.$search.set({ needle: newVal });
+               var found = this.editor.$search.find(this.editor.getSession())
+               this.editor.scrollToLine(found.start.row + 1, true, true, function () {});
+               this.editor.gotoLine(found.start.row + 1, 0, true);
+               console.log("line", found.start.row + 1)
                break
             case "theme":
                 this.editor.setTheme(newVal)
