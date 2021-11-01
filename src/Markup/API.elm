@@ -12,7 +12,7 @@ module Markup.API exposing
     )
 
 import Block.Accumulator as Accumulator exposing (Accumulator)
-import Block.Block exposing (Block, SBlock)
+import Block.Block exposing (Block, ExprM(..), SBlock)
 import Block.BlockTools
 import Block.Function
 import Block.Parser
@@ -23,6 +23,7 @@ import Expression.Parser
 import LaTeX.Export.Markdown
 import Lang.Lang exposing (Lang(..))
 import Markup.Simplify as Simplify
+import Markup.Vector as Vector
 import Render.Block
 import Render.Msg exposing (MarkupMsg(..))
 import Render.Settings exposing (Settings)
@@ -61,7 +62,7 @@ parse lang generation lines =
             Block.Parser.run lang generation lines
 
         data =
-            List.foldl (folder lang) { accumulator = Accumulator.empty, blocks = [] } state.committed
+            List.foldl (folder lang) { accumulator = Accumulator.init 4, blocks = [] } state.committed
 
         ast =
             case lang of
@@ -82,14 +83,107 @@ folder : Lang -> SBlock -> { accumulator : Accumulator, blocks : List Block } ->
 folder lang sblock acc =
     let
         block =
-            sblockToBlock lang sblock
+            sblockToBlock lang acc.accumulator sblock
+
+        data =
+            labelBlock acc.accumulator block
     in
-    { accumulator = Accumulator.updateAccumulatorWithBlock block acc.accumulator, blocks = block :: acc.blocks }
+    { accumulator = Accumulator.updateAccumulatorWithBlock block data.accumulator, blocks = data.block :: acc.blocks }
 
 
-sblockToBlock : Lang -> SBlock -> Block
-sblockToBlock lang sblock =
+sblockToBlock : Lang -> Accumulator -> SBlock -> Block
+sblockToBlock lang accumulator sblock =
     (Block.BlockTools.map (Expression.Parser.parseExpr lang) >> Block.Function.fixMarkdownBlock) sblock
+
+
+
+--|> label accumulator
+
+
+labelBlock : Accumulator -> Block -> { block : Block, accumulator : Accumulator }
+labelBlock accumulator block =
+    case block of
+        Block.Block.Paragraph exprList meta ->
+            List.foldl xfolder { expressions = [], accumulator = accumulator } exprList
+                |> (\data -> { block = Block.Block.Paragraph (data.expressions |> List.reverse) meta, accumulator = data.accumulator })
+                |> Debug.log "HEADINGS"
+
+        _ ->
+            { block = block, accumulator = accumulator }
+
+
+xfolder : ExprM -> { expressions : List ExprM, accumulator : Accumulator } -> { expressions : List ExprM, accumulator : Accumulator }
+xfolder expr data =
+    labelExpression data.accumulator expr
+        |> (\result -> { expressions = result.expr :: data.expressions, accumulator = result.accumulator })
+
+
+labelExpression : Accumulator -> ExprM -> { expr : ExprM, accumulator : Accumulator }
+labelExpression accumulator expr =
+    case expr of
+        ExprM name exprList exprMeta ->
+            let
+                data =
+                    labelForName name accumulator
+            in
+            { expr = ExprM name (List.map (setLabel data.label) exprList) { exprMeta | label = data.label |> Debug.log "HEADING1 (LE)" }, accumulator = data.accumulator }
+
+        _ ->
+            { expr = expr, accumulator = accumulator }
+
+
+setLabel : String -> ExprM -> ExprM
+setLabel label expr =
+    case expr of
+        TextM str exprMeta ->
+            TextM str { exprMeta | label = label }
+
+        VerbatimM name str exprMeta ->
+            VerbatimM name str { exprMeta | label = label }
+
+        ArgM args exprMeta ->
+            ArgM args { exprMeta | label = label }
+
+        ExprM name args exprMeta ->
+            ExprM name args { exprMeta | label = label }
+
+        ErrorM str ->
+            ErrorM str
+
+
+labelForName : String -> Accumulator -> { label : String, accumulator : Accumulator }
+labelForName str accumulator =
+    case str of
+        "heading1" ->
+            let
+                sectionIndex =
+                    Vector.increment 0 accumulator.sectionIndex
+            in
+            { label = Vector.toString sectionIndex, accumulator = { accumulator | sectionIndex = sectionIndex } }
+
+        "heading2" ->
+            let
+                sectionIndex =
+                    Vector.increment 1 accumulator.sectionIndex
+            in
+            { label = Vector.toString sectionIndex, accumulator = { accumulator | sectionIndex = sectionIndex } }
+
+        "heading3" ->
+            let
+                sectionIndex =
+                    Vector.increment 2 accumulator.sectionIndex
+            in
+            { label = Vector.toString sectionIndex, accumulator = { accumulator | sectionIndex = sectionIndex } }
+
+        "heading4" ->
+            let
+                sectionIndex =
+                    Vector.increment 3 accumulator.sectionIndex
+            in
+            { label = Vector.toString sectionIndex, accumulator = { accumulator | sectionIndex = sectionIndex } }
+
+        _ ->
+            { label = str, accumulator = accumulator }
 
 
 renderFancy : Render.Settings.Settings -> Lang -> Int -> List String -> List (Element MarkupMsg)

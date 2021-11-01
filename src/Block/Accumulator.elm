@@ -1,20 +1,32 @@
 module Block.Accumulator exposing
     ( Accumulator
-    , empty
+    , init
     , updateAccumulatorWithBlock
     )
 
 import Block.Block exposing (Block(..))
 import Dict
 import LaTeX.MathMacro
+import Markup.Vector as Vector exposing (Vector)
 
 
 type alias Accumulator =
-    { macroDict : LaTeX.MathMacro.MathMacroDict }
+    { macroDict : LaTeX.MathMacro.MathMacroDict
+    , sectionIndex : Vector
+    }
 
 
 empty =
-    { macroDict = Dict.empty }
+    { macroDict = Dict.empty
+    , sectionIndex = Vector.init 4
+    }
+
+
+init : Int -> Accumulator
+init k =
+    { macroDict = Dict.empty
+    , sectionIndex = Vector.init k
+    }
 
 
 updateAccumulatorWithBlock : Block -> Accumulator -> Accumulator

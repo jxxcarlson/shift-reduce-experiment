@@ -1,6 +1,6 @@
 module Block.State exposing (State, init)
 
-import Block.Accumulator exposing (Accumulator)
+import Block.Accumulator as Accumulator exposing (Accumulator)
 import Block.Block exposing (SBlock)
 import Block.Line
 import Dict
@@ -50,14 +50,10 @@ init lang generation input =
     , generation = generation
     , blockCount = 0
     , inVerbatimBlock = False
-    , accumulator = initialAccumulator
+    , accumulator = Accumulator.init 4
     , stack = []
     , stackBottomName = ""
     , stackBottomLevel = 0
     , errorMessage = Nothing
     , lang = lang
     }
-
-
-initialAccumulator =
-    { macroDict = Dict.empty }

@@ -1,4 +1,4 @@
-module Vector exposing (..)
+module Markup.Vector exposing (..)
 
 import List.Extra
 
