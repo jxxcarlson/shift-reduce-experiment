@@ -378,32 +378,32 @@ internalLink str =
     "#" ++ str |> makeSlug
 
 
-tocLink : List ExprM -> Element MarkupMsg
-tocLink exprList =
+tocLink : String -> List ExprM -> Element MarkupMsg
+tocLink label exprList =
     let
         t =
             ASTTools.stringValueOfList exprList
     in
-    Element.link [] { url = internalLink t, label = Element.text t }
+    Element.link [] { url = internalLink t, label = Element.text (label ++ " " ++ t) }
 
 
 viewTOCItem : Int -> Settings -> Accumulator -> ExprM -> Element MarkupMsg
 viewTOCItem generation settings accumulator block =
     case block of
-        ExprM "heading1" exprList _ ->
-            el (tocStyle 1 exprList) (tocLink exprList)
+        ExprM "heading1" exprList meta ->
+            el (tocStyle 1 exprList) (tocLink meta.label exprList)
 
-        ExprM "heading2" exprList _ ->
-            el (tocStyle 2 exprList) (tocLink exprList)
+        ExprM "heading2" exprList meta ->
+            el (tocStyle 2 exprList) (tocLink meta.label exprList)
 
-        ExprM "heading3" exprList _ ->
-            el (tocStyle 3 exprList) (tocLink exprList)
+        ExprM "heading3" exprList meta ->
+            el (tocStyle 3 exprList) (tocLink meta.label exprList)
 
-        ExprM "heading4" exprList _ ->
-            el (tocStyle 4 exprList) (tocLink exprList)
+        ExprM "heading4" exprList meta ->
+            el (tocStyle 4 exprList) (tocLink meta.label exprList)
 
-        ExprM "heading5" exprList _ ->
-            el (tocStyle 5 exprList) (tocLink exprList)
+        ExprM "heading5" exprList meta ->
+            el (tocStyle 5 exprList) (tocLink meta.label exprList)
 
         _ ->
             Element.none
