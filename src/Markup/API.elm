@@ -74,6 +74,26 @@ parse lang generation lines =
     }
 
 
+
+{-
+
+   1. List.map sblockToBlock state.committed
+
+   2. List.foldl folder initialData state.committed
+
+      initialData = {accumulator = Accumulator.empty, blocks = [] }
+
+      folder : SBlock -> {accumulator : Accumulator, blocks : List Block} -> {accumulator : Accumulator, blocks : List Block}
+      folder sblock acc =
+        let
+          block = sblockToBlock sblock
+        in
+          {accumulator = updateAccumulatorWithBlock bloc acc.accumulator, blocks = block::acc.blocks}
+
+
+-}
+
+
 renderFancy : Render.Settings.Settings -> Lang -> Int -> List String -> List (Element MarkupMsg)
 renderFancy settings language count source =
     let
