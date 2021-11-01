@@ -118,7 +118,7 @@ finalize lang state =
 
 nextTokenState : Lang.Token.Common.TokenState -> Token -> Lang.Token.Common.TokenState
 nextTokenState tokenState token =
-    (case tokenState of
+    case tokenState of
         Lang.Token.Common.TSA ->
             case token of
                 Token.Symbol "[" _ ->
@@ -146,8 +146,6 @@ nextTokenState tokenState token =
 
                         _ ->
                             tokenState
-    )
-        |> Debug.log ("TS ( " ++ Debug.toString token ++ ")")
 
 
 processToken : Lang -> State -> Step State State

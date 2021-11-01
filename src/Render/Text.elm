@@ -413,7 +413,7 @@ viewTOCItem generation settings accumulator block =
 
 
 tocStyle k exprList =
-    [ Font.size 14, Font.color tocColor, leftPadding (k * tocPadding), makeId exprList ]
+    [ Font.size 14, Font.color tocColor, leftPadding (k * tocPadding) ]
 
 
 leftPadding k =
@@ -456,36 +456,36 @@ headingFontSize settings level =
 
 
 heading1 g s a exprList =
-    Element.column [ headingFontSize s 1, verticalPadding 14 0 ]
-        [ Element.link [ makeId exprList ]
+    Element.column [ headingFontSize s 1, verticalPadding 14 0, makeId exprList ]
+        [ Element.link []
             { url = internalLink "TITLE", label = Element.paragraph [] (List.map (render g s a) exprList) }
         ]
 
 
 heading2 g s a exprList =
-    Element.column [ headingFontSize s 2, verticalPadding 14 0 ]
-        [ Element.link [ makeId exprList ]
+    Element.column [ headingFontSize s 2, verticalPadding 14 0, makeId exprList ]
+        [ Element.link []
             { url = internalLink "TITLE", label = Element.paragraph [] (List.map (render g s a) exprList) }
         ]
 
 
 heading3 g s a exprList =
-    Element.column [ headingFontSize s 3, verticalPadding 14 0 ]
-        [ Element.link [ makeId exprList ]
+    Element.column [ headingFontSize s 3, verticalPadding 14 0, makeId exprList ]
+        [ Element.link []
             { url = internalLink "TITLE", label = Element.paragraph [] (List.map (render g s a) exprList) }
         ]
 
 
 heading4 g s a exprList =
-    Element.column [ headingFontSize s 4, verticalPadding 14 0 ]
-        [ Element.link [ makeId exprList ]
+    Element.column [ headingFontSize s 4, verticalPadding 14 0, makeId exprList ]
+        [ Element.link []
             { url = internalLink "TITLE", label = Element.paragraph [] (List.map (render g s a) exprList) }
         ]
 
 
 heading5 g s a exprList =
-    Element.column [ headingFontSize s 5, verticalPadding 14 0 ]
-        [ Element.link [ makeId exprList ]
+    Element.column [ headingFontSize s 5, verticalPadding 14 0, makeId exprList ]
+        [ Element.link []
             { url = internalLink "TITLE", label = Element.paragraph [] (List.map (render g s a) exprList) }
         ]
 
