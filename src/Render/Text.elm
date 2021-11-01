@@ -21,7 +21,7 @@ render : Int -> Settings -> Accumulator -> ExprM -> Element MarkupMsg
 render generation settings accumulator text =
     case text of
         TextM string meta ->
-            Element.el [ Events.onClick (SendMeta (Debug.log "META" meta)) ] (Element.text string)
+            Element.el [ Events.onClick (SendMeta meta) ] (Element.text string)
 
         ExprM name exprList _ ->
             Element.el [] (renderMarked name generation settings accumulator exprList)

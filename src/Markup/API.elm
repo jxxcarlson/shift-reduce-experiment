@@ -106,7 +106,6 @@ labelBlock accumulator block =
         Block.Block.Paragraph exprList meta ->
             List.foldl xfolder { expressions = [], accumulator = accumulator } exprList
                 |> (\data -> { block = Block.Block.Paragraph (data.expressions |> List.reverse) meta, accumulator = data.accumulator })
-                |> Debug.log "HEADINGS"
 
         _ ->
             { block = block, accumulator = accumulator }
@@ -126,7 +125,7 @@ labelExpression accumulator expr =
                 data =
                     labelForName name accumulator
             in
-            { expr = ExprM name (List.map (setLabel data.label) exprList) { exprMeta | label = data.label |> Debug.log "HEADING1 (LE)" }, accumulator = data.accumulator }
+            { expr = ExprM name (List.map (setLabel data.label) exprList) { exprMeta | label = data.label }, accumulator = data.accumulator }
 
         _ ->
             { expr = expr, accumulator = accumulator }
