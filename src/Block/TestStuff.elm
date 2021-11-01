@@ -8,34 +8,9 @@ import Markup.Simplify exposing (BlockS(..), ExprS(..))
 
 m1 =
     """
-- Put gas in the car
-
-- Drive to Las Vegas
-"""
-
-
-m2 =
-    """
-. Put gas in the car
-
-. Drive to Las Vegas
-"""
-
-
-t1 =
-    "\\begin{itemize}\n   \n   \\item Apples\n   \n   \\item Oranges\n   \n\\end{itemize}"
-
-
-t2 =
-    "\\begin{enumerate}\n   \n   \\item Apples\n   \n   \\item Oranges\n   \n\\end{enumerate}"
-
-
-mi3 =
-    """
-\\begin{item}
-   foo
-   bar
-\\end{item}
+\\begin{mathmacro}
+    \\newcommand{\\bra}[0]{\\langle}
+\\end{mathmacro}
 """
 
 

@@ -7,7 +7,7 @@ import Block.Block as Block exposing (BlockStatus(..), SBlock(..))
 import Block.BlockTools as BlockTools
 import Block.Function as Function exposing (simpleCommit)
 import Block.Line exposing (BlockOption(..), LineData, LineType(..))
-import Block.State exposing (Accumulator, State)
+import Block.State exposing (State)
 import LaTeX.MathMacro
 import Lang.Lang exposing (Lang(..))
 import Lang.LineType.L1
@@ -522,7 +522,6 @@ endBlock name state =
                     -- if name == stackTopName || stackTopName == "item" then
                     if name == stackTopName then
                         state
-                            |> updateAccummulatorInStateWithBlock top
                             |> Function.changeStatusOfTopOfStack BlockComplete
                             --|> Function.simpleCommit
                             |> Function.reduceStackIfTopAndBottomMatch state.currentLineData.indent name
@@ -532,7 +531,6 @@ endBlock name state =
                         -- the tags don't match. We note that fact for the benefit of the renderer (or the error handler),
                         -- and we commit the block
                         state
-                            |> updateAccummulatorInStateWithBlock top
                             |> Function.changeStatusOfTopOfStack (MismatchedTags stackTopName name)
                             -- |> Function.simpleCommit
                             |> Function.reduceStackIfTopAndBottomMatch state.currentLineData.indent name
@@ -566,7 +564,6 @@ commitBlock_ state =
             in
             { state
                 | committed = top_ :: state.committed
-                , accumulator = updateAccumulatorWithBlock top_ state.accumulator
             }
                 |> debugCyan "commitBlock (1)"
 
@@ -587,35 +584,6 @@ commitBlock_ state =
 
                 LT ->
                     { state | committed = top_ :: next_ :: state.committed, stack = List.drop 1 state.stack } |> debugMagenta "commitBlock (4)"
-
-
-
--- ACCUMULATOR
-
-
-updateAccummulatorInStateWithBlock : SBlock -> State -> State
-updateAccummulatorInStateWithBlock block state =
-    { state | accumulator = updateAccumulatorWithBlock block state.accumulator }
-
-
-{-|
-
-    This function post data to the accumulator field of State as the parser
-    runs its loop.  That information is used downstream by the renderer.
-
--}
-updateAccumulatorWithBlock : SBlock -> Accumulator -> Accumulator
-updateAccumulatorWithBlock sblock1 accumulator =
-    case sblock1 of
-        SVerbatimBlock name contentList _ ->
-            if name == "mathmacro" then
-                { accumulator | macroDict = LaTeX.MathMacro.makeMacroDict (String.join "\n" (List.map String.trimLeft contentList)) } |> debug3 "Accumulator (1)"
-
-            else
-                accumulator
-
-        _ ->
-            accumulator
 
 
 

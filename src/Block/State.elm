@@ -1,5 +1,6 @@
-module Block.State exposing (Accumulator, State, init)
+module Block.State exposing (State, init)
 
+import Block.Accumulator exposing (Accumulator)
 import Block.Block exposing (SBlock)
 import Block.Line
 import Dict
@@ -30,10 +31,6 @@ type alias State =
     , errorMessage : Maybe { red : String, blue : String }
     , lang : Lang
     }
-
-
-type alias Accumulator =
-    { macroDict : LaTeX.MathMacro.MathMacroDict }
 
 
 

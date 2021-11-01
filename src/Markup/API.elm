@@ -11,11 +11,11 @@ module Markup.API exposing
     , tableOfContents
     )
 
-import Block.Block exposing (Block)
+import Block.Accumulator as Accumulator exposing (Accumulator)
+import Block.Block exposing (Block, SBlock)
 import Block.BlockTools
 import Block.Function
 import Block.Parser
-import Block.State
 import Element as E exposing (Element)
 import Element.Font as Font
 import Expression.ASTTools as ASTTools
@@ -54,44 +54,42 @@ rl str =
 -- NOTE THE AST TRANSFORMATION BELOW
 
 
-parse : Lang -> Int -> List String -> { ast : List Block, accumulator : Block.State.Accumulator }
+parse : Lang -> Int -> List String -> { ast : List Block, accumulator : Accumulator }
 parse lang generation lines =
     let
         state =
             Block.Parser.run lang generation lines
 
+        data =
+            List.foldl (folder lang) { accumulator = Accumulator.empty, blocks = [] } state.committed
+
         ast =
             case lang of
                 Markdown ->
-                    List.map (Block.BlockTools.map (Expression.Parser.parseExpr lang) >> Block.Function.fixMarkdownBlock) state.committed
+                    data.blocks
+                        |> List.reverse
                         |> LaTeX.Export.Markdown.putListItemsAsChildrenOfBlock
 
                 _ ->
-                    List.map (Block.BlockTools.map (Expression.Parser.parseExpr lang) >> Block.Function.fixMarkdownBlock) state.committed
+                    data.blocks |> List.reverse
     in
     { ast = ast
-    , accumulator = state.accumulator
+    , accumulator = data.accumulator
     }
 
 
-
-{-
-
-   1. List.map sblockToBlock state.committed
-
-   2. List.foldl folder initialData state.committed
-
-      initialData = {accumulator = Accumulator.empty, blocks = [] }
-
-      folder : SBlock -> {accumulator : Accumulator, blocks : List Block} -> {accumulator : Accumulator, blocks : List Block}
-      folder sblock acc =
-        let
-          block = sblockToBlock sblock
-        in
-          {accumulator = updateAccumulatorWithBlock bloc acc.accumulator, blocks = block::acc.blocks}
+folder : Lang -> SBlock -> { accumulator : Accumulator, blocks : List Block } -> { accumulator : Accumulator, blocks : List Block }
+folder lang sblock acc =
+    let
+        block =
+            sblockToBlock lang sblock
+    in
+    { accumulator = Accumulator.updateAccumulatorWithBlock block acc.accumulator, blocks = block :: acc.blocks }
 
 
--}
+sblockToBlock : Lang -> SBlock -> Block
+sblockToBlock lang sblock =
+    (Block.BlockTools.map (Expression.Parser.parseExpr lang) >> Block.Function.fixMarkdownBlock) sblock
 
 
 renderFancy : Render.Settings.Settings -> Lang -> Int -> List String -> List (Element MarkupMsg)
@@ -166,7 +164,7 @@ renderFancy settings language count source =
         docTitle :: author :: date :: renderedText_
 
 
-tableOfContents : Int -> Settings -> Block.State.Accumulator -> List Block -> List (Element MarkupMsg)
+tableOfContents : Int -> Settings -> Accumulator -> List Block -> List (Element MarkupMsg)
 tableOfContents generation settings accumulator blocks =
     blocks |> ASTTools.getHeadings |> Render.Text.viewTOC generation defaultSettings accumulator
 
