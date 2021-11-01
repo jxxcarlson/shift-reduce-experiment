@@ -45,6 +45,7 @@ type alias Model =
     , viewMode : ViewMode
     , message : String
     , lineNumber : Int
+    , searchText : String
     }
 
 
@@ -66,6 +67,7 @@ viewModeToString mode =
 type Msg
     = NoOp
     | InputText String
+    | InputSearch String
     | ClearText
     | LoadDocumentText Lang String
     | IncrementCounter
@@ -107,6 +109,7 @@ init flags =
       , viewMode = StandardView
       , message = ""
       , lineNumber = 0
+      , searchText = ""
       }
     , Process.sleep 100 |> Task.perform (always IncrementCounter)
     )
@@ -148,6 +151,9 @@ update msg model =
               }
             , Cmd.none
             )
+
+        InputSearch str ->
+            ( { model | searchText = str }, Cmd.none )
 
         ClearText ->
             ( { model
@@ -201,7 +207,7 @@ mainColumn model =
     column (mainColumnStyle model)
         [ column [ centerY, paddingEach { top = 46, bottom = 0, left = 0, right = 0 }, spacing 8, width (px appWidth_), height (px (appHeight_ model)) ]
             [ -- title "L3 Demo App"
-              column [ height fill, spacing 12 ]
+              column [ height (panelHeight model), spacing 12 ]
                 [ row [ spacing 12 ] [ editor model, rhs model ]
                 ]
             , row [ Element.paddingXY 8 0, Element.height (px 30), Element.width fill, Font.size 14, Background.color (Element.rgb 0.3 0.3 0.3), Font.color (Element.rgb 1 1 1) ] [ Element.text model.message ]
@@ -209,15 +215,59 @@ mainColumn model =
         ]
 
 
+
+-- PARAMETERS
+
+
+widePanelWidth_ =
+    2 * panelWidth_
+
+
+panelWidth_ =
+    560
+
+
+appHeight_ model =
+    model.windowHeight - 140
+
+
+panelHeight model =
+    px (appHeight_ model - 160)
+
+
+innerPanelHeight model =
+    appHeight_ model - 180
+
+
+appWidth_ =
+    2 * panelWidth_ + 15
+
+
 editor model =
-    column [ height fill, moveUp 8 ]
+    column [ height (px (innerPanelHeight model)), moveUp 28 ]
         [ row [ spacing 12 ]
             [ l1DocButton model.language
             , miniLaTeXDocButton model.language
             , markdownDocButton model.language
+            , searchField model
             ]
         , editor_ model
         ]
+
+
+searchField : Model -> Element Msg
+searchField model =
+    inputFieldTemplate Element.fill "Search ..." InputSearch model.searchText
+
+
+inputFieldTemplate : Element.Length -> String -> (String -> msg) -> String -> Element msg
+inputFieldTemplate width_ default msg text =
+    Input.text [ Element.moveUp 5, Font.size 16, Element.height (px 33), Element.width width_ ]
+        { onChange = msg
+        , text = text
+        , label = Input.labelHidden default
+        , placeholder = Just <| Input.placeholder [ Element.moveUp 5 ] (Element.text default)
+        }
 
 
 editor_ : Model -> Element Msg
@@ -240,7 +290,7 @@ editor_ model =
                 , HtmlAttr.attribute "softtabs" "true"
                 , HtmlAttr.attribute "navigateWithinSoftTabs" "true"
                 , HtmlAttr.attribute "fontsize" "12"
-                , HtmlAttr.style "height" (String.fromInt (panelHeight_ model) ++ "px")
+                , HtmlAttr.style "height" (String.fromInt (innerPanelHeight model) ++ "px")
                 , HtmlAttr.style "width" (String.fromInt panelWidth_ ++ "px")
                 , HtmlAttr.attribute "text" model.sourceText
                 ]
@@ -309,7 +359,7 @@ renderedText model =
         [ spacing 8
         , paddingXY 24 36
         , width (px panelWidth_)
-        , height (px (panelHeight_ model))
+        , height (px (innerPanelHeight model))
         , scrollbarY
         , moveUp 9
         , Font.size 14
@@ -326,7 +376,7 @@ latexSourceView model =
         [ spacing 8
         , paddingXY 24 36
         , width (px panelWidth_)
-        , height (px (panelHeight_ model))
+        , height (px (innerPanelHeight model))
         , scrollbarY
         , moveUp 9
         , Font.size 14
@@ -348,20 +398,17 @@ render language count source =
 
 
 -- INPUT
-
-
-inputText : Model -> Element Msg
-inputText model =
-    Input.multiline [ height (px (panelHeight_ model)), width (px panelWidth_), Font.size 14, Background.color (Element.rgb255 255 240 240) ]
-        { onChange = InputText
-        , text = model.sourceText
-        , placeholder = Nothing
-        , label = Input.labelHidden "Enter source text here"
-        , spellcheck = False
-        }
-
-
-
+--
+--inputText : Model -> Element Msg
+--inputText model =
+--    Input.multiline [ height (px (innerPanelHeight model)), width (px panelWidth_), Font.size 14, Background.color (Element.rgb255 255 240 240) ]
+--        { onChange = InputText
+--        , text = model.sourceText
+--        , placeholder = Nothing
+--        , label = Input.labelHidden "Enter source text here"
+--        , spellcheck = False
+--        }
+--
 -- BUTTONS
 
 
@@ -425,34 +472,6 @@ dummyButton =
             , label = el [ centerX, centerY, Font.size 14 ] (text "Rendered text")
             }
         ]
-
-
-
--- PARAMETERS
-
-
-widePanelWidth_ =
-    2 * panelWidth_
-
-
-panelWidth_ =
-    560
-
-
-appHeight_ model =
-    model.windowHeight - 160
-
-
-panelHeight_ model =
-    appHeight_ model - parserDisplayPanelHeight_ - 120
-
-
-parserDisplayPanelHeight_ =
-    0
-
-
-appWidth_ =
-    2 * panelWidth_ + 15
 
 
 

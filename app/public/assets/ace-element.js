@@ -120,7 +120,9 @@ window.customElements.define("ace-editor", class AceEditor extends HTMLElement {
 
         // Initial attributes
         editor.setOption("printMargin", false)
+        // editor.setOption("highlightActiveLine", true)
         editor.setTheme(this.getAttribute("theme"))
+        // editor.setTheme('ace/theme/tomorrow_night')
         editor.setFontSize(Number(this.getAttribute("fontsize")) || 16)
         editor.setReadOnly(this.hasAttribute("readonly"))
         let session = editor.getSession()
