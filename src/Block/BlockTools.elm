@@ -125,6 +125,7 @@ map exprParser sblock =
                     -- TODO: this is incomplete (id, last col)
                     { id = "verbatim"
                     , loc = { begin = { row = meta.begin, col = 0 }, end = { row = meta.end, col = 7 } }
+                    , label = ""
                     }
             in
             VerbatimBlock name_ strList exprMeta meta
