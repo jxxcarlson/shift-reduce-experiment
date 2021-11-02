@@ -35,12 +35,20 @@ render generation settings accumulator blocks =
     List.map (renderBlock generation settings accumulator) blocks
 
 
+highlightStyle flag =
+    if not flag then
+        [ Background.color (Element.rgba 0 0 0 0) ]
+
+    else
+        [ Background.color (Element.rgb 0.8 0.8 1.0), paddingXY 4 4 ]
+
+
 renderBlock : Int -> Settings -> Accumulator -> Block -> Element MarkupMsg
 renderBlock generation settings accumulator block =
     case block of
-        Paragraph textList _ ->
+        Paragraph textList meta ->
             paragraph
-                []
+                (highlightStyle (meta.id == settings.selectedId))
                 (List.map (Render.Text.render generation settings accumulator) textList)
 
         VerbatimBlock name lines _ meta ->

@@ -45,6 +45,7 @@ defaultSettings =
     , paragraphSpacing = 28
     , showTOC = True
     , showErrorMessages = False
+    , selectedId = ""
     }
 
 
