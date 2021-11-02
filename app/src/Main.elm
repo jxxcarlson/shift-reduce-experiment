@@ -3,6 +3,7 @@ module Main exposing (main)
 import Block.Accumulator as Accumulator exposing (Accumulator)
 import Block.Block exposing (Block)
 import Browser
+import Browser.Dom as Dom
 import Data.L1Test
 import Data.MarkdownTest
 import Data.MiniLaTeXTest
@@ -26,7 +27,7 @@ import Markup.Meta
 import Process
 import Render.Msg
 import Render.Settings
-import Task
+import Task exposing (Task)
 
 
 main =
@@ -78,6 +79,7 @@ type Msg
     | IncrementCounter
     | SetViewMode ViewMode
     | Render Render.Msg.MarkupMsg
+    | SetViewPortForElement (Result Dom.Error ( Dom.Element, Dom.Viewport ))
 
 
 identifierToLanguage : String -> Lang
@@ -164,7 +166,19 @@ update msg model =
             ( { model | searchText = str }, Cmd.none )
 
         Search ->
-            ( { model | searchCount = model.searchCount + 1, message = ASTTools.findIdsMatchingText model.searchText model.parseData.ast |> Debug.toString }, Cmd.none )
+            let
+                ids =
+                    ASTTools.findIdsMatchingText model.searchText model.parseData.ast
+
+                cmd =
+                    case List.head ids of
+                        Nothing ->
+                            Cmd.none
+
+                        Just id ->
+                            setViewportForElement (id ++ ".0" |> Debug.log "ID")
+            in
+            ( { model | searchCount = model.searchCount + 1, message = ASTTools.findIdsMatchingText model.searchText model.parseData.ast |> Debug.toString }, cmd )
 
         ClearText ->
             ( { model
@@ -188,6 +202,18 @@ update msg model =
                 _ ->
                     ( model, Cmd.none )
 
+        SetViewPortForElement result ->
+            case result of
+                Ok ( element, viewport ) ->
+                    ( model, setViewPortForSelectedLine element viewport )
+
+                Err err ->
+                    let
+                        _ =
+                            Debug.log "Couldn't set viewport" err
+                    in
+                    ( model, Cmd.none )
+
 
 download : String -> String -> String -> Cmd msg
 download filename mimetype content =
@@ -198,6 +224,28 @@ download filename mimetype content =
 --
 -- VIEW
 --
+
+
+setViewportForElement : String -> Cmd Msg
+setViewportForElement id =
+    Dom.getViewportOf "__RENDERED_TEXT__"
+        |> Task.andThen (\vp -> getElementWithViewPort vp id)
+        |> Task.attempt SetViewPortForElement
+
+
+setViewPortForSelectedLine : Dom.Element -> Dom.Viewport -> Cmd Msg
+setViewPortForSelectedLine element viewport =
+    let
+        y =
+            viewport.viewport.y + element.element.y - element.element.height - 100 |> Debug.log "Y-VALUE"
+    in
+    Task.attempt (\_ -> NoOp) (Dom.setViewportOf "__RENDERED_TEXT__" 0 y)
+
+
+getElementWithViewPort : Dom.Viewport -> String -> Task Dom.Error ( Dom.Element, Dom.Viewport )
+getElementWithViewPort vp id =
+    Dom.getElement id
+        |> Task.map (\el -> ( el, vp ))
 
 
 view : Model -> Html Msg
@@ -390,9 +438,14 @@ renderedText model =
         , Font.size 14
         , spacing 14
         , alignTop
+        , htmlId "__RENDERED_TEXT__"
         , Background.color (Element.rgb255 255 255 255)
         ]
         (render model.parseData model.count)
+
+
+htmlId str =
+    Element.htmlAttribute (HtmlAttr.id str)
 
 
 latexSourceView : Model -> Element Msg
