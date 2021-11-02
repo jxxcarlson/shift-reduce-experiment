@@ -16,12 +16,6 @@ type alias Accumulator =
     }
 
 
-empty =
-    { macroDict = Dict.empty
-    , sectionIndex = Vector.init 4
-    }
-
-
 init : Int -> Accumulator
 init k =
     { macroDict = Dict.empty

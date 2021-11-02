@@ -1,5 +1,7 @@
 module Main exposing (main)
 
+import Block.Accumulator as Accumulator exposing (Accumulator)
+import Block.Block exposing (Block)
 import Browser
 import Data.L1Test
 import Data.MarkdownTest
@@ -47,6 +49,7 @@ type alias Model =
     , lineNumber : Int
     , searchText : String
     , searchCount : Int
+    , parseData : { ast : List Block, accumulator : Accumulator }
     }
 
 
@@ -113,6 +116,7 @@ init flags =
       , lineNumber = 0
       , searchText = ""
       , searchCount = 0
+      , parseData = { ast = [], accumulator = Accumulator.init 4 }
       }
     , Process.sleep 100 |> Task.perform (always IncrementCounter)
     )
@@ -150,6 +154,7 @@ update msg model =
         InputText str ->
             ( { model
                 | sourceText = str
+                , parseData = API.parse model.language model.count (String.lines str)
                 , count = model.count + 1
               }
             , Cmd.none
@@ -159,7 +164,7 @@ update msg model =
             ( { model | searchText = str }, Cmd.none )
 
         Search ->
-            ( { model | searchCount = model.searchCount + 1 }, Cmd.none )
+            ( { model | searchCount = model.searchCount + 1, message = ASTTools.findIdsMatchingText model.searchText model.parseData.ast |> Debug.toString }, Cmd.none )
 
         ClearText ->
             ( { model
@@ -387,7 +392,7 @@ renderedText model =
         , alignTop
         , Background.color (Element.rgb255 255 255 255)
         ]
-        (render model.language model.count model.sourceText)
+        (render model.parseData model.count)
 
 
 latexSourceView : Model -> Element Msg
@@ -410,25 +415,12 @@ settings =
     { defaultSettings | paragraphSpacing = 42, showErrorMessages = True }
 
 
-render : Lang -> Int -> String -> List (Element Msg)
-render language count source =
-    --<<<<<<< HEAD
-    API.renderFancy settings language count (String.lines source) |> List.map (Element.map Render)
+render : { ast : List Block, accumulator : Accumulator } -> Int -> List (Element Msg)
+render parseData count =
+    API.renderFancyFromParseData parseData settings count |> List.map (Element.map Render)
 
 
 
--- INPUT
---
---inputText : Model -> Element Msg
---inputText model =
---    Input.multiline [ height (px (innerPanelHeight model)), width (px panelWidth_), Font.size 14, Background.color (Element.rgb255 255 240 240) ]
---        { onChange = InputText
---        , text = model.sourceText
---        , placeholder = Nothing
---        , label = Input.labelHidden "Enter source text here"
---        , spellcheck = False
---        }
---
 -- BUTTONS
 
 

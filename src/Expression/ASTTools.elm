@@ -6,6 +6,7 @@ module Expression.ASTTools exposing
     , filter
     , filterBlockByName
     , filterStrictBlock
+    , findIdsMatchingText
     , getHeadings
     , getItem
     , getText
@@ -145,6 +146,81 @@ getHeadings blocks =
 filter : FilterType -> String -> List Block -> List ExprM
 filter filterType key blocks =
     List.map (filter_ filterType key) blocks |> List.concat
+
+
+findIdsMatchingText : String -> List Block -> List String
+findIdsMatchingText str blocks =
+    List.filter (blockContains str) blocks |> List.map blockToId
+
+
+blockContains : String -> Block -> Bool
+blockContains key block =
+    case block of
+        Paragraph exprs _ ->
+            List.any (exprContains key) exprs
+
+        VerbatimBlock _ strings _ _ ->
+            List.any (String.contains key) strings
+
+        Block _ blocks _ ->
+            List.any (blockContains key) blocks
+
+        BError _ ->
+            False
+
+
+exprContains : String -> ExprM -> Bool
+exprContains key expr =
+    case expr of
+        TextM str _ ->
+            String.contains key str
+
+        VerbatimM _ str _ ->
+            String.contains key str
+
+        ArgM exprs _ ->
+            List.any (exprContains key) exprs
+
+        ExprM _ exprs _ ->
+            List.any (exprContains key) exprs
+
+        ErrorM _ ->
+            False
+
+
+exprToId : ExprM -> String
+exprToId expr =
+    case expr of
+        TextM _ meta ->
+            meta.id
+
+        VerbatimM _ _ meta ->
+            meta.id
+
+        ArgM _ meta ->
+            meta.id
+
+        ExprM _ _ meta ->
+            meta.id
+
+        ErrorM _ ->
+            "(error)"
+
+
+blockToId : Block -> String
+blockToId block =
+    case block of
+        Paragraph _ meta ->
+            meta.id
+
+        VerbatimBlock _ _ _ meta ->
+            meta.id
+
+        Block _ _ meta ->
+            meta.id
+
+        BError _ ->
+            "(error)"
 
 
 filterStrictBlock : FilterType -> String -> List Block -> String

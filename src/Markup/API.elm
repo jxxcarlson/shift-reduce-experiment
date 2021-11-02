@@ -8,6 +8,7 @@ module Markup.API exposing
     , q
     , render
     , renderFancy
+    , renderFancyFromParseData
     , rl
     , tableOfContents
     )
@@ -193,10 +194,12 @@ labelForName str accumulator =
 
 renderFancy : Render.Settings.Settings -> Lang -> Int -> List String -> List (Element MarkupMsg)
 renderFancy settings language count source =
-    let
-        parseData =
-            parse language count source
+    renderFancyFromParseData (parse language count source) settings count
 
+
+renderFancyFromParseData : { ast : List Block, accumulator : Accumulator } -> Settings -> Int -> List (Element MarkupMsg)
+renderFancyFromParseData parseData settings count =
+    let
         ast =
             parseData.ast
 
