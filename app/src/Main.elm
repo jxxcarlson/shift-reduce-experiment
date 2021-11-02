@@ -46,6 +46,7 @@ type alias Model =
     , message : String
     , lineNumber : Int
     , searchText : String
+    , searchCount : Int
     }
 
 
@@ -111,6 +112,7 @@ init flags =
       , message = ""
       , lineNumber = 0
       , searchText = ""
+      , searchCount = 0
       }
     , Process.sleep 100 |> Task.perform (always IncrementCounter)
     )
@@ -157,7 +159,7 @@ update msg model =
             ( { model | searchText = str }, Cmd.none )
 
         Search ->
-            ( model, Cmd.none )
+            ( { model | searchCount = model.searchCount + 1 }, Cmd.none )
 
         ClearText ->
             ( { model
@@ -310,6 +312,7 @@ editor_ model =
                 , HtmlAttr.style "width" (String.fromInt panelWidth_ ++ "px")
                 , HtmlAttr.attribute "text" model.sourceText
                 , HtmlAttr.attribute "searchkey" model.searchText
+                , HtmlAttr.attribute "searchcount" (String.fromInt model.searchCount |> Debug.log "SEARCHCOUNT")
                 ]
                 []
 

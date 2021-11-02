@@ -60,7 +60,7 @@ window.customElements.define("ace-editor", class AceEditor extends HTMLElement {
     // List of observed attributes
     static get observedAttributes() {
         return ["theme", "mode", "fontsize", "softtabs", "tabsize", "readonly", "placeholder",
-            "wrapmode", "min-lines", "max-lines", "line-numbers", "shadow-style", "text", "linenumber", "searchkey"]
+            "wrapmode", "min-lines", "max-lines", "line-numbers", "shadow-style", "text", "linenumber", "searchkey", "searchcount"]
     }
 
 
@@ -205,12 +205,27 @@ window.customElements.define("ace-editor", class AceEditor extends HTMLElement {
                break
             case "searchkey":
                this.editor.$search.set({ needle: newVal });
-               var found = this.editor.$search.find(this.editor.getSession())
-               var line = found.start.row + 1
-               console.log("line", line)
-               this.editor.scrollToLine(line, true, true, function () {});
-               this.editor.gotoLine(line, 0, true);
+               this.editor.found = this.editor.$search.findAll(this.editor.getSession())
+               this.editor.searchIndex = 0
+               if (this.editor.found[0] != null) {
+                       var  line =  this.editor.found[0].start.row + 1
+                       console.log("line", line)
+                       this.editor.scrollToLine(line, true, true, function () {});
+                       this.editor.gotoLine(line, 0, true);
+                 }
 
+
+               break
+            case "searchcount":
+               console.log("searchcount", newVal)
+               if (this.editor.found != null) {
+                     this.editor.searchIndex = (this.editor.searchIndex + 1) % this.editor.found.length
+                     var  line2 =  this.editor.found[this.editor.searchIndex].start.row + 1
+                     console.log("line2", line2)
+                     this.editor.scrollToLine(line2, true, true, function () {});
+                     this.editor.gotoLine(line2, 0, true);
+
+                 }
                break
             case "theme":
                 this.editor.setTheme(newVal)
