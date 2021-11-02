@@ -42,6 +42,7 @@ function editorFocus() {
     this.textInput.focus()
 }
 
+
 console.log("Defining custom Ace element")
 
 // Creates an object based in the HTML Element prototype
@@ -62,6 +63,9 @@ window.customElements.define("ace-editor", class AceEditor extends HTMLElement {
             "wrapmode", "min-lines", "max-lines", "line-numbers", "shadow-style", "text", "linenumber", "searchkey"]
     }
 
+
+
+
     // Fires when an instance of the element is created
     constructor(self) {
         console.log("In constructor")
@@ -80,6 +84,7 @@ window.customElements.define("ace-editor", class AceEditor extends HTMLElement {
         // getElementById may not be polyfilled yet
         self.container = clone.querySelector("#ace-editor-container")
         shadowRoot.appendChild(clone)
+
         return self
     }
 
@@ -127,7 +132,8 @@ window.customElements.define("ace-editor", class AceEditor extends HTMLElement {
                 caseSensitive: true,
                 range: null,
                 wholeWord: false,
-                regExp: false
+                regExp: false,
+                skipCurrent : true
             });
 
         // Initial attributes
@@ -177,9 +183,16 @@ window.customElements.define("ace-editor", class AceEditor extends HTMLElement {
         this._attached = false
     }
 
-
-
-
+//    function gotoLine(i, found, editor) {
+//            if found != null {
+//               var loc = found[i]
+//               if loc != null {
+//                    editor.scrollToLine(loc.start.row + 1, true, true, function () {});
+//                    editor.gotoLine(loc.start.row + 1, 0, true);
+//                    console.log("line", loc.start.row + 1)
+//               }
+//              }
+//          }
 
     attributeChangedCallback(attr, oldVal, newVal) {
         if (!this._attached) {
@@ -193,9 +206,11 @@ window.customElements.define("ace-editor", class AceEditor extends HTMLElement {
             case "searchkey":
                this.editor.$search.set({ needle: newVal });
                var found = this.editor.$search.find(this.editor.getSession())
-               this.editor.scrollToLine(found.start.row + 1, true, true, function () {});
-               this.editor.gotoLine(found.start.row + 1, 0, true);
-               console.log("line", found.start.row + 1)
+               var line = found.start.row + 1
+               console.log("line", line)
+               this.editor.scrollToLine(line, true, true, function () {});
+               this.editor.gotoLine(line, 0, true);
+
                break
             case "theme":
                 this.editor.setTheme(newVal)
