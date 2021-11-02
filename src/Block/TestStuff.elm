@@ -14,6 +14,14 @@ m1 =
 """
 
 
+qami str =
+    Markup.API.q MiniLaTeX str
+
+
+qama str =
+    Markup.API.q Markdown str
+
+
 ami str =
     Markup.API.p MiniLaTeX str
 

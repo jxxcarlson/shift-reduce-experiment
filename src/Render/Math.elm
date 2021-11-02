@@ -12,13 +12,13 @@ type DisplayMode
     | DisplayMathMode
 
 
-mathText : Int -> DisplayMode -> String -> Element msg
-mathText generation displayMode content =
+mathText : Int -> String -> DisplayMode -> String -> Element msg
+mathText generation id displayMode content =
     -- the code 'String.replace "\\ \\" "\\\\"'
     -- is needed because for some reason "\\\\" gets expanded to "\\ \\"
     -- TODO Track this down at the soure.
     Html.Keyed.node "span"
-        [ HA.style "margin-left" "6px", HA.style "padding-top" "14px", HA.style "padding-bottom" "14px" ]
+        [ HA.style "margin-left" "6px", HA.style "padding-top" "14px", HA.style "padding-bottom" "14px", HA.id id ]
         [ ( String.fromInt generation, mathText_ displayMode "ID" (content |> String.replace "\\ \\" "\\\\") )
         ]
         |> Element.html

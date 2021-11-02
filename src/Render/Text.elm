@@ -10,6 +10,7 @@ import Element.Font as Font
 import Element.Input as Input
 import Expression.AST exposing (Expr(..))
 import Expression.ASTTools as ASTTools
+import Html.Attributes
 import LaTeX.MathMacro
 import Render.Math
 import Render.Msg exposing (MarkupMsg(..))
@@ -17,17 +18,21 @@ import Render.Settings exposing (Settings)
 import Utility
 
 
+htmlId str =
+    Element.htmlAttribute (Html.Attributes.id str)
+
+
 render : Int -> Settings -> Accumulator -> ExprM -> Element MarkupMsg
 render generation settings accumulator text =
     case text of
         TextM string meta ->
-            Element.el [ Events.onClick (SendMeta meta) ] (Element.text string)
+            Element.el [ Events.onClick (SendMeta meta), htmlId meta.id ] (Element.text string)
 
-        ExprM name exprList _ ->
-            Element.el [] (renderMarked name generation settings accumulator exprList)
+        ExprM name exprList meta ->
+            Element.el [ htmlId meta.id ] (renderMarked name generation settings accumulator exprList)
 
-        VerbatimM name str _ ->
-            renderVerbatim name generation settings accumulator str
+        VerbatimM name str meta ->
+            renderVerbatim name generation settings accumulator meta str
 
         ArgM _ _ ->
             Element.none
@@ -40,13 +45,13 @@ errorText index str =
     Element.el [ Font.color (Element.rgb255 200 40 40) ] (Element.text <| "(" ++ String.fromInt index ++ ") not implemented: " ++ str)
 
 
-renderVerbatim name generation settings accumulator str =
+renderVerbatim name generation settings accumulator meta str =
     case Dict.get name verbatimDict of
         Nothing ->
             errorText 1 name
 
         Just f ->
-            f generation settings accumulator str
+            f generation settings accumulator meta str
 
 
 renderMarked name generation settings accumulator exprList =
@@ -103,13 +108,16 @@ markupDict =
         ]
 
 
-verbatimDict : Dict String (Int -> Settings -> Accumulator -> String -> Element MarkupMsg)
+
+-- verbatimDict : Dict String (Int -> Settings -> Accumulator -> Meta -> String -> Element MarkupMsg)
+
+
 verbatimDict =
     Dict.fromList
-        [ ( "$", \g s a str -> math g s a str )
-        , ( "`", \g s a str -> code g s a str )
-        , ( "code", \g s a str -> code g s a str )
-        , ( "math", \g s a str -> math g s a str )
+        [ ( "$", \g s a m str -> math g s a m str )
+        , ( "`", \g s a m str -> code g s a m str )
+        , ( "code", \g s a m str -> code g s a m str )
+        , ( "math", \g s a m str -> math g s a m str )
         ]
 
 
@@ -318,16 +326,16 @@ simpleElement formatList g s a exprList =
     Element.paragraph formatList (List.map (render g s a) exprList)
 
 
-verbatimElement formatList g s a str =
-    Element.el formatList (Element.text str)
+verbatimElement formatList g s a m str =
+    Element.el (htmlId m.id :: formatList) (Element.text str)
 
 
-code g s a str =
-    verbatimElement codeStyle g s a str
+code g s a m str =
+    verbatimElement codeStyle g s a m str
 
 
-math g s a str =
-    mathElement g s a str
+math g s a m str =
+    mathElement g s a m str
 
 
 codeStyle =
@@ -340,9 +348,12 @@ codeStyle =
     ]
 
 
-mathElement : Int -> Settings -> Accumulator -> String -> Element MarkupMsg
-mathElement generation settings accumulator str =
-    Render.Math.mathText generation Render.Math.InlineMathMode (LaTeX.MathMacro.evalStr accumulator.macroDict str)
+
+-- mathElement : Int -> Settings -> Accumulator -> String -> Element MarkupMsg
+
+
+mathElement generation settings accumulator m str =
+    Render.Math.mathText generation m.id Render.Math.InlineMathMode (LaTeX.MathMacro.evalStr accumulator.macroDict str)
 
 
 item : Int -> Settings -> Accumulator -> List ExprM -> Element MarkupMsg

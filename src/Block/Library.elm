@@ -447,7 +447,7 @@ newMeta str state =
     { begin = state.index
     , end = state.index
     , status = BlockUnfinished str
-    , id = String.fromInt state.blockCount
+    , id = String.fromInt state.generation ++ "." ++ String.fromInt state.blockCount
     , indent = state.currentLineData.indent
     }
 

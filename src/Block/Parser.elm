@@ -36,7 +36,7 @@ nextStep lang state =
         finalizeOrRecoverFromError state |> debugRed "finalizeOrRecoverFromError"
 
     else
-        Loop (state |> getLine lang |> Block.Library.processLine lang |> postProcess)
+        Loop ({ state | blockCount = state.blockCount + 1 } |> getLine lang |> Block.Library.processLine lang |> postProcess)
 
 
 postProcess : State -> State

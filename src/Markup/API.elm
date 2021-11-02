@@ -5,6 +5,7 @@ module Markup.API exposing
     , p
     , parse
     , prepareForExport
+    , q
     , render
     , renderFancy
     , rl
@@ -44,6 +45,11 @@ defaultSettings =
 p : Lang -> String -> List Simplify.BlockS
 p lang str =
     parse lang 0 (String.lines str) |> .ast |> Simplify.blocks
+
+
+q : Lang -> String -> List Block
+q lang str =
+    parse lang 0 (String.lines str) |> .ast
 
 
 rl : String -> List (Element MarkupMsg)
