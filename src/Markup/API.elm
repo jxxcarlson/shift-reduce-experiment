@@ -1,5 +1,6 @@
 module Markup.API exposing
-    ( Settings
+    ( ParseData
+    , Settings
     , compile
     , defaultSettings
     , p
@@ -31,6 +32,10 @@ import Render.Msg exposing (MarkupMsg(..))
 import Render.Settings exposing (Settings)
 import Render.Text
 import Utility
+
+
+type alias ParseData =
+    { ast : List Block, accumulator : Accumulator }
 
 
 defaultSettings : Settings
