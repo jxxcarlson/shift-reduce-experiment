@@ -51,6 +51,7 @@ type alias Model =
     , searchText : String
     , searchCount : Int
     , parseData : { ast : List Block, accumulator : Accumulator }
+    , selectedId : String
     }
 
 
@@ -119,6 +120,7 @@ init flags =
       , searchText = ""
       , searchCount = 0
       , parseData = { ast = [], accumulator = Accumulator.init 4 }
+      , selectedId = "(none)"
       }
     , Process.sleep 100 |> Task.perform (always IncrementCounter)
     )
@@ -170,15 +172,15 @@ update msg model =
                 ids =
                     ASTTools.findIdsMatchingText model.searchText model.parseData.ast
 
-                cmd =
+                ( cmd, id ) =
                     case List.head ids of
                         Nothing ->
-                            Cmd.none
+                            ( Cmd.none, "(none)" )
 
-                        Just id ->
-                            setViewportForElement (id ++ ".0" |> Debug.log "ID")
+                        Just id_ ->
+                            ( setViewportForElement (id_ ++ ".0" |> Debug.log "ID"), id_ )
             in
-            ( { model | searchCount = model.searchCount + 1, message = ASTTools.findIdsMatchingText model.searchText model.parseData.ast |> Debug.toString }, cmd )
+            ( { model | selectedId = id, searchCount = model.searchCount + 1, message = ASTTools.findIdsMatchingText model.searchText model.parseData.ast |> Debug.toString }, cmd )
 
         ClearText ->
             ( { model
@@ -441,7 +443,7 @@ renderedText model =
         , htmlId "__RENDERED_TEXT__"
         , Background.color (Element.rgb255 255 255 255)
         ]
-        (render model.parseData model.count)
+        (render model.selectedId model.parseData model.count)
 
 
 htmlId str =
@@ -464,13 +466,13 @@ latexSourceView model =
         [ Element.text (LaTeX.Export.API.export model.language model.sourceText) ]
 
 
-settings =
-    { defaultSettings | paragraphSpacing = 42, showErrorMessages = True }
+settings selectedId =
+    { defaultSettings | paragraphSpacing = 42, showErrorMessages = True, selectedId = selectedId }
 
 
-render : { ast : List Block, accumulator : Accumulator } -> Int -> List (Element Msg)
-render parseData count =
-    API.renderFancyFromParseData parseData settings count |> List.map (Element.map Render)
+render : String -> { ast : List Block, accumulator : Accumulator } -> Int -> List (Element Msg)
+render selectedId parseData count =
+    API.renderFancyFromParseData parseData (settings selectedId) count |> List.map (Element.map Render)
 
 
 

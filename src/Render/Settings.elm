@@ -7,4 +7,5 @@ type alias Settings =
     , paragraphSpacing : Int
     , showTOC : Bool
     , showErrorMessages : Bool
+    , selectedId : String
     }
