@@ -253,6 +253,7 @@ href_ url label =
 
 image generation settings accumuator body =
     let
+        arguments : List String
         arguments =
             ASTTools.exprListToStringList body
 
@@ -309,7 +310,7 @@ image generation settings accumuator body =
     column [ spacing 8, Element.width (px settings.width), placement, Element.paddingXY 0 18 ]
         [ Element.image [ Element.width width, placement ]
             { src = url, description = description }
-        , caption
+        , el [ placement ] caption
         ]
 
 
