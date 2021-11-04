@@ -356,7 +356,7 @@ editor_ model =
     el [ htmlAttribute onChange ] <|
         html <|
             Html.node "ace-editor"
-                [ HtmlAttr.attribute "theme" "twilight"
+                [ HtmlAttr.attribute "theme" "one_dark"
                 , HtmlAttr.attribute "wrapmode" "true"
                 , HtmlAttr.attribute "tabsize" "2"
                 , HtmlAttr.attribute "linenumber" (String.fromInt (model.lineNumber + 1))

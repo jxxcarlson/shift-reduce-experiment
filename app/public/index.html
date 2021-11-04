@@ -14,6 +14,12 @@
     integrity="sha384-AfEj0r4/OFrOo5t7NnNe46zW/tFgW6x/bCJG8FqQCEo3+Aro6EYUG4+cU+KJWu/X" crossorigin="anonymous">
 
   <!-- For the ACE editor as in Alex Korban's book -->
+  <!-- It seems that in app/public/assets, the file one_dark.js needs
+       require.js in order for function 'define' to be defined (Ha ha! second-order JS humor)
+       If so, the below is not solution.  It nukes all JS interop in the app with an infinite
+       chan of calls.
+  -->
+  <!-- <script src="assets/require.js"></script> -->
   <script src="assets/ace.js"></script>
   <script src="assets/ace-element.js"></script>
 
