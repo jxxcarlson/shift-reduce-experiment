@@ -178,7 +178,7 @@ update msg model =
                             ( Cmd.none, "(none)" )
 
                         Just id_ ->
-                            ( setViewportForElement (id_ ++ ".0" |> Debug.log "ID"), id_ )
+                            ( setViewportForElement (id_ ++ ".0"), id_ )
             in
             ( { model | selectedId = id, searchCount = model.searchCount + 1, message = ASTTools.findIdsMatchingText model.searchText model.parseData.ast |> Debug.toString }, cmd )
 
@@ -210,10 +210,6 @@ update msg model =
                     ( model, setViewPortForSelectedLine element viewport )
 
                 Err err ->
-                    let
-                        _ =
-                            Debug.log "Couldn't set viewport" err
-                    in
                     ( model, Cmd.none )
 
 
@@ -239,7 +235,7 @@ setViewPortForSelectedLine : Dom.Element -> Dom.Viewport -> Cmd Msg
 setViewPortForSelectedLine element viewport =
     let
         y =
-            viewport.viewport.y + element.element.y - element.element.height - 100 |> Debug.log "Y-VALUE"
+            viewport.viewport.y + element.element.y - element.element.height - 100
     in
     Task.attempt (\_ -> NoOp) (Dom.setViewportOf "__RENDERED_TEXT__" 0 y)
 
@@ -367,7 +363,7 @@ editor_ model =
                 , HtmlAttr.style "width" (String.fromInt panelWidth_ ++ "px")
                 , HtmlAttr.attribute "text" model.sourceText
                 , HtmlAttr.attribute "searchkey" model.searchText
-                , HtmlAttr.attribute "searchcount" (String.fromInt model.searchCount |> Debug.log "SEARCHCOUNT")
+                , HtmlAttr.attribute "searchcount" (String.fromInt model.searchCount)
                 ]
                 []
 

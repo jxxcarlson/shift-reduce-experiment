@@ -54,6 +54,16 @@ makeEntry mathExpression_ =
             ( "nullMacro", MacroBody 0 [ MathText "0" ] )
 
 
+evalStr : MathMacroDict -> String -> String
+evalStr macroDict_ str =
+    str
+        |> String.split " "
+        |> List.map String.trim
+        |> List.filter (\s -> s /= "")
+        |> List.map (evalStr_ macroDict_)
+        |> String.join " "
+
+
 
 -- EVAL
 
@@ -80,8 +90,8 @@ makeEntry mathExpression_ =
     --> "\\int_0^1 x^n dx + \\bf{B}+ \\bf{R}"
 
 -}
-evalStr : MathMacroDict -> String -> String
-evalStr macroDict_ str =
+evalStr_ : MathMacroDict -> String -> String
+evalStr_ macroDict_ str =
     case parseMany (String.trim str) of
         Ok result ->
             evalList macroDict_ result
@@ -90,10 +100,12 @@ evalStr macroDict_ str =
             str
 
 
+{-| TODO: test this change thoroughly: join strings without space ??
+-}
 evalList : MathMacroDict -> List MathExpression -> String
 evalList macroDict_ list =
     List.map (evalMathExpr macroDict_) list
-        |> String.join " "
+        |> String.join ""
 
 
 evalMathExpr : MathMacroDict -> MathExpression -> String

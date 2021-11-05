@@ -1,6 +1,10 @@
 module Data.MiniLaTeXTest exposing (text)
 
 
+textQ =
+    "$$\n  \\{ a_{1} \\}\n$$"
+
+
 text =
     """
 \\title{The Fourier Transform}

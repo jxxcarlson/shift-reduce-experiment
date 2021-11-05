@@ -67,7 +67,7 @@ renderBlock generation settings accumulator block =
             if meta.status /= BlockComplete then
                 renderBlocksIncomplete settings name meta.status blocks
 
-            else if List.member name [ "theorem", "colloary", "definition", "lemma", "proposition" ] then
+            else if List.member name [ "theorem", "corollary", "definition", "lemma", "proposition" ] then
                 renderTheoremLikeBlock generation settings accumulator name blocks
 
             else
