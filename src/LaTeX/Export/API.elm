@@ -63,6 +63,6 @@ prepareForExportWithImages language sourceText =
 
 getImageURLs : List Block -> List String
 getImageURLs blocks =
-    Expression.ASTTools.filter Expression.ASTTools.Contains "heading" blocks
+    Expression.ASTTools.filter Expression.ASTTools.Contains "image" blocks
         |> List.map Expression.ASTTools.getText
         |> Maybe.Extra.values
