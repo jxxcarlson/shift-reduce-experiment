@@ -45,6 +45,7 @@ nameDict =
         , ( "date", "nothing" )
         , ( "tags", "nothing" )
         , ( "author", "nothing" )
+        , ( "image", "imagecenter" ) -- needed  for compatibitlity with pdserver for now
         ]
 
 
