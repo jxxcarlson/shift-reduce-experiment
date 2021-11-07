@@ -79,12 +79,15 @@ renderImageCenter args =
 
 fileReferenceFromUrl : String -> String
 fileReferenceFromUrl url =
-    case String.split "/" url |> List.reverse |> List.head of
-        Nothing ->
-            "no-file-name"
+    case String.split "/" url |> List.reverse of
+        "image.png" :: a :: rest ->
+            "image/" ++ a ++ ".png"
 
-        Just fileName ->
-            "image/" ++ fileName
+        fname :: rest ->
+            "image/" ++ fname
+
+        [] ->
+            "image/nothing.png"
 
 
 renderArgs : List ExprM -> String
