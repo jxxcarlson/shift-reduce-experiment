@@ -35,6 +35,9 @@ renderVerbatimEnvironment name body =
     else if name == "math" then
         "$$\n" ++ body ++ "\n$$"
 
+    else if name == "code" then
+        "\\begin{verbatim}\n" ++ body ++ "\n\\end{verbatim}\n"
+
     else
         "\\begin{" ++ name ++ "}\n" ++ body ++ "\n\\end{" ++ name ++ "}\n"
 
