@@ -117,7 +117,7 @@ finalize lang state =
 
 nextTokenState : Token -> Token.TokenStack -> Token.TokenStack
 nextTokenState token tokenStack =
-    Token.push token tokenStack
+    Token.push token tokenStack |> debugRed "New TOKEN STACK"
 
 
 processToken : Lang -> State -> Step State State
@@ -128,7 +128,11 @@ processToken lang state =
 
         tokenStack =
             if lang == Markdown then
-                nextTokenState token state.tokenStack
+                state.tokenStack
+                    |> Token.reduceGracefully
+                    |> debugRed "PROCESS TOKEN (A1)"
+                    |> Token.push token
+                    |> debugRed "PROCESS TOKEN (A2)"
 
             else
                 state.tokenStack

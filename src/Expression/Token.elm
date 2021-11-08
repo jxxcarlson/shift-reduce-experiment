@@ -8,6 +8,7 @@ module Expression.Token exposing
     , length
     , push
     , reduce
+    , reduceGracefully
     , startPositionOf
     , stringValue
     , symbolToString
@@ -25,25 +26,6 @@ type Token
     | AnnotatedText String String String Loc
     | Special String String Loc -- eg, for @title[The Greatest Book Ever!]
     | TokenError ErrorData Loc
-
-
-push : Token -> TokenStack -> TokenStack
-push token stack =
-    case token of
-        Symbol "[" _ ->
-            LBR :: stack
-
-        Symbol "]" _ ->
-            RBR :: stack
-
-        Symbol "(" _ ->
-            LPAREN :: stack
-
-        Symbol ")" _ ->
-            RPAREN :: stack
-
-        _ ->
-            stack
 
 
 symbolToString : Token -> Maybe String
@@ -168,6 +150,35 @@ type TokenSymbol
 
 type alias TokenStack =
     List TokenSymbol
+
+
+push : Token -> TokenStack -> TokenStack
+push token stack =
+    case token of
+        Symbol "[" _ ->
+            LBR :: stack
+
+        Symbol "]" _ ->
+            RBR :: stack
+
+        Symbol "(" _ ->
+            LPAREN :: stack
+
+        Symbol ")" _ ->
+            RPAREN :: stack
+
+        _ ->
+            stack
+
+
+reduceGracefully : TokenStack -> TokenStack
+reduceGracefully stack =
+    case reduce (List.reverse stack) of
+        [ TError ] ->
+            stack
+
+        result ->
+            List.reverse result
 
 
 {-|
