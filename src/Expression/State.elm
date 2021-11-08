@@ -9,7 +9,7 @@ import Lang.Token.Common
 type alias State =
     { sourceText : String
     , scanPointer : Int
-    , tokenState : Lang.Token.Common.TokenState
+    , tokenStack : Expression.Token.TokenStack
     , end : Int
     , stack : List (Either Token Expr)
     , committed : List Expr

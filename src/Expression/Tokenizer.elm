@@ -1,9 +1,8 @@
 module Expression.Tokenizer exposing (get, run)
 
 import Expression.Error exposing (..)
-import Expression.Token exposing (Token(..))
+import Expression.Token exposing (Token(..), TokenStack, TokenSymbol(..))
 import Lang.Lang exposing (Lang(..))
-import Lang.Token.Common exposing (TokenState(..))
 import Lang.Token.L1 as L1
 import Lang.Token.Markdown as Markdown
 import Lang.Token.MiniLaTeX as MiniLaTeX
@@ -18,7 +17,7 @@ import Parser.Advanced as Parser exposing (Parser)
     which is at this juncture pointing one character beyond the string chomped.
 
 -}
-get : Lang -> TokenState -> Int -> String -> Token
+get : Lang -> TokenStack -> Int -> String -> Token
 get lang tokenState start input =
     case Parser.run (tokenParser lang tokenState start) input of
         Ok token ->
@@ -33,7 +32,7 @@ type alias State =
     , source : String
     , scanPointer : Int
     , sourceLength : Int
-    , tokenState : TokenState
+    , tokenStack : TokenStack
     , tokens : List Token
     }
 
@@ -56,7 +55,7 @@ init source =
     , scanPointer = 0
     , sourceLength = String.length source
     , tokens = []
-    , tokenState = TSA
+    , tokenStack = []
     }
 
 
@@ -68,7 +67,7 @@ nextStep lang state =
     else
         let
             token =
-                get lang state.tokenState state.scanPointer (String.dropLeft state.scanPointer state.source)
+                get lang state.tokenStack state.scanPointer (String.dropLeft state.scanPointer state.source)
 
             newScanPointer =
                 state.scanPointer + Expression.Token.length token + 1
@@ -106,14 +105,14 @@ type alias TokenParser =
       Ok [Text ("Test: "),Symbol "[",Text ("i "),Symbol "[",Text ("j foo bar"),Symbol "]",Symbol "]"]
 
 -}
-tokenParser : Lang -> TokenState -> Int -> TokenParser
-tokenParser lang tokenState start =
+tokenParser : Lang -> TokenStack -> Int -> TokenParser
+tokenParser lang tokenStack start =
     case lang of
         L1 ->
-            L1.tokenParser tokenState start
+            L1.tokenParser tokenStack start
 
         MiniLaTeX ->
-            MiniLaTeX.tokenParser tokenState start
+            MiniLaTeX.tokenParser tokenStack start
 
         Markdown ->
-            Markdown.tokenParser tokenState start
+            Markdown.tokenParser tokenStack start

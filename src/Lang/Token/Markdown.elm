@@ -1,8 +1,8 @@
 module Lang.Token.Markdown exposing (specialParser, tokenParser)
 
 import Expression.Error exposing (..)
-import Expression.Token exposing (Token(..))
-import Lang.Token.Common as Common exposing (TokenParser, TokenState(..))
+import Expression.Token exposing (Token(..), TokenStack)
+import Lang.Token.Common as Common exposing (TokenParser)
 import Markup.ParserTools as ParserTools
 import Parser.Advanced as Parser exposing ((|.), (|=), Parser)
 
@@ -27,14 +27,13 @@ All of this for the tokenizer to set things up to recognize
     [!function-name](arg_1)...(arg_n)
 
 -}
-tokenParser : TokenState -> Int -> Parser Context Problem Token
-tokenParser tokenState start =
-    case tokenState of
-        TSA ->
-            tokenParserA start
+tokenParser : TokenStack -> Int -> Parser Context Problem Token
+tokenParser tokenStack start =
+    if List.isEmpty tokenStack then
+        tokenParserA start
 
-        TSB _ ->
-            tokenParserB start
+    else
+        tokenParserB start
 
 
 tokenParserA start =

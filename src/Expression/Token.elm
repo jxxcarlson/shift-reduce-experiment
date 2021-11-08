@@ -1,9 +1,12 @@
 module Expression.Token exposing
     ( Loc
     , Token(..)
+    , TokenStack
+    , TokenSymbol(..)
     , dummyLoc
     , isSymbol
     , length
+    , push
     , reduce
     , startPositionOf
     , stringValue
@@ -22,6 +25,25 @@ type Token
     | AnnotatedText String String String Loc
     | Special String String Loc -- eg, for @title[The Greatest Book Ever!]
     | TokenError ErrorData Loc
+
+
+push : Token -> TokenStack -> TokenStack
+push token stack =
+    case token of
+        Symbol "[" _ ->
+            LBR :: stack
+
+        Symbol "]" _ ->
+            RBR :: stack
+
+        Symbol "(" _ ->
+            LPAREN :: stack
+
+        Symbol ")" _ ->
+            RPAREN :: stack
+
+        _ ->
+            stack
 
 
 symbolToString : Token -> Maybe String
@@ -136,28 +158,61 @@ length token =
             loc.end - loc.begin
 
 
-reduce : List Char -> List Char
-reduce chars =
-    case chars of
-        '[' :: ']' :: rest ->
+type TokenSymbol
+    = LBR
+    | RBR
+    | LPAREN
+    | RPAREN
+    | TError
+
+
+type alias TokenStack =
+    List TokenSymbol
+
+
+{-|
+
+    Grammar: S -> [ ] A ; A -> ( ) | ( ) A | | ( S )
+
+    > input = [LBR, RBR, LPAREN, RPAREN]
+    > reduce input
+      [] : List TokenSymbol
+
+    > input = [LBR, LBR, RBR, LPAREN, RPAREN]
+    > reduce input
+    [LBR,LBR,RBR,LPAREN,RPAREN]
+
+    > input = [LBR, RBR, LPAREN, LBR, RBR, LPAREN, RPAREN, RPAREN]
+    > reduce input
+    [] : List TokenSymbol
+
+-}
+reduce : List TokenSymbol -> List TokenSymbol
+reduce symbols =
+    case symbols of
+        -- S -> [ ] A
+        LBR :: RBR :: rest ->
             reduce rest
 
-        '(' :: ')' :: [] ->
+        -- A -> ( )
+        LPAREN :: RPAREN :: [] ->
             []
 
-        '(' :: ')' :: rest ->
+        -- A -> ( ) A
+        LPAREN :: RPAREN :: rest ->
             reduce rest
 
-        '(' :: rest ->
+        -- A -> ( S )
+        LPAREN :: rest ->
             case List.head (List.reverse rest) of
-                Just ')' ->
+                Just RPAREN ->
                     reduce (List.take (List.length rest - 1) rest)
 
                 Just _ ->
-                    chars
+                    symbols
 
                 Nothing ->
-                    chars
+                    symbols
 
         _ ->
-            chars
+            [ TError ]

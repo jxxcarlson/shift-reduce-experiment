@@ -57,7 +57,7 @@ init : String -> State
 init str =
     { sourceText = str
     , scanPointer = 0
-    , tokenState = Lang.Token.Common.TSA
+    , tokenStack = []
     , end = String.length str
     , stack = []
     , committed = []
@@ -115,64 +115,23 @@ finalize lang state =
         recoverFromError lang state |> debugCyan "ReduceFinal (2, recoverFromErrors)"
 
 
-nextTokenState : Lang.Token.Common.TokenState -> Token -> Lang.Token.Common.TokenState
-nextTokenState tokenState token =
-    case tokenState of
-        Lang.Token.Common.TSA ->
-            case token of
-                Token.Symbol "[" _ ->
-                    Lang.Token.Common.TSB 0
-
-                _ ->
-                    Lang.Token.Common.TSA
-
-        Lang.Token.Common.TSB 0 ->
-            case token of
-                Token.Text s _ ->
-                    if String.left 1 s == "  " then
-                        -- we have passed the end of the argument list
-                        Lang.Token.Common.TSA
-
-                    else
-                        tokenState
-
-                _ ->
-                    tokenState
-
-        Lang.Token.Common.TSB k ->
-            case token of
-                Token.Symbol "(" _ ->
-                    Lang.Token.Common.TSB (k + 1)
-
-                Token.Symbol ")" _ ->
-                    Lang.Token.Common.TSB (k - 1)
-
-                _ ->
-                    case token of
-                        Token.Text s _ ->
-                            if String.trim s == "" then
-                                -- we have passed the end of the argument list
-                                Lang.Token.Common.TSA
-
-                            else
-                                tokenState
-
-                        _ ->
-                            tokenState
+nextTokenState : Token -> Token.TokenStack -> Token.TokenStack
+nextTokenState token tokenStack =
+    Token.push token tokenStack
 
 
 processToken : Lang -> State -> Step State State
 processToken lang state =
     let
         token =
-            Tokenizer.get lang state.tokenState state.scanPointer (String.dropLeft state.scanPointer state.sourceText)
+            Tokenizer.get lang state.tokenStack state.scanPointer (String.dropLeft state.scanPointer state.sourceText)
 
-        tokenState =
+        tokenStack =
             if lang == Markdown then
-                nextTokenState state.tokenState token
+                nextTokenState token state.tokenStack
 
             else
-                state.tokenState
+                state.tokenStack
 
         _ =
             debugBlue "n" state.count
@@ -205,10 +164,10 @@ processToken lang state =
                     String.length unprocessedText |> debugBlue "tokenLength"
             in
             -- Oops, exit
-            Loop { state | tokenState = tokenState, committed = errorValue state errorData :: state.committed, scanPointer = state.scanPointer + tokenLength + 1 }
+            Loop { state | tokenStack = tokenStack, committed = errorValue state errorData :: state.committed, scanPointer = state.scanPointer + tokenLength + 1 }
 
         newToken ->
-            Loop (shift newToken (reduce lang { state | tokenState = tokenState })) |> debugRed "processToken, OUT"
+            Loop (shift newToken (reduce lang { state | tokenStack = tokenStack })) |> debugRed "processToken, OUT"
 
 
 errorValue : State -> ErrorData -> Expr

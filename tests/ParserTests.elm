@@ -7,7 +7,7 @@ import Expression.AST exposing (Expr(..))
 import Expression.Parser exposing (run)
 import Expression.Token as Token
 import Lang.Lang exposing (Lang(..))
-import Lang.Token.Common exposing (TokenState(..))
+import Lang.Token.Common exposing (TokenSymbol(..))
 import Markup.API as API
 import Markup.Simplify as Simplify exposing (BlockS(..), ExprS(..))
 import Test exposing (..)
