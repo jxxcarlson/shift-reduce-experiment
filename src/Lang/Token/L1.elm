@@ -12,6 +12,11 @@ type alias TokenParser =
     Parser Context Problem Token
 
 
+{-| Expression.Tokenizer.tokenParser calls L1.tokenParser
+with arguments tokenState and start. The first argument
+is not used (although it is for the Markdown parser)
+-}
+tokenParser : a -> Int -> TokenParser
 tokenParser _ start =
     tokenParser_ start
 

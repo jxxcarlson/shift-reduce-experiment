@@ -13,6 +13,11 @@ type TokenState
     | TSB
 
 
+{-| Expression.Tokenizer.tokenParser calls MiniLaTeX.tokenParser
+with arguments tokenState and start. The first argument
+is not used (although it is for the Markdown parser)
+-}
+tokenParser : a -> Int -> Parser Context Problem Token
 tokenParser _ start =
     tokenParser_ start
 

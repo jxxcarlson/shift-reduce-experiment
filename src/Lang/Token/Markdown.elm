@@ -11,6 +11,23 @@ type alias TokenParser =
     Parser Context Problem Token
 
 
+{-| tokenParser calls a specific parser depending on the
+value of tokenParser. tokenParserA does not recognize
+parentheses, while tokenParserB does. The transition from
+state TSA to TSB 0 is made when a left bracket is encountered.
+See Expression.Parser.nextTokenState. While in state TSB,
+k is incremented when a left parenthesis is encountered,
+decremented when a right parenthesis is encountered.
+When a white-space token is encountered in state TSB \_,
+the state changes to TSA.
+
+All of this for the tokenizer to set things up to recognize
+"function call" in extended markdown of the form
+
+    [!function-name](arg_1)...(arg_n)
+
+-}
+tokenParser : TokenState -> Int -> Parser Context Problem Token
 tokenParser tokenState start =
     case tokenState of
         TSA ->

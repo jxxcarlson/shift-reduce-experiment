@@ -52,5 +52,5 @@ suiteSourceMap =
         , test "(5) get source fragment" <|
             \_ ->
                 SourceMap.getFragment "1.2.0" source blocks
-                    |> Expect.equal (Just { fragment = "foo\nba r\nbaz\nabc\n", meta = { id = "1.2.0", label = "", loc = { begin = { col = 0, row = 2 }, end = { col = 3, row = 5 } } } })
+                    |> Expect.equal (Just { fragment = "foo\nbar\nbaz\nabc\n", meta = { id = "1.2.0", label = "", loc = { begin = { col = 0, row = 2 }, end = { col = 3, row = 5 } } } })
         ]
