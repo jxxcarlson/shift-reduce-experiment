@@ -12,7 +12,7 @@ type alias TokenParser =
 
 
 {-| tokenParser calls a specific parser depending on the
-value of tokenParser. tokenParserA does not recognize
+value of tokenState. tokenParserA does not recognize
 parentheses, while tokenParserB does. The transition from
 state TSA to TSB 0 is made when a left bracket is encountered.
 See Expression.Parser.nextTokenState. While in state TSB,
