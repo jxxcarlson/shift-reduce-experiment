@@ -28,7 +28,7 @@ import Lang.Lang exposing (Lang(..))
 import Markup.Simplify as Simplify
 import Markup.Vector as Vector
 import Render.Block
-import Render.Msg exposing (MarkupMsg(..))
+import Render.Msg exposing (MarkupMsg)
 import Render.Settings exposing (Settings)
 import Render.Text
 import Utility

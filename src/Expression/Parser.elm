@@ -2,7 +2,6 @@ module Expression.Parser exposing (parseExpr, parseToBlock, run)
 
 import Block.Block exposing (Block)
 import Block.BlockTools
-import Block.Function as Function
 import Either
 import Expression.AST as AST exposing (Expr)
 import Expression.Error exposing (ErrorData, Problem(..))
@@ -174,7 +173,7 @@ processToken lang state =
             debugBlue "Token" token
     in
     case token of
-        TokenError errorData meta ->
+        TokenError errorData _ ->
             let
                 ( row, col ) =
                     List.map (\item -> ( item.row, item.col )) errorData |> List.Extra.last |> Maybe.withDefault ( 1, 1 ) |> debugBlue "(row, col)"

@@ -5,7 +5,7 @@ import Block.Library
 import Block.State exposing (State)
 import Lang.Lang exposing (Lang)
 import List.Extra
-import Markup.Debugger exposing (debugBlue, debugCyan, debugGreen, debugMagenta, debugRed, debugYellow)
+import Markup.Debugger exposing (debugCyan, debugGreen, debugRed, debugYellow)
 import Markup.Simplify as Simplify
 
 

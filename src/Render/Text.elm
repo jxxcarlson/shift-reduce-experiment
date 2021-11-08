@@ -8,7 +8,6 @@ import Element.Background as Background
 import Element.Events as Events
 import Element.Font as Font
 import Element.Input as Input
-import Expression.AST exposing (Expr(..))
 import Expression.ASTTools as ASTTools
 import Html.Attributes
 import LaTeX.MathMacro
@@ -95,9 +94,9 @@ markupDict =
         , ( "texmacro", \g s a exprList -> texmacro g s a exprList )
         , ( "texarg", \g s a exprList -> texarg g s a exprList )
         , ( "abstract", \g s a exprList -> abstract g s a exprList )
-        , ( "tags", \g s a exprList -> Element.none )
-        , ( "author", \g s a exprList -> Element.none )
-        , ( "date", \g s a exprList -> Element.none )
+        , ( "tags", \_ _ _ _ -> Element.none )
+        , ( "author", \_ _ _ _ -> Element.none )
+        , ( "date", \_ _ _ _ -> Element.none )
         , ( "large", \g s a exprList -> large g s a exprList )
 
         -- MiniLaTeX stuff
@@ -145,8 +144,8 @@ specialFunctionsDict : Dict String (Settings -> String -> Element MarkupMsg)
 specialFunctionsDict =
     Dict.fromList
         [ ( "title", \s str -> title s str )
-        , ( "red", \s str -> Element.el [ Font.color redColor ] (Element.text str) )
-        , ( "blue", \s str -> Element.el [ Font.color blueColor ] (Element.text str) )
+        , ( "red", \_ str -> Element.el [ Font.color redColor ] (Element.text str) )
+        , ( "blue", \_ str -> Element.el [ Font.color blueColor ] (Element.text str) )
         ]
 
 
@@ -190,10 +189,6 @@ macro2 element g s a exprList =
 
 
 large g s a exprList =
-    simpleElement [ Font.size 18 ] g s a exprList
-
-
-author g s a exprList =
     simpleElement [ Font.size 18 ] g s a exprList
 
 
@@ -367,10 +362,6 @@ numberedItem generation settings accumulator str =
     Element.paragraph [ Element.width Element.fill ] [ Element.text (ASTTools.exprListToStringList str |> String.join " ") ]
 
 
-itemSymbol =
-    el [ Font.bold, Element.alignTop, Element.moveUp 1, Font.size 18 ] (Element.text "•")
-
-
 codeColor =
     -- E.rgb 0.2 0.5 1.0
     Element.rgb 0.4 0 0.8
@@ -506,13 +497,6 @@ heading3 g s a exprList =
 
 heading4 g s a exprList =
     Element.column [ headingFontSize s 4, verticalPadding 14 0, makeId exprList ]
-        [ Element.link []
-            { url = internalLink "TITLE", label = Element.paragraph [] (elementLabel exprList :: List.map (render g s a) exprList) }
-        ]
-
-
-heading5 g s a exprList =
-    Element.column [ headingFontSize s 5, verticalPadding 14 0, makeId exprList ]
         [ Element.link []
             { url = internalLink "TITLE", label = Element.paragraph [] (elementLabel exprList :: List.map (render g s a) exprList) }
         ]

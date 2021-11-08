@@ -1,7 +1,7 @@
 module LaTeX.Export.Markdown exposing (putListItemsAsChildrenOfBlock)
 
-import Block.Block exposing (Block(..), BlockStatus(..), ExprM(..))
-import Markup.Debugger exposing (debugMagenta, debugYellow)
+import Block.Block exposing (Block(..), ExprM(..))
+import Markup.Debugger exposing (debugYellow)
 
 
 putListItemsAsChildrenOfBlock : List Block -> List Block

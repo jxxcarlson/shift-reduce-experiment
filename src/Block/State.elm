@@ -3,8 +3,6 @@ module Block.State exposing (State, init)
 import Block.Accumulator as Accumulator exposing (Accumulator)
 import Block.Block exposing (SBlock)
 import Block.Line
-import Dict
-import LaTeX.MathMacro
 import Lang.Lang exposing (Lang)
 
 

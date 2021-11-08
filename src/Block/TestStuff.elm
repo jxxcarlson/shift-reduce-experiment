@@ -1,9 +1,9 @@
-module Block.TestStuff exposing (..)
+module Block.TestStuff exposing (al, ama, ami, ll, m1, ma, mi, qama, qami)
 
 import Block.Parser
 import Lang.Lang exposing (Lang(..))
 import Markup.API
-import Markup.Simplify exposing (BlockS(..), ExprS(..))
+import Markup.Simplify
 
 
 m1 =

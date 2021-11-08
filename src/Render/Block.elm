@@ -3,19 +3,17 @@ module Render.Block exposing (render)
 import Block.Accumulator exposing (Accumulator)
 import Block.Block as Block exposing (Block(..), BlockStatus(..))
 import Block.BlockTools as Block
-import Block.State
 import Dict exposing (Dict)
 import Element exposing (..)
 import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
-import Expression.AST
 import Expression.ASTTools as ASTTools
 import Html.Attributes
 import LaTeX.MathMacro
 import Markup.Debugger exposing (debugYellow)
 import Render.Math
-import Render.Msg exposing (MarkupMsg(..))
+import Render.Msg exposing (MarkupMsg)
 import Render.Settings exposing (Settings)
 import Render.Text
 import String.Extra

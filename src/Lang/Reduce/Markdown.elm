@@ -7,7 +7,7 @@ import Expression.State exposing (State)
 import Expression.Token as Token exposing (Token(..))
 import List.Extra
 import Markup.Common exposing (Step(..))
-import Markup.Debugger exposing (debugGreen, debugNull, debugRed, debugYellow)
+import Markup.Debugger exposing (debugGreen, debugRed, debugYellow)
 
 
 reduceFinal : State -> State
@@ -63,7 +63,7 @@ reduce state =
                 state
 
         -- arg :: expr :: rest = expr with incorporated arg :: rest
-        (Right (AST.Arg args1 loc2)) :: (Right (AST.Expr name args2 loc3)) :: rest ->
+        (Right (AST.Arg args1 loc2)) :: (Right (AST.Expr name args2 _)) :: rest ->
             reduce { state | stack = Right (AST.Expr name (args1 ++ args2) { begin = loc2.begin, end = loc2.end }) :: rest } |> debugYellow "RED 3 (incorporate arg in expr)"
 
         -- THREE-TERM RULES
@@ -98,7 +98,7 @@ reduce state =
             reduce { state | stack = Right (AST.Expr name args { begin = loc1.begin, end = loc2.end }) :: rest } |> debugGreen "RED 8"
 
         -- Transform "{" .... "}" to Right (Arg [....])
-        (Left (Token.Symbol ")" loc3)) :: rest ->
+        (Left (Token.Symbol ")" _)) :: _ ->
             { state | stack = reduceArg state.stack } |> debugGreen "RULE 9"
 
         (Left (MarkedText "boldItalic" str loc)) :: [] ->
@@ -238,9 +238,6 @@ reduceArg stack =
 
                 n =
                     List.length interior |> debugYellow "n, interior length"
-
-                found =
-                    List.Extra.getAt n rest |> debugYellow "found"
             in
             case ( List.Extra.getAt n rest, Stack.toExprList interior ) of
                 ( Nothing, _ ) ->

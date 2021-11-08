@@ -1,8 +1,6 @@
 module LaTeX.Export.Block exposing (render)
 
 import Block.Block exposing (Block(..), BlockStatus(..))
-import Element exposing (..)
-import Element.Background as Background
 import LaTeX.Export.Data
 import LaTeX.Export.Text
 
@@ -21,7 +19,7 @@ excludeTitle blocks =
 
 isNotTitleBlock block =
     case block of
-        Paragraph ((Block.Block.ExprM name _ _) :: rest2) _ ->
+        Paragraph ((Block.Block.ExprM name _ _) :: _) _ ->
             name /= "title"
 
         _ ->
@@ -94,17 +92,3 @@ statusToString status =
 
         BlockComplete ->
             ""
-
-
-error str =
-    paragraph [ Background.color (rgb255 250 217 215) ] [ text str ]
-
-
-internalLink : String -> String
-internalLink str =
-    "#" ++ str |> makeSlug
-
-
-makeSlug : String -> String
-makeSlug str =
-    str |> String.toLower |> String.replace " " "-"

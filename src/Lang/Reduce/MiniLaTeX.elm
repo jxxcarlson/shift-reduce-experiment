@@ -2,26 +2,12 @@ module Lang.Reduce.MiniLaTeX exposing (recoverFromError, reduce, reduceFinal)
 
 import Either exposing (Either(..))
 import Expression.AST as AST exposing (Expr)
-import Expression.ASTTools as ASTTools
 import Expression.Stack as Stack exposing (Stack)
 import Expression.State exposing (State)
 import Expression.Token as Token exposing (Token(..))
 import List.Extra
 import Markup.Common exposing (Step(..))
 import Markup.Debugger exposing (debugGreen, debugYellow)
-
-
-fixedPoint : State -> State
-fixedPoint state =
-    let
-        newState =
-            reduce state
-    in
-    if state == newState then
-        state |> debugGreen "EXIT FIXED POINT"
-
-    else
-        fixedPoint state |> debugGreen "FIXED POINT AGAIN"
 
 
 reduceFinal : State -> State
@@ -94,7 +80,7 @@ reduce state =
             { state | committed = AST.Expr fName [ AST.Expr (transformMacroNames exprName) args loc3 ] { begin = loc1.begin, end = loc4.end } :: state.committed, stack = rest } |> debugGreen "RULE 5"
 
         -- Transform "{" .... "}" to Right (Arg [....])
-        (Left (Token.Symbol "}" _)) :: rest ->
+        (Left (Token.Symbol "}" _)) :: _ ->
             { state | stack = reduceArg state.stack } |> debugGreen "RULE A"
 
         -- reduce  arg :: functionName :: rest to expr :: rest
@@ -132,9 +118,6 @@ reduceArg stack =
 
                 n =
                     List.length interior |> debugYellow "n, interior length"
-
-                found =
-                    List.Extra.getAt n rest |> debugYellow "found"
             in
             case ( List.Extra.getAt n rest, Stack.toExprList interior ) of
                 ( Nothing, _ ) ->

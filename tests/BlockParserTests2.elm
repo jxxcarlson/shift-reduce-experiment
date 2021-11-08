@@ -1,6 +1,6 @@
-module BlockParserTests2 exposing (..)
+module BlockParserTests2 exposing (run, suiteMiniLaTeXBlockParser)
 
-import Block.Block exposing (BlockStatus(..), SBlock(..))
+import Block.Block exposing (BlockStatus(..))
 import Block.Parser
 import Expect
 import Lang.Lang exposing (Lang(..))

@@ -1,12 +1,11 @@
 module LaTeX.Export.API exposing (export, prepareForExportWithImages)
 
-import Block.Block exposing (Block(..), ExprM(..))
+import Block.Block exposing (Block)
 import Expression.ASTTools
 import LaTeX.Export.Block
 import LaTeX.Export.Markdown
 import Lang.Lang exposing (Lang(..))
 import Markup.API
-import Markup.Meta as Meta
 import Maybe.Extra
 import Utility
 

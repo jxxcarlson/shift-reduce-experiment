@@ -188,25 +188,6 @@ exprContains key expr =
             False
 
 
-exprToId : ExprM -> String
-exprToId expr =
-    case expr of
-        TextM _ meta ->
-            meta.id
-
-        VerbatimM _ _ meta ->
-            meta.id
-
-        ArgM _ meta ->
-            meta.id
-
-        ExprM _ _ meta ->
-            meta.id
-
-        ErrorM _ ->
-            "(error)"
-
-
 blockToId : Block -> String
 blockToId block =
     case block of

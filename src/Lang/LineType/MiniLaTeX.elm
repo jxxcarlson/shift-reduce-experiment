@@ -70,7 +70,7 @@ beginItemParser =
         |= Parser.getSource
     )
         -- |> Parser.map (\s -> Line.BeginBlock Line.RejectFirstLine s)
-        |> Parser.map (\s -> Line.BeginBlock Line.AcceptNibbledFirstLine "item")
+        |> Parser.map (\_ -> Line.BeginBlock Line.AcceptNibbledFirstLine "item")
 
 
 mapBlock : String -> Line.LineType

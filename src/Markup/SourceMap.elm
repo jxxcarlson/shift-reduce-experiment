@@ -59,7 +59,7 @@ getExprMeta expr =
         ArgM exprMList exprMeta ->
             exprMeta :: (List.map getExprMeta exprMList |> List.concat)
 
-        ErrorM str ->
+        ErrorM _ ->
             [ Markup.Meta.dummy ]
 
 

@@ -3,7 +3,7 @@ module Expression.Tokenizer exposing (get, run)
 import Expression.Error exposing (..)
 import Expression.Token exposing (Token(..))
 import Lang.Lang exposing (Lang(..))
-import Lang.Token.Common as Common exposing (TokenState(..))
+import Lang.Token.Common exposing (TokenState(..))
 import Lang.Token.L1 as L1
 import Lang.Token.Markdown as Markdown
 import Lang.Token.MiniLaTeX as MiniLaTeX

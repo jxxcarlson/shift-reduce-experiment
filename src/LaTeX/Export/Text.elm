@@ -23,15 +23,11 @@ render expr =
             else
                 "\\" ++ name ++ encloseWithBraces str
 
-        ArgM str _ ->
+        ArgM _ _ ->
             encloseWithBraces (render expr)
 
         ErrorM str ->
             "\\red" ++ encloseWithBraces str
-
-
-errorText index str =
-    "(" ++ String.fromInt index ++ ") not implemented: " ++ str
 
 
 nameDict : Dict String String
@@ -80,10 +76,10 @@ renderImageCenter args =
 fileReferenceFromUrl : String -> String
 fileReferenceFromUrl url =
     case String.split "/" url |> List.reverse of
-        "image.png" :: a :: rest ->
+        "image.png" :: a :: _ ->
             "image/" ++ a ++ ".png"
 
-        fname :: rest ->
+        fname :: _ ->
             "image/" ++ fname
 
         [] ->

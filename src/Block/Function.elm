@@ -39,7 +39,6 @@ import Block.Block as Block exposing (Block(..), BlockStatus(..), ExprM(..), SBl
 import Block.BlockTools as BlockTools
 import Block.Line exposing (BlockOption(..), LineData, LineType(..))
 import Block.State exposing (State)
-import Expression.Token exposing (Token(..))
 import Lang.Lang exposing (Lang(..))
 import Markup.Debugger exposing (..)
 import Markup.Meta
@@ -67,7 +66,7 @@ makeBlock_ state =
         BeginBlock RejectFirstLine mark ->
             SBlock mark [] (newMeta state) |> Just
 
-        BeginBlock AcceptFirstLine kind ->
+        BeginBlock AcceptFirstLine _ ->
             SBlock (nibble state.currentLineData.content |> transformMarkdownHeading)
                 [ SParagraph [ deleteSpaceDelimitedPrefix state.currentLineData.content ] (newMeta state) ]
                 (newMeta state)
@@ -211,7 +210,7 @@ fixMarkdownBlock block =
             { dummy | id = meta.id }
     in
     case block of
-        Paragraph [ ExprM "special" [ Block.TextM "title" meta1, Block.TextM argString meta2 ] meta3 ] meta4 ->
+        Paragraph [ ExprM "special" [ Block.TextM "title" meta1, Block.TextM argString meta2 ] _ ] meta4 ->
             Paragraph [ ExprM "title" [ Block.TextM (String.trim argString) meta1 ] (metaToExprMeta meta2) ] meta4
 
         -- This is where Markdown items (- Foo bar baz) are made to confirm with the standard AST
@@ -343,10 +342,6 @@ getBlocksOfTheSameLevelHelper data =
 
 reduce : State -> State
 reduce state =
-    let
-        finalize_ =
-            reverseContents >> finalizeBlockStatus
-    in
     case state.stack of
         block1 :: ((SBlock name blocks meta) as block2) :: rest ->
             if indentationOfBlock block1 > indentationOfBlock block2 then
