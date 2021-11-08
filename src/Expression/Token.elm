@@ -4,6 +4,7 @@ module Expression.Token exposing
     , dummyLoc
     , isSymbol
     , length
+    , reduce
     , startPositionOf
     , stringValue
     , symbolToString
@@ -23,12 +24,15 @@ type Token
     | TokenError ErrorData Loc
 
 
-
 symbolToString : Token -> Maybe String
-symbolToString token  =
+symbolToString token =
     case token of
-        Symbol str _-> Just str
-        _ -> Nothing
+        Symbol str _ ->
+            Just str
+
+        _ ->
+            Nothing
+
 
 stringValue : Token -> String
 stringValue token =
@@ -130,3 +134,30 @@ length token =
 
         TokenError _ loc ->
             loc.end - loc.begin
+
+
+reduce : List Char -> List Char
+reduce chars =
+    case chars of
+        '[' :: ']' :: rest ->
+            reduce rest
+
+        '(' :: ')' :: [] ->
+            []
+
+        '(' :: ')' :: rest ->
+            reduce rest
+
+        '(' :: rest ->
+            case List.head (List.reverse rest) of
+                Just ')' ->
+                    reduce (List.take (List.length rest - 1) rest)
+
+                Just _ ->
+                    chars
+
+                Nothing ->
+                    chars
+
+        _ ->
+            chars

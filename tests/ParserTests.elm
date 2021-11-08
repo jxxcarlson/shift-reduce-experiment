@@ -59,12 +59,12 @@ suiteMarkdown =
             \_ ->
                 run Markdown "[!italic](Foo [!strong](Bar) Baz)"
                     |> Expect.equal
-                        { committed = [ Expr "italic" [ Text "Foo " { begin = 10, end = 13 }, Expr "strong" [ Text "Bar" { begin = 24, end = 26 } ] { begin = 23, end = 27 }, Text " Baz" { begin = 28, end = 31 } ] { begin = 9, end = 32 } ], count = 14, end = 33, scanPointer = 33, sourceText = "[!italic](Foo [!strong](Bar) Baz)", stack = [], tokenState = TSA }
+                        { committed = [ Expr "italic" [ Text "Foo " { begin = 10, end = 13 }, Expr "strong" [ Text "Bar" { begin = 24, end = 26 } ] { begin = 23, end = 27 }, Text " Baz" { begin = 28, end = 31 } ] { begin = 9, end = 32 } ], count = 14, end = 33, scanPointer = 33, sourceText = "[!italic](Foo [!strong](Bar) Baz)", stack = [], tokenState = TSB 0 }
         , test "(8)  two functions in text" <|
             \_ ->
                 run Markdown "[!italic]([stuff)\n"
                     |> Expect.equal
-                        { committed = [ Text "\n" { begin = 17, end = 17 }, Text "Error! I added a bracket after this: " { begin = 0, end = 0 } ], count = 9, end = 18, scanPointer = 18, sourceText = "[!italic]([stuff)\n", stack = [ Left (Token.Symbol "]" { begin = 18, end = 19 }), Left (Token.Symbol ")" { begin = 16, end = 16 }), Left (Token.Text "stuff" { begin = 11, end = 15 }), Left (Token.Symbol "[" { begin = 10, end = 10 }), Left (Token.Symbol "(" { begin = 9, end = 9 }), Right (Expr "italic" [] { begin = 0, end = 8 }) ], tokenState = TSA }
+                        { committed = [ Text "\n" { begin = 17, end = 17 }, Text "Error! I added a bracket after this: " { begin = 0, end = 0 } ], count = 9, end = 18, scanPointer = 18, sourceText = "[!italic]([stuff)\n", stack = [ Left (Token.Symbol "]" { begin = 18, end = 19 }), Left (Token.Symbol ")" { begin = 16, end = 16 }), Left (Token.Text "stuff" { begin = 11, end = 15 }), Left (Token.Symbol "[" { begin = 10, end = 10 }), Left (Token.Symbol "(" { begin = 9, end = 9 }), Right (Expr "italic" [] { begin = 0, end = 8 }) ], tokenState = TSB 0 }
         ]
 
 

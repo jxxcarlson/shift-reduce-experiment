@@ -5,6 +5,7 @@ import Expression.AST as AST exposing (Expr(..))
 import Expression.Stack as Stack exposing (Stack)
 import Expression.State exposing (State)
 import Expression.Token as Token exposing (Token(..))
+import Lang.Token.Common exposing (TokenState(..))
 import List.Extra
 import Markup.Common exposing (Step(..))
 import Markup.Debugger exposing (debugGreen, debugRed, debugYellow)

@@ -124,6 +124,19 @@ nextTokenState tokenState token =
                     Lang.Token.Common.TSB 0
 
                 _ ->
+                    Lang.Token.Common.TSA
+
+        Lang.Token.Common.TSB 0 ->
+            case token of
+                Token.Text s _ ->
+                    if String.left 1 s == "  " then
+                        -- we have passed the end of the argument list
+                        Lang.Token.Common.TSA
+
+                    else
+                        tokenState
+
+                _ ->
                     tokenState
 
         Lang.Token.Common.TSB k ->
@@ -138,6 +151,7 @@ nextTokenState tokenState token =
                     case token of
                         Token.Text s _ ->
                             if String.trim s == "" then
+                                -- we have passed the end of the argument list
                                 Lang.Token.Common.TSA
 
                             else
