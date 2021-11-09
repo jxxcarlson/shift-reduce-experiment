@@ -201,10 +201,3 @@ push token stack =
 
         _ ->
             stack
-
-
-{-|
-
-    Grammar: S -> [ ] A ; A -> ( ) | ( ) A | | ( S )
-
--}
