@@ -117,7 +117,7 @@ finalize lang state =
                 recoverFromError lang state |> debugCyan "ReduceFinal (3, recoverFromErrors: tokenStack not empty)"
 
         tokenStack ->
-            recoverFromError lang { state | tokenStack = tokenStack } |> debugCyan "ReduceFinal (2, recoverFromErrors)"
+            recoverFromTokenStackError lang { state | tokenStack = tokenStack } |> debugCyan "ReduceFinal (2, recoverFromErrors)"
 
 
 nextTokenState : Token -> Token.TokenStack -> Token.TokenStack
@@ -224,6 +224,19 @@ recoverFromError lang state =
 
         Markdown ->
             Markdown.recoverFromError state
+
+
+recoverFromTokenStackError : Lang -> State -> Step State State
+recoverFromTokenStackError lang state =
+    case lang of
+        L1 ->
+            Done state
+
+        MiniLaTeX ->
+            Done state
+
+        Markdown ->
+            Markdown.recoverFromTokenStackError state
 
 
 {-|

@@ -11,6 +11,7 @@ module Expression.Stack exposing
 import Either exposing (Either(..))
 import Expression.AST as AST exposing (Expr)
 import Expression.Token as Token exposing (Token(..))
+import Lang.Lang exposing (Lang(..))
 import Maybe.Extra
 
 
@@ -84,19 +85,27 @@ symbolToString item =
             Nothing
 
 
-dump : Stack -> String
-dump stack =
-    List.map dumpItem stack |> List.reverse |> String.join "" |> String.trim
+dump : Lang -> Stack -> String
+dump lang stack =
+    List.map (dumpItem lang) stack |> List.reverse |> String.join "" |> String.trim
 
 
-dumpItem : StackItem -> String
-dumpItem stackItem =
+dumpItem : Lang -> StackItem -> String
+dumpItem lang stackItem =
     case stackItem of
         Left token ->
             Token.stringValue token
 
         Right expr ->
-            AST.miniLaTeXStringValue expr
+            case lang of
+                MiniLaTeX ->
+                    AST.miniLaTeXStringValue expr
+
+                Markdown ->
+                    AST.markdownStringValue expr
+
+                L1 ->
+                    AST.markdownStringValue expr
 
 
 isFunctionName : StackItem -> Bool

@@ -5,6 +5,7 @@ import Expression.AST as AST exposing (Expr)
 import Expression.Stack as Stack exposing (Stack)
 import Expression.State exposing (State)
 import Expression.Token as Token exposing (Token(..))
+import Lang.Lang exposing (Lang(..))
 import List.Extra
 import Markup.Common exposing (Step(..))
 import Markup.Debugger exposing (debugGreen, debugYellow)
@@ -237,7 +238,7 @@ recoverFromError state =
             Done
                 ({ state
                     | stack = Left (Symbol "}" { begin = state.scanPointer, end = state.scanPointer + 1 }) :: state.stack
-                    , committed = AST.Expr "red" [ AST.Text (Stack.dump state.stack) Token.dummyLoc ] Token.dummyLoc :: state.committed
+                    , committed = AST.Expr "red" [ AST.Text (Stack.dump MiniLaTeX state.stack) Token.dummyLoc ] Token.dummyLoc :: state.committed
                  }
                     |> reduce
                     |> (\st -> { st | committed = List.reverse st.committed })

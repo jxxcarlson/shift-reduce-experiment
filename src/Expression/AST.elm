@@ -2,12 +2,12 @@ module Expression.AST exposing
     ( Expr(..)
     , args2M
     , getName
+    , markdownStringValue
     , miniLaTeXStringValue
+    , reverseContents
     , stringValue
     , stringValueOfArgList
     , stringValueOfList
-    , reverseContents
-
     )
 
 import Expression.Token as Token
@@ -22,18 +22,19 @@ type Expr
     | Error String
 
 
-
 reverseContents : Expr -> Expr
 reverseContents expr =
     case expr of
-
         Expr name args loc ->
             Expr name (List.reverse args) loc
 
         Arg args loc ->
-           Arg  (List.reverse args) loc
+            Arg (List.reverse args) loc
 
-        _ -> expr
+        _ ->
+            expr
+
+
 dummy =
     { begin = 0, end = 0 }
 
@@ -152,6 +153,25 @@ miniLaTeXStringValue text =
 
         Expr name textList _ ->
             [ name ++ "{" ] ++ List.map stringValue textList ++ [ "}" ] |> String.join ""
+
+        Arg textList _ ->
+            List.map stringValue textList |> String.join ""
+
+        Verbatim _ str _ ->
+            str
+
+        Error str ->
+            str
+
+
+markdownStringValue : Expr -> String
+markdownStringValue text =
+    case text of
+        Text string _ ->
+            string
+
+        Expr name textList _ ->
+            [ "[!" ++ name ++ "]" ] ++ List.map stringValue textList |> String.join ""
 
         Arg textList _ ->
             List.map stringValue textList |> String.join ""

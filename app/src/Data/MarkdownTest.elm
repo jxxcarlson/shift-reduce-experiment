@@ -1,6 +1,7 @@
 module Data.MarkdownTest exposing (text)
 
 
+text = ""
 text_ =
     """
 
@@ -14,7 +15,7 @@ set up an account, go for it. (There are some advantages: you don't have to keep
 """
 
 
-text =
+textQ =
     """
 [! title ](Krakow Talk: Lambda Days)
 

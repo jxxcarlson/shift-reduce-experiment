@@ -104,13 +104,13 @@ type alias Flags =
 
 
 initialText =
-    Data.MiniLaTeXTest.text
+    Data.MarkdownTest.text
 
 
 init : Flags -> ( Model, Cmd Msg )
 init flags =
     ( { sourceText = initialText
-      , language = MiniLaTeX
+      , language = Markdown
       , count = 0
       , windowHeight = flags.height
       , windowWidth = flags.width
