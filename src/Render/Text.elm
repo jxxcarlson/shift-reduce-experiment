@@ -11,6 +11,7 @@ import Element.Input as Input
 import Expression.ASTTools as ASTTools
 import Html.Attributes
 import LaTeX.MathMacro
+import Markup.Meta exposing (ExpressionMeta)
 import Render.Math
 import Render.Msg exposing (MarkupMsg(..))
 import Render.Settings exposing (Settings)
@@ -22,13 +23,17 @@ htmlId str =
 
 
 render : Int -> Settings -> Accumulator -> ExprM -> Element MarkupMsg
-render generation settings accumulator text =
-    case text of
+render generation settings accumulator expr =
+    case expr of
         TextM string meta ->
             Element.el [ Events.onClick (SendMeta meta), htmlId meta.id ] (Element.text string)
 
         ExprM name exprList meta ->
-            Element.el [ htmlId meta.id ] (renderMarked name generation settings accumulator exprList)
+            if String.contains "!" name then
+                expand (String.split "!" name) exprList meta |> render generation settings accumulator
+
+            else
+                Element.el [ htmlId meta.id ] (renderMarked name generation settings accumulator exprList)
 
         VerbatimM name str meta ->
             renderVerbatim name generation settings accumulator meta str
@@ -38,6 +43,20 @@ render generation settings accumulator text =
 
         ErrorM str ->
             Element.el [ Font.color redColor ] (Element.text str)
+
+
+expand : List String -> List ExprM -> ExpressionMeta -> ExprM
+expand names expressions exprMeta =
+    case List.head names of
+        Nothing ->
+            ExprM "null" [] exprMeta
+
+        Just firstName ->
+            let
+                firstExpr =
+                    ExprM firstName expressions exprMeta
+            in
+            List.foldl (\name acc -> ExprM name [ acc ] exprMeta) firstExpr (List.drop 1 names)
 
 
 errorText index str =

@@ -2,7 +2,13 @@ module Data.MarkdownTest exposing (text)
 
 
 text =
-    "> Pythagoras said that $a^2 + b^2 = c^2$. This was a long time ago, but nonetheless he was right. Quite the dude!\n"
+    """
+ 
+[!gray]([!underline](some stuff))
+
+[!gray!underline](some stuff)
+
+"""
 
 
 text_ =
