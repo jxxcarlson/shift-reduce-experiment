@@ -108,11 +108,16 @@ nextStep_ lang state =
 
 finalize : Lang -> State -> Step State State
 finalize lang state =
-    if state.stack == [] then
-        Done (state |> (\st -> { st | committed = List.reverse st.committed })) |> debugCyan "ReduceFinal (1)"
+    case Token.reduce state.tokenStack of
+        [] ->
+            if List.isEmpty state.stack then
+                Done (state |> (\st -> { st | committed = List.reverse st.committed })) |> debugCyan "ReduceFinal (1)"
 
-    else
-        recoverFromError lang state |> debugCyan "ReduceFinal (2, recoverFromErrors)"
+            else
+                recoverFromError lang state |> debugCyan "ReduceFinal (3, recoverFromErrors: tokenStack not empty)"
+
+        tokenStack ->
+            recoverFromError lang { state | tokenStack = tokenStack } |> debugCyan "ReduceFinal (2, recoverFromErrors)"
 
 
 nextTokenState : Token -> Token.TokenStack -> Token.TokenStack
@@ -129,7 +134,7 @@ processToken lang state =
         tokenStack =
             if lang == Markdown then
                 state.tokenStack
-                    |> Token.reduceGracefully
+                    |> Token.reduce
                     |> debugRed "PROCESS TOKEN (A1)"
                     |> Token.push token
                     |> debugRed "PROCESS TOKEN (A2)"
@@ -141,13 +146,16 @@ processToken lang state =
             debugBlue "n" state.count
 
         _ =
+            debugBlue "Token" token
+
+        _ =
             debugBlue "Stack" state.stack |> Simplify.stack
 
         _ =
-            debugBlue "Committed" state.committed |> Simplify.expressions
+            debugBlue "TokenStack" state.tokenStack
 
         _ =
-            debugBlue "Token" token
+            debugBlue "Committed" state.committed |> Simplify.expressions
     in
     case token of
         TokenError errorData _ ->

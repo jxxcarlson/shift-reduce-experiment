@@ -67,6 +67,7 @@ reduce state =
             reduce { state | stack = Right (AST.Expr name (args1 ++ args2) { begin = loc2.begin, end = loc2.end }) :: rest } |> debugYellow "RED 3 (incorporate arg in expr)"
 
         -- THREE-TERM RULES
+        -- [ fname ] -> Right Expr fname []
         (Left (Token.Symbol "]" loc3)) :: (Left (Token.Text fName loc2)) :: (Left (Token.Symbol "[" loc1)) :: rest ->
             let
                 expr =
@@ -189,12 +190,13 @@ recoverFromError state =
                     String.dropLeft position state.sourceText
 
                 errorMessage =
-                    "Error! I added a bracket after this: " ++ errorText
+                    errorText
             in
             Done
                 ({ state
-                    | stack = Left (Symbol "]" { begin = state.scanPointer, end = state.scanPointer + 1 }) :: state.stack
-                    , committed = AST.Text errorMessage Token.dummyLoc :: state.committed
+                    | -- stack = Left (Symbol "]" { begin = state.scanPointer, end = state.scanPointer + 1 }) :: state.stack
+                      stack = List.drop 1 state.stack
+                    , committed = AST.Expr "red" [ AST.Text errorMessage Token.dummyLoc ] Token.dummyLoc :: state.committed
                  }
                     |> reduce
                     |> (\st -> { st | committed = List.reverse st.committed })

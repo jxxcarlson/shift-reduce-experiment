@@ -8,7 +8,6 @@ module Expression.Token exposing
     , length
     , push
     , reduce
-    , reduceGracefully
     , startPositionOf
     , stringValue
     , symbolToString
@@ -145,7 +144,40 @@ type TokenSymbol
     | RBR
     | LPAREN
     | RPAREN
-    | TError
+
+
+reduce : TokenStack -> TokenStack
+reduce stack =
+    stack |> List.reverse |> reduce_ |> List.reverse
+
+
+reduce_ : TokenStack -> TokenStack
+reduce_ stack =
+    case stack of
+        LBR :: RBR :: LPAREN :: RPAREN :: [] ->
+            []
+
+        LBR :: RBR :: LPAREN :: RPAREN :: rest ->
+            reduce_ (LBR :: RBR :: rest)
+
+        LBR :: RBR :: LPAREN :: rest ->
+            case List.reverse rest of
+                RPAREN :: rest2 ->
+                    reduce_ (List.reverse rest2)
+
+                _ ->
+                    stack
+
+        LPAREN :: rest ->
+            case List.reverse rest of
+                RPAREN :: rest2 ->
+                    reduce_ (List.reverse rest2)
+
+                _ ->
+                    stack
+
+        _ ->
+            stack
 
 
 type alias TokenStack =
@@ -171,59 +203,8 @@ push token stack =
             stack
 
 
-reduceGracefully : TokenStack -> TokenStack
-reduceGracefully stack =
-    case reduce (List.reverse stack) of
-        [ TError ] ->
-            stack
-
-        result ->
-            List.reverse result
-
-
 {-|
 
     Grammar: S -> [ ] A ; A -> ( ) | ( ) A | | ( S )
 
-    > input = [LBR, RBR, LPAREN, RPAREN]
-    > reduce input
-      [] : List TokenSymbol
-
-    > input = [LBR, LBR, RBR, LPAREN, RPAREN]
-    > reduce input
-    [LBR,LBR,RBR,LPAREN,RPAREN]
-
-    > input = [LBR, RBR, LPAREN, LBR, RBR, LPAREN, RPAREN, RPAREN]
-    > reduce input
-    [] : List TokenSymbol
-
 -}
-reduce : List TokenSymbol -> List TokenSymbol
-reduce symbols =
-    case symbols of
-        -- S -> [ ] A
-        LBR :: RBR :: rest ->
-            reduce rest
-
-        -- A -> ( )
-        LPAREN :: RPAREN :: [] ->
-            []
-
-        -- A -> ( ) A
-        LPAREN :: RPAREN :: rest ->
-            reduce rest
-
-        -- A -> ( S )
-        LPAREN :: rest ->
-            case List.head (List.reverse rest) of
-                Just RPAREN ->
-                    reduce (List.take (List.length rest - 1) rest)
-
-                Just _ ->
-                    symbols
-
-                Nothing ->
-                    symbols
-
-        _ ->
-            [ TError ]
