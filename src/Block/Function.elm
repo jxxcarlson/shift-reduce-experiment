@@ -1,5 +1,6 @@
 module Block.Function exposing
     ( changeStatusOfTopOfStack
+    , changeStatusOfTopOfStackRecursively
     , dumpStack
     , finalize
     , finalizeBlockStatus
@@ -28,6 +29,7 @@ module Block.Function exposing
     , reverseCommitted
     , reverseContents
     , setBlockStatus
+    , setBlockStatusRecursively
     , setStackBottomLevelAndName
     , shiftBlock
     , simpleCommit
@@ -558,9 +560,37 @@ changeStatusOfTopOfStack status state =
             { state | stack = setBlockStatus status block :: List.drop 1 state.stack }
 
 
+changeStatusOfTopOfStackRecursively : BlockStatus -> State -> State
+changeStatusOfTopOfStackRecursively status state =
+    case stackTop state of
+        Nothing ->
+            state
+
+        Just block ->
+            { state | stack = setBlockStatusRecursively status block :: List.drop 1 state.stack }
+
+
 setBlockStatus : BlockStatus -> SBlock -> SBlock
 setBlockStatus status block =
     BlockTools.mapMeta (\meta -> { meta | status = status }) block
+
+
+setBlockStatusRecursively : BlockStatus -> SBlock -> SBlock
+setBlockStatusRecursively status block =
+    case block of
+        SBlock name children meta ->
+            setBlockStatus status (SBlock name (List.map (setBlockStatus status) children) meta)
+
+        anyBlock ->
+            setBlockStatus status anyBlock
+
+
+
+--type SBlock
+--    = SParagraph (List String) Meta
+--    | SVerbatimBlock String (List String) Meta
+--    | SBlock String (List SBlock) Meta
+--    | SError String
 
 
 simpleCommit : State -> State

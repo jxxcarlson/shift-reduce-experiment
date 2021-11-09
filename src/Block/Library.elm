@@ -154,7 +154,7 @@ handleUnterminatedBlock mStr state =
 
 
 unterminatedBlockNames =
-    [ "item" ]
+    [ "item", "quotation" ]
 
 
 postMessageWithBlockUnfinished : String -> State -> State
@@ -255,7 +255,7 @@ handleOrdinaryLine state =
                         -- TODO. In fact, in the else clause, we should reduce the stack, then create the block.
                         if state.initialBlockIndent == Function.indentationOfCurrentBlock state then
                             addLineToStackTop
-                                { state | errorMessage = Just { red = "Below: you forgot to indent the math text. This is needed for all blocks.  Also, remember the trailing dollar signs", blue = "" } }
+                                { state | errorMessage = Just { red = "Below: did you forgot to indent the text?", blue = "" } }
                                 |> Function.insertErrorMessage
 
                         else

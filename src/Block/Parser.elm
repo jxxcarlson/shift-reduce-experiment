@@ -1,5 +1,7 @@
 module Block.Parser exposing (run)
 
+import Block.Block exposing (BlockStatus(..))
+import Block.BlockTools as BlockTools
 import Block.Function as Function
 import Block.Library
 import Block.State exposing (State)
@@ -62,9 +64,27 @@ finalizeOrRecoverFromError : State -> Step State State
 finalizeOrRecoverFromError state =
     state
         |> debug "finalizeOrRecoverFromError, reduce, IN"
+        |> closeNonTerminatedBlocks
         |> Function.reduce
         |> debug "finalizeOrRecoverFromError, reduce, OUT"
         |> finalizeOrRecoverFromError_
+
+
+{-| This function is needed for things like the quotation block
+in Markdown which are "auto-termintated."
+-}
+closeNonTerminatedBlocks : State -> State
+closeNonTerminatedBlocks state =
+    case List.head state.stack of
+        Nothing ->
+            state
+
+        Just top ->
+            if List.member (BlockTools.sblockName top) [ Just "quotation" ] then
+                Function.changeStatusOfTopOfStackRecursively BlockComplete state
+
+            else
+                state
 
 
 finalizeOrRecoverFromError_ : State -> Step State State
