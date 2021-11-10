@@ -86,6 +86,7 @@ markupDict =
     Dict.fromList
         [ ( "special", \g s a exprList -> special g s a exprList )
         , ( "item", \g s a exprList -> item g s a exprList )
+        , ( "bibitem", \g s a exprList -> bibitem g s a exprList )
         , ( "numberedItem", \g s a exprList -> numberedItem g s a exprList )
         , ( "strong", \g s a exprList -> strong g s a exprList )
         , ( "bold", \g s a exprList -> strong g s a exprList )
@@ -403,6 +404,11 @@ mathElement generation settings accumulator m str =
 item : Int -> Settings -> Accumulator -> List ExprM -> Element MarkupMsg
 item generation settings accumulator str =
     Element.paragraph [ Element.width Element.fill ] [ Element.text (ASTTools.exprListToStringList str |> String.join " ") ]
+
+
+bibitem : Int -> Settings -> Accumulator -> List ExprM -> Element MarkupMsg
+bibitem generation settings accumulator str =
+    Element.paragraph [ Element.width Element.fill ] [ Element.text (ASTTools.exprListToStringList str |> String.join " " |> (\s -> "[" ++ s ++ "]")) ]
 
 
 numberedItem : Int -> Settings -> Accumulator -> List ExprM -> Element MarkupMsg

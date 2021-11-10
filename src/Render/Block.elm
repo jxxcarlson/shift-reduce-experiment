@@ -201,6 +201,7 @@ blockDict =
         , ( "quotation", \g s a blocks -> quotationBlock g s a blocks )
         , ( "itemize", \g s a blocks -> itemize g s a blocks )
         , ( "enumerate", \g s a blocks -> enumerate g s a blocks )
+        , ( "thebibliography", \g s a blocks -> bibliography g s a blocks )
         , ( "title", \_ _ _ _ -> Element.none )
         , ( "heading1", \g s a blocks -> heading1 g s a blocks )
         , ( "heading2", \g s a blocks -> heading2 g s a blocks )
@@ -342,6 +343,41 @@ itemize generation settings accumulator blocks =
     in
     column [ spacing listSpacing ]
         (List.map (item_ generation settings accumulator) (nonEmptyBlocks blocks))
+
+
+bibliography : Int -> Settings -> Accumulator -> List Block -> Element MarkupMsg
+bibliography generation settings accumulator blocks =
+    let
+        _ =
+            debugYellow "XXX, ENTERNG biblography" (List.length blocks)
+    in
+    column [ spacing listSpacing ]
+        (List.map (bibitem generation settings accumulator) (nonEmptyBlocks blocks))
+
+
+bibitem : Int -> Settings -> Accumulator -> Block -> Element MarkupMsg
+bibitem generation settings accumulator block =
+    let
+        blocks =
+            case block of
+                Block "bibitem" blocks_ _ ->
+                    blocks_
+
+                Paragraph [ Block.ExprM "bibitem" expressions _ ] meta ->
+                    [ Paragraph expressions meta ]
+
+                _ ->
+                    []
+    in
+    row [ width fill, paddingEach { left = 18, right = 0, top = 0, bottom = 0 } ]
+        [ el [ height fill ] none
+        , column [ width fill ]
+            [ row [ width fill, spacing listSpacing ]
+                [ itemSymbol
+                , paragraph [ width fill ] (List.map (renderBlock generation settings accumulator) blocks)
+                ]
+            ]
+        ]
 
 
 nonEmptyBlocks : List Block -> List Block
