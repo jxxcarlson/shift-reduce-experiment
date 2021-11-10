@@ -53,13 +53,13 @@ suiteL1BlockParser =
             , test "(6) " <|
                 \_ ->
                     run L1 "|| code\n   a[i] = 0"
-                        |> Expect.equal [ SVerbatimBlock "code" [ "   a[i] = 0" ] { status = BlockComplete, begin = 0, end = 1, id = "0", indent = 0 } ]
+                        |> Expect.equal [ SVerbatimBlock "code" [ "   a[i] = 0" ] { status = BlockComplete, begin = 0, end = 1, id = "0", indent = 0, label = "" } ]
             , test "(7) " <|
                 \_ ->
                     run L1 "|| code\n   a[i] = 0\n      b[i] = 1\n\nabc"
                         |> Expect.equal
-                            [ SVerbatimBlock "code" [ "   a[i] = 0", "      b[i] = 1" ] { begin = 0, end = 2, id = "0", indent = 0, status = BlockComplete }
-                            , SParagraph [ "abc" ] { begin = 4, end = 4, id = "1", indent = 0, status = BlockComplete }
+                            [ SVerbatimBlock "code" [ "   a[i] = 0", "      b[i] = 1" ] { begin = 0, end = 2, id = "0", indent = 0, status = BlockComplete, label = "" }
+                            , SParagraph [ "abc" ] { begin = 4, end = 4, id = "1", indent = 0, status = BlockComplete, label = "" }
                             ]
             , test
                 "(8) Nested blocks"
