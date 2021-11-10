@@ -117,6 +117,8 @@ markupDict =
         , ( "author", \_ _ _ _ -> Element.none )
         , ( "date", \_ _ _ _ -> Element.none )
         , ( "large", \g s a exprList -> large g s a exprList )
+        , ( "mdash", \g s a exprList -> Element.el [] (Element.text "—") )
+        , ( "ndash", \g s a exprList -> Element.el [] (Element.text "–") )
 
         -- MiniLaTeX stuff
         , ( "term", \g s a exprList -> term g s a exprList )
