@@ -99,7 +99,7 @@ folder lang sblock acc =
             sblockToBlock lang sblock
 
         data =
-            Accumulator.labelBlock acc.accumulator block |> Debug.log "ACC"
+            Accumulator.labelBlock acc.accumulator block
     in
     { accumulator = Accumulator.updateAccumulatorWithBlock block data.accumulator, blocks = data.block :: acc.blocks }
 

@@ -88,10 +88,6 @@ labelBlock accumulator block =
                 { block = block, accumulator = accumulator }
 
         Block.Block.Block name expressions meta ->
-            let
-                _ =
-                    Debug.log "ACC NAME" name
-            in
             if List.member name Lang.theoremLikeNames || True then
                 let
                     newTheoremIndex =
@@ -100,7 +96,7 @@ labelBlock accumulator block =
                     newBlock =
                         Block.Block.Block name expressions { meta | label = Vector.toString newTheoremIndex }
                 in
-                { block = newBlock, accumulator = { accumulator | theoremIndex = newTheoremIndex } } |> Debug.log "THMACC"
+                { block = newBlock, accumulator = { accumulator | theoremIndex = newTheoremIndex } }
 
             else
                 { block = block, accumulator = accumulator }
