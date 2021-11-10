@@ -12,6 +12,7 @@ import Expression.ASTTools as ASTTools
 import Html.Attributes
 import LaTeX.MathMacro
 import Markup.Debugger exposing (debugYellow)
+import Markup.Meta exposing (ExpressionMeta)
 import Render.Math
 import Render.Msg exposing (MarkupMsg)
 import Render.Settings exposing (Settings)
@@ -49,7 +50,7 @@ renderBlock generation settings accumulator block =
                 (highlightStyle (meta.id == settings.selectedId))
                 (List.map (Render.Text.render generation settings accumulator) textList)
 
-        VerbatimBlock name lines _ meta ->
+        VerbatimBlock name lines exprMeta meta ->
             if meta.status /= BlockComplete then
                 renderLinesIncomplete settings name meta.status lines
 
@@ -59,7 +60,7 @@ renderBlock generation settings accumulator block =
                         error ("Unimplemented verbatim block: " ++ name)
 
                     Just f ->
-                        f generation meta.id settings accumulator lines
+                        f generation meta.id settings accumulator lines exprMeta
 
         Block name blocks meta ->
             if meta.status /= BlockComplete then
@@ -182,15 +183,15 @@ error str =
     paragraph [ Background.color (rgb255 250 217 215) ] [ text str ]
 
 
-verbatimBlockDict : Dict String (Int -> String -> Settings -> Accumulator -> List String -> Element MarkupMsg)
+verbatimBlockDict : Dict String (Int -> String -> Settings -> Accumulator -> List String -> ExpressionMeta -> Element MarkupMsg)
 verbatimBlockDict =
     Dict.fromList
-        [ ( "code", \g id s a lines -> codeBlock g id s a lines )
-        , ( "verbatim", \g id s a lines -> codeBlock g id s a lines )
-        , ( "math", \g id s a lines -> mathBlock g id s a lines )
-        , ( "equation", \g id s a lines -> equation g id s a lines )
-        , ( "align", \g id s a lines -> aligned g id s a lines )
-        , ( "mathmacro", \_ _ _ _ _ -> Element.none )
+        [ ( "code", \g id s a lines exprMeta -> codeBlock g id s a lines )
+        , ( "verbatim", \g id s a lines exprMeta -> codeBlock g id s a lines )
+        , ( "math", \g id s a lines exprMeta -> mathBlock g id s a lines )
+        , ( "equation", \g id s a lines exprMeta -> equation g id s a lines exprMeta )
+        , ( "align", \g id s a lines exprMeta -> aligned g id s a lines exprMeta )
+        , ( "mathmacro", \_ _ _ _ _ _ -> Element.none )
         ]
 
 
@@ -290,15 +291,21 @@ prepareMathLines accumulator stringList =
         |> LaTeX.MathMacro.evalStr accumulator.macroDict
 
 
-equation : Int -> String -> Settings -> Accumulator -> List String -> Element MarkupMsg
-equation generation id settings accumulator textList =
-    -- Render.Math.mathText generation Render.Math.DisplayMathMode (String.join "\n" textList |> MiniLaTeX.MathMacro.evalStr accumulator.macroDict)
-    Render.Math.mathText generation id Render.Math.DisplayMathMode (prepareMathLines accumulator textList)
+equation : Int -> String -> Settings -> Accumulator -> List String -> ExpressionMeta -> Element MarkupMsg
+equation generation id settings accumulator textList exprMeta =
+    Element.row [ Element.width (Element.px settings.width) ]
+        [ Element.el [ Element.centerX ] (Render.Math.mathText generation id Render.Math.DisplayMathMode (prepareMathLines accumulator textList))
+        , Element.el [ Element.alignRight, Font.size 12 ] (Element.text <| "(" ++ exprMeta.label ++ ")")
+        ]
 
 
-aligned : Int -> String -> Settings -> Accumulator -> List String -> Element MarkupMsg
-aligned generation id settings accumulator textList =
-    Render.Math.mathText generation id Render.Math.DisplayMathMode ("\\begin{aligned}\n" ++ (String.join "\n" textList |> LaTeX.MathMacro.evalStr accumulator.macroDict) ++ "\n\\end{aligned}")
+aligned : Int -> String -> Settings -> Accumulator -> List String -> ExpressionMeta -> Element MarkupMsg
+aligned generation id settings accumulator textList exprMeta =
+    Element.row [ Element.width (Element.px settings.width) ]
+        [ Element.el [ Element.centerX ]
+            (Render.Math.mathText generation id Render.Math.DisplayMathMode ("\\begin{aligned}\n" ++ (String.join "\n" textList |> LaTeX.MathMacro.evalStr accumulator.macroDict) ++ "\n\\end{aligned}"))
+        , Element.el [ Element.alignRight, Font.size 12 ] (Element.text <| "(" ++ exprMeta.label ++ ")")
+        ]
 
 
 quotationBlock : Int -> Settings -> Accumulator -> List Block -> Element MarkupMsg

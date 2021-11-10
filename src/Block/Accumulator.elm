@@ -14,6 +14,8 @@ import Markup.Vector as Vector exposing (Vector)
 type alias Accumulator =
     { macroDict : LaTeX.MathMacro.MathMacroDict
     , sectionIndex : Vector
+    , theoremIndex : Vector
+    , equationIndex : Vector
     }
 
 
@@ -21,6 +23,8 @@ init : Int -> Accumulator
 init k =
     { macroDict = Dict.empty
     , sectionIndex = Vector.init k
+    , theoremIndex = Vector.init 1
+    , equationIndex = Vector.init 1
     }
 
 
@@ -58,6 +62,8 @@ updateAccumulatorWithBlock block accumulator =
     of type ExpressionMeta.  In the case of a heading, the that field may be
     something like "3.2.0"
 
+    This function labels expressions in a block.
+
 -}
 labelBlock : Accumulator -> Block -> { block : Block, accumulator : Accumulator }
 labelBlock accumulator block =
@@ -66,8 +72,26 @@ labelBlock accumulator block =
             List.foldl xfolder { expressions = [], accumulator = accumulator } exprList
                 |> (\data -> { block = Block.Block.Paragraph (data.expressions |> List.reverse) meta, accumulator = data.accumulator })
 
+        Block.Block.VerbatimBlock name stringList exprMeta meta ->
+            if List.member name equationBlockNames then
+                let
+                    newEquationIndex =
+                        Vector.increment 0 accumulator.equationIndex
+
+                    newBlock =
+                        Block.Block.VerbatimBlock name stringList { exprMeta | label = Vector.toString newEquationIndex } meta
+                in
+                { block = newBlock, accumulator = { accumulator | equationIndex = newEquationIndex } }
+
+            else
+                { block = block, accumulator = accumulator }
+
         _ ->
             { block = block, accumulator = accumulator }
+
+
+equationBlockNames =
+    [ "equation", "align" ]
 
 
 xfolder : ExprM -> { expressions : List ExprM, accumulator : Accumulator } -> { expressions : List ExprM, accumulator : Accumulator }
