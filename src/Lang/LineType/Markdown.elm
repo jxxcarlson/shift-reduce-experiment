@@ -1,7 +1,7 @@
 module Lang.LineType.Markdown exposing (lineType)
 
 import Block.Line as Line
-import Parser exposing ((|.), Parser)
+import Parser exposing ((|.), (|=), Parser)
 
 
 lineType : String -> Line.LineType
@@ -16,7 +16,8 @@ lineType str =
 
 lineTypeParser =
     Parser.oneOf
-        [ beginCodeBlockParser
+        [ commentParser
+        , beginCodeBlockParser
         , beginMathBlockParser
         , beginNumberedItemParser
         , beginItemParser
@@ -25,6 +26,12 @@ lineTypeParser =
         , Line.ordinaryLineParser []
         , Line.emptyLineParser
         ]
+
+
+commentParser : Parser Line.LineType
+commentParser =
+    Parser.succeed (\_ -> Line.Comment)
+        |= Parser.symbol "%"
 
 
 beginItemParser : Parser Line.LineType

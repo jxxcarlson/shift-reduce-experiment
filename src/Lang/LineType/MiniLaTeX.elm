@@ -20,7 +20,8 @@ lineType str =
 
 lineTypeParser =
     Parser.oneOf
-        [ beginItemParser
+        [ commentParser
+        , beginItemParser
         , beginCodeBlockParser
         , beginBlockParser
         , endBlockParser
@@ -28,6 +29,12 @@ lineTypeParser =
         , Line.ordinaryLineParser []
         , Line.emptyLineParser
         ]
+
+
+commentParser : Parser Line.LineType
+commentParser =
+    Parser.succeed (\_ -> Line.Comment)
+        |= Parser.symbol "%"
 
 
 beginMathBlockParser : Parser Line.LineType

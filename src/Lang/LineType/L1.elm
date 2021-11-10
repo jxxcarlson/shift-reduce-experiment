@@ -16,12 +16,19 @@ lineType str =
 
 lineTypeParser =
     Parser.oneOf
-        [ beginItemParser
+        [ commentParser
+        , beginItemParser
         , Line.ordinaryLineParser [ '|' ]
         , Line.emptyLineParser
         , beginVerbatimBlockParser
         , beginBlockParser
         ]
+
+
+commentParser : Parser Line.LineType
+commentParser =
+    Parser.succeed (\_ -> Line.Comment)
+        |= Parser.symbol "%"
 
 
 beginBlockParser : Parser Line.LineType

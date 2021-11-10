@@ -1,13 +1,14 @@
 module Data.MiniLaTeXTest exposing (text)
 
 
-text =
+textWE =
     """
 \\begin{lemma}
   \\label{foo}
  (1) Let $A$ be an axiom of system J. Then $\\phi(A) = 0$. (2) Suppose that $\\phi(A) = 0$ and that $\\hi(A \\to B) = 0$.  Then $\\phi(B) = 0$.
 \\end{lemma}
 
+% This is a test
 
 I refer you to \\ref{foo}.
 
@@ -20,7 +21,7 @@ Take a look at \\eqref{bar}.
 """
 
 
-textW =
+text =
     """
 
 % logic-macros

@@ -110,6 +110,9 @@ processLine language state =
             in
             state
 
+        Comment ->
+            { state | index = state.index + 1 }
+
 
 
 -- ORDINARY LINE

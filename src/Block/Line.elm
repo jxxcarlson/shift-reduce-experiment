@@ -12,6 +12,7 @@ type LineType
     | BeginVerbatimBlock String
     | EndVerbatimBlock String
     | Problem String
+    | Comment
 
 
 {-| In the case of the AcceptFirstLine option, the line after the block mark
