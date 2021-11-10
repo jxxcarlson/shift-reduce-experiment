@@ -6,10 +6,13 @@ module Block.Accumulator exposing
     )
 
 import Block.Block exposing (Block(..), ExprM(..))
-import Dict
+import Dict exposing (Dict)
+import Expression.AST as AST
+import Expression.ASTTools as ASTTools exposing (FilterType(..))
 import LaTeX.MathMacro
 import Lang.Lang as Lang
 import Markup.Vector as Vector exposing (Vector)
+import String.Extra
 
 
 type alias Accumulator =
@@ -17,6 +20,7 @@ type alias Accumulator =
     , sectionIndex : Vector
     , theoremIndex : Vector
     , equationIndex : Vector
+    , crossReferences : Dict String String
     }
 
 
@@ -26,6 +30,7 @@ init k =
     , sectionIndex = Vector.init k
     , theoremIndex = Vector.init 1
     , equationIndex = Vector.init 1
+    , crossReferences = Dict.empty
     }
 
 
@@ -87,16 +92,28 @@ labelBlock accumulator block =
             else
                 { block = block, accumulator = accumulator }
 
-        Block.Block.Block name expressions meta ->
-            if List.member name Lang.theoremLikeNames || True then
+        Block.Block.Block name blocks meta ->
+            if List.member name Lang.theoremLikeNames then
                 let
                     newTheoremIndex =
                         Vector.increment 0 accumulator.theoremIndex
 
                     newBlock =
-                        Block.Block.Block name expressions { meta | label = Vector.toString newTheoremIndex }
+                        Block.Block.Block name blocks { meta | label = Vector.toString newTheoremIndex }
+
+                    label =
+                        ASTTools.filterStrictBlock Equality "label" blocks
+
+                    newCrossReferences =
+                        if label == "" then
+                            accumulator.crossReferences
+
+                        else
+                            Dict.insert label
+                                (String.Extra.toTitleCase name ++ " " ++ Vector.toString newTheoremIndex)
+                                accumulator.crossReferences
                 in
-                { block = newBlock, accumulator = { accumulator | theoremIndex = newTheoremIndex } }
+                { block = newBlock, accumulator = { accumulator | theoremIndex = newTheoremIndex, crossReferences = newCrossReferences } }
 
             else
                 { block = block, accumulator = accumulator }

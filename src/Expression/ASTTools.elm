@@ -5,6 +5,7 @@ module Expression.ASTTools exposing
     , exprListToStringList
     , filter
     , filterBlockByName
+    , filterExpressions
     , filterStrictBlock
     , findIdsMatchingText
     , getHeadings
@@ -23,6 +24,24 @@ module Expression.ASTTools exposing
 import Block.Block exposing (Block(..), ExprM(..))
 import Markup.Meta as Meta
 import Maybe.Extra
+
+
+matchName : String -> ExprM -> Bool
+matchName str expr =
+    case expr of
+        VerbatimM name _ _ ->
+            name == str
+
+        ExprM name _ _ ->
+            name == str
+
+        _ ->
+            False
+
+
+filterExpressions : String -> List ExprM -> List ExprM
+filterExpressions key expressions =
+    List.filter (matchName key) expressions
 
 
 {-| [Text "a b c d"] -> [Text "a b c", Text "d"]

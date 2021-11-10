@@ -119,6 +119,8 @@ markupDict =
         , ( "large", \g s a exprList -> large g s a exprList )
         , ( "mdash", \g s a exprList -> Element.el [] (Element.text "—") )
         , ( "ndash", \g s a exprList -> Element.el [] (Element.text "–") )
+        , ( "ref", \g s a exprList -> ref g s a exprList )
+        , ( "label", \g s a exprList -> Element.none )
 
         -- MiniLaTeX stuff
         , ( "term", \g s a exprList -> term g s a exprList )
@@ -128,8 +130,18 @@ markupDict =
         ]
 
 
+ref g s a exprList =
+    case ASTTools.exprListToStringList exprList of
+        xref :: [] ->
+            case Dict.get xref a.crossReferences of
+                Just val ->
+                    Element.el [] (Element.text val)
 
--- verbatimDict : Dict String (Int -> Settings -> Accumulator -> Meta -> String -> Element MarkupMsg)
+                Nothing ->
+                    Element.none
+
+        _ ->
+            Element.none
 
 
 verbatimDict =
