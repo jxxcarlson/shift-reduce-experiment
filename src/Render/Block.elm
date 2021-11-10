@@ -276,7 +276,9 @@ codeBlock generation id settings accumulator textList =
 
 mathBlock : Int -> String -> Settings -> Accumulator -> List String -> Element MarkupMsg
 mathBlock generation id settings accumulator textList =
-    Render.Math.mathText generation id Render.Math.DisplayMathMode (String.join "\n" textList |> LaTeX.MathMacro.evalStr accumulator.macroDict)
+    Element.row [ Element.width (Element.px settings.width) ]
+        [ Element.el [ Element.centerX ] (Render.Math.mathText generation id Render.Math.DisplayMathMode (String.join "\n" textList |> LaTeX.MathMacro.evalStr accumulator.macroDict))
+        ]
 
 
 
