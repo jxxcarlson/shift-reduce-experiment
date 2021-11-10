@@ -129,6 +129,7 @@ newMeta state =
     , status = BlockUnfinished "begin"
     , id = String.fromInt state.blockCount
     , indent = state.currentLineData.indent
+    , label = ""
     }
 
 
@@ -262,7 +263,7 @@ insertErrorMessage state =
 
         Just message ->
             { state
-                | committed = SParagraph [ renderErrorMessage state.lang message ] { status = BlockComplete, begin = 0, end = 0, id = "error", indent = 0 } :: state.committed
+                | committed = SParagraph [ renderErrorMessage state.lang message ] { status = BlockComplete, begin = 0, end = 0, id = "error", indent = 0, label = "" } :: state.committed
                 , errorMessage = Nothing
             }
 

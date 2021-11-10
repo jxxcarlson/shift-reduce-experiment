@@ -82,6 +82,7 @@ labelBlock accumulator block =
                         Block.Block.VerbatimBlock name stringList { exprMeta | label = Vector.toString newEquationIndex } meta
                 in
                 { block = newBlock, accumulator = { accumulator | equationIndex = newEquationIndex } }
+                -- Block.Block.Block name expressions meta
 
             else
                 { block = block, accumulator = accumulator }

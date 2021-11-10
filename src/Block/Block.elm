@@ -18,12 +18,13 @@ type alias Meta =
     , indent : Int
     , id : String
     , status : BlockStatus
+    , label : String
     }
 
 
-dummyMeta : { begin : number, end : number, indent : number, id : String, status : BlockStatus }
+dummyMeta : Meta
 dummyMeta =
-    { begin = 0, end = 0, indent = 0, id = "ID", status = BlockComplete }
+    { begin = 0, end = 0, indent = 0, id = "ID", status = BlockComplete, label = "" }
 
 
 type Block

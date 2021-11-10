@@ -446,6 +446,7 @@ newMeta str state =
     , status = BlockUnfinished str
     , id = String.fromInt state.generation ++ "." ++ String.fromInt state.blockCount
     , indent = state.currentLineData.indent
+    , label = ""
     }
 
 
@@ -488,7 +489,7 @@ addLineToBlocks index lineData blocks =
         rest ->
             -- TODO: the id field is questionable
             -- otherwise we prepend a paragraph with the given line
-            SParagraph [ lineData.content ] { status = BlockComplete, begin = index, end = index, id = String.fromInt index, indent = lineData.indent } :: rest
+            SParagraph [ lineData.content ] { status = BlockComplete, begin = index, end = index, id = String.fromInt index, indent = lineData.indent, label = "" } :: rest
 
 
 
