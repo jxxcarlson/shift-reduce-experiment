@@ -8,6 +8,7 @@ module Block.Accumulator exposing
 import Block.Block exposing (Block(..), ExprM(..))
 import Dict
 import LaTeX.MathMacro
+import Lang.Lang as Lang
 import Markup.Vector as Vector exposing (Vector)
 
 
@@ -73,7 +74,7 @@ labelBlock accumulator block =
                 |> (\data -> { block = Block.Block.Paragraph (data.expressions |> List.reverse) meta, accumulator = data.accumulator })
 
         Block.Block.VerbatimBlock name stringList exprMeta meta ->
-            if List.member name equationBlockNames then
+            if List.member name Lang.equationBlockNames then
                 let
                     newEquationIndex =
                         Vector.increment 0 accumulator.equationIndex
@@ -82,17 +83,30 @@ labelBlock accumulator block =
                         Block.Block.VerbatimBlock name stringList { exprMeta | label = Vector.toString newEquationIndex } meta
                 in
                 { block = newBlock, accumulator = { accumulator | equationIndex = newEquationIndex } }
-                -- Block.Block.Block name expressions meta
+
+            else
+                { block = block, accumulator = accumulator }
+
+        Block.Block.Block name expressions meta ->
+            let
+                _ =
+                    Debug.log "ACC NAME" name
+            in
+            if List.member name Lang.theoremLikeNames || True then
+                let
+                    newTheoremIndex =
+                        Vector.increment 0 accumulator.theoremIndex
+
+                    newBlock =
+                        Block.Block.Block name expressions { meta | label = Vector.toString newTheoremIndex }
+                in
+                { block = newBlock, accumulator = { accumulator | theoremIndex = newTheoremIndex } } |> Debug.log "THMACC"
 
             else
                 { block = block, accumulator = accumulator }
 
         _ ->
             { block = block, accumulator = accumulator }
-
-
-equationBlockNames =
-    [ "equation", "align" ]
 
 
 xfolder : ExprM -> { expressions : List ExprM, accumulator : Accumulator } -> { expressions : List ExprM, accumulator : Accumulator }

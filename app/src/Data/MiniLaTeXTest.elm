@@ -1,11 +1,22 @@
 module Data.MiniLaTeXTest exposing (text)
 
 
-textQ =
-    "$$\n  \\{ a_{1} \\}\n$$"
-
-
 text =
+    """
+
+\\title{Test}
+
+
+\\section{Foo}
+
+\\begin{theorem}
+  There are infinitely many primes.
+\\end{theorem}
+
+"""
+
+
+textQ =
     """
 \\title{The Fourier Transform}
 \\author{James Carlson} \\date{October 30, 2021} \\tags{quantum}

@@ -1,7 +1,7 @@
 module Render.Block exposing (render)
 
 import Block.Accumulator exposing (Accumulator)
-import Block.Block as Block exposing (Block(..), BlockStatus(..))
+import Block.Block as Block exposing (Block(..), BlockStatus(..), Meta)
 import Block.BlockTools as Block
 import Dict exposing (Dict)
 import Element exposing (..)
@@ -11,6 +11,7 @@ import Element.Font as Font
 import Expression.ASTTools as ASTTools
 import Html.Attributes
 import LaTeX.MathMacro
+import Lang.Lang as Lang
 import Markup.Debugger exposing (debugYellow)
 import Markup.Meta exposing (ExpressionMeta)
 import Render.Math
@@ -19,10 +20,6 @@ import Render.Settings exposing (Settings)
 import Render.Text
 import String.Extra
 import Utility
-
-
-
--- Internal.MathMacro.evalStr latexState.mathMacroDictionary str
 
 
 htmlId str =
@@ -66,8 +63,8 @@ renderBlock generation settings accumulator block =
             if meta.status /= BlockComplete then
                 renderBlocksIncomplete settings name meta.status blocks
 
-            else if List.member name [ "theorem", "corollary", "definition", "lemma", "proposition" ] then
-                renderTheoremLikeBlock generation settings accumulator name blocks
+            else if List.member name Lang.theoremLikeNames then
+                renderTheoremLikeBlock generation settings accumulator name blocks meta
 
             else
                 case Dict.get name blockDict of
@@ -319,17 +316,17 @@ quotationBlock generation settings accumulator blocks =
     column
         [ paddingEach { left = 18, right = 0, top = 0, bottom = 8 }
         ]
-        (List.map (renderBlock generation settings accumulator) (debugYellow "XX, block in quotation" blocks))
+        (List.map (renderBlock generation settings accumulator) blocks)
 
 
-renderTheoremLikeBlock : Int -> Settings -> Accumulator -> String -> List Block -> Element MarkupMsg
-renderTheoremLikeBlock generation settings accumulator name blocks =
+renderTheoremLikeBlock : Int -> Settings -> Accumulator -> String -> List Block -> Meta -> Element MarkupMsg
+renderTheoremLikeBlock generation settings accumulator name blocks meta =
     column [ Element.spacing 8 ]
-        [ row [ Font.bold ] [ Element.text (String.Extra.toTitleCase name) ]
+        [ row [ Font.bold ] [ Element.text <| String.Extra.toTitleCase name ++ " " ++ meta.label ]
         , column
             [ Font.italic
             ]
-            (List.map (renderBlock generation settings accumulator) (debugYellow "XX, block in quotation" blocks))
+            (List.map (renderBlock generation settings accumulator) blocks)
         ]
 
 
