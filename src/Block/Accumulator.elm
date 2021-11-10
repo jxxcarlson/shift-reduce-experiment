@@ -86,8 +86,20 @@ labelBlock accumulator block =
 
                     newBlock =
                         Block.Block.VerbatimBlock name stringList { exprMeta | label = Vector.toString newEquationIndex } meta
+
+                    label =
+                        ASTTools.getMacroValue "label" (String.join " " stringList) |> Maybe.withDefault ""
+
+                    newCrossReferences =
+                        if label == "" then
+                            accumulator.crossReferences
+
+                        else
+                            Dict.insert label
+                                (Vector.toString newEquationIndex)
+                                accumulator.crossReferences
                 in
-                { block = newBlock, accumulator = { accumulator | equationIndex = newEquationIndex } }
+                { block = newBlock, accumulator = { accumulator | equationIndex = newEquationIndex, crossReferences = newCrossReferences } }
 
             else
                 { block = block, accumulator = accumulator }

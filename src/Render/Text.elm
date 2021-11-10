@@ -120,6 +120,7 @@ markupDict =
         , ( "mdash", \g s a exprList -> Element.el [] (Element.text "—") )
         , ( "ndash", \g s a exprList -> Element.el [] (Element.text "–") )
         , ( "ref", \g s a exprList -> ref g s a exprList )
+        , ( "eqref", \g s a exprList -> eqref g s a exprList )
         , ( "label", \g s a exprList -> Element.none )
 
         -- MiniLaTeX stuff
@@ -136,6 +137,20 @@ ref g s a exprList =
             case Dict.get xref a.crossReferences of
                 Just val ->
                     Element.el [] (Element.text val)
+
+                Nothing ->
+                    Element.none
+
+        _ ->
+            Element.none
+
+
+eqref g s a exprList =
+    case ASTTools.exprListToStringList exprList of
+        xref :: [] ->
+            case Dict.get xref a.crossReferences of
+                Just val ->
+                    Element.el [] (Element.text <| "(" ++ val ++ ")")
 
                 Nothing ->
                     Element.none
@@ -561,10 +576,6 @@ boldItalic g s a exprList =
 
 
 term g s a exprList =
-    simpleElement [ Font.italic, Element.paddingEach { left = 0, right = 2, top = 0, bottom = 0 } ] g s a exprList
-
-
-eqref g s a exprList =
     simpleElement [ Font.italic, Element.paddingEach { left = 0, right = 2, top = 0, bottom = 0 } ] g s a exprList
 
 

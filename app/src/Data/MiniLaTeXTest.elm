@@ -3,6 +3,25 @@ module Data.MiniLaTeXTest exposing (text)
 
 text =
     """
+\\begin{lemma}
+  \\label{foo}
+ (1) Let $A$ be an axiom of system J. Then $\\phi(A) = 0$. (2) Suppose that $\\phi(A) = 0$ and that $\\hi(A \\to B) = 0$.  Then $\\phi(B) = 0$.
+\\end{lemma}
+
+
+I refer you to \\ref{foo}.
+
+\\begin{equation}
+  \\label{bar}
+  x^2
+\\end{equation}
+
+Take a look at \\eqref{bar}.
+"""
+
+
+textW =
+    """
 
 % logic-macros
 

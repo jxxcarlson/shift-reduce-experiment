@@ -10,6 +10,7 @@ module Expression.ASTTools exposing
     , findIdsMatchingText
     , getHeadings
     , getItem
+    , getMacroValue
     , getText
     , listExprMToString
     , reverseContents
@@ -24,6 +25,36 @@ module Expression.ASTTools exposing
 import Block.Block exposing (Block(..), ExprM(..))
 import Markup.Meta as Meta
 import Maybe.Extra
+import Parser exposing ((|.), (|=), Parser)
+
+
+getMacroValue : String -> String -> Maybe String
+getMacroValue name str =
+    case Parser.run (macroValueParser2 name) str of
+        Ok out ->
+            Just out
+
+        Err _ ->
+            Nothing
+
+
+macroValueParser2 : String -> Parser String
+macroValueParser2 str =
+    prefixParser str |> Parser.andThen (\_ -> macroValueParser_ str)
+
+
+prefixParser : String -> Parser ()
+prefixParser str =
+    Parser.chompUntil ("\\" ++ str ++ "{") |> Parser.andThen (\_ -> Parser.symbol ("\\" ++ str ++ "{"))
+
+
+macroValueParser_ : String -> Parser String
+macroValueParser_ str =
+    Parser.succeed String.slice
+        |= Parser.getOffset
+        |. Parser.chompUntil "}"
+        |= Parser.getOffset
+        |= Parser.getSource
 
 
 matchName : String -> ExprM -> Bool
