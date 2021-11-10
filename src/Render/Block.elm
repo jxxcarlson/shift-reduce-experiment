@@ -297,8 +297,12 @@ equation : Int -> String -> Settings -> Accumulator -> List String -> Expression
 equation generation id settings accumulator textList exprMeta =
     Element.row [ Element.width (Element.px settings.width) ]
         [ Element.el [ Element.centerX ] (Render.Math.mathText generation id Render.Math.DisplayMathMode (prepareMathLines accumulator textList))
-        , Element.el [ Element.alignRight, Font.size 12 ] (Element.text <| "(" ++ exprMeta.label ++ ")")
+        , Element.el [ Element.alignRight, Font.size 12, equationLabelPadding ] (Element.text <| "(" ++ exprMeta.label ++ ")")
         ]
+
+
+equationLabelPadding =
+    Element.paddingEach { left = 0, right = 18, top = 0, bottom = 0 }
 
 
 aligned : Int -> String -> Settings -> Accumulator -> List String -> ExpressionMeta -> Element MarkupMsg
@@ -306,7 +310,7 @@ aligned generation id settings accumulator textList exprMeta =
     Element.row [ Element.width (Element.px settings.width) ]
         [ Element.el [ Element.centerX ]
             (Render.Math.mathText generation id Render.Math.DisplayMathMode ("\\begin{aligned}\n" ++ (String.join "\n" textList |> LaTeX.MathMacro.evalStr accumulator.macroDict) ++ "\n\\end{aligned}"))
-        , Element.el [ Element.alignRight, Font.size 12 ] (Element.text <| "(" ++ exprMeta.label ++ ")")
+        , Element.el [ Element.alignRight, Font.size 12, equationLabelPadding ] (Element.text <| "(" ++ exprMeta.label ++ ")")
         ]
 
 
