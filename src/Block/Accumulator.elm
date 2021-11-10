@@ -88,10 +88,6 @@ labelBlock accumulator block =
                 { block = block, accumulator = accumulator }
 
         Block.Block.Block name expressions meta ->
-            let
-                _ =
-                    Debug.log "ACC NAME" name
-            in
             if List.member name Lang.theoremLikeNames || True then
                 let
                     newTheoremIndex =
