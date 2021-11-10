@@ -24,6 +24,13 @@ init k =
     }
 
 
+{-|
+
+    If the block is a 'Verbatim "mathmacro" block, extract a macroDict
+    from its contents and store that dictionary as a field of the
+    accumulator.
+
+-}
 updateAccumulatorWithBlock : Block -> Accumulator -> Accumulator
 updateAccumulatorWithBlock block accumulator =
     case block of
@@ -38,6 +45,20 @@ updateAccumulatorWithBlock block accumulator =
             accumulator
 
 
+{-|
+
+    The aim of function labelBLock and its callees
+
+        - xfolder
+        - labelExpression
+        - setLabel
+        - labelForName
+
+    is to set the 'label: String' field of the `ExpressionMata` component of a value
+    of type ExpressionMeta.  In the case of a heading, the that field may be
+    something like "3.2.0"
+
+-}
 labelBlock : Accumulator -> Block -> { block : Block, accumulator : Accumulator }
 labelBlock accumulator block =
     case block of
