@@ -88,6 +88,10 @@ reduce state =
         (Right (AST.Arg args loc2)) :: (Left (Token.FunctionName name loc1)) :: rest ->
             { state | stack = Right (AST.Expr name args { begin = loc1.begin, end = loc2.end }) :: rest } |> debugGreen "RULE B"
 
+        -- handle 0-arg functions
+        (Left (Token.Text str loc2)) :: (Left (Token.FunctionName name loc1)) :: [] ->
+            { state | committed = AST.Text str loc2 :: AST.Expr name [] loc1 :: state.committed, stack = [] } |> debugGreen "RULE: 0-ARG FN"
+
         -- create a verbatim expression from a verbatim token, clearing the stack
         (Left (Token.Verbatim label content loc)) :: [] ->
             reduceAux (AST.Verbatim label content loc) [] state |> debugGreen "RULE 6"
@@ -209,23 +213,6 @@ recoverFromError state =
         (Left (Symbol "{" loc2)) :: (Left (FunctionName name loc1)) :: rest ->
             Loop { state | committed = AST.Expr "red" [ AST.Text ("\\" ++ name ++ "{??}") { begin = loc1.begin, end = loc2.end } ] { begin = loc1.begin, end = loc2.end } :: state.committed, stack = rest }
 
-        -- commit text at the top of the stack
-        --(Left (Token.Text content loc1)) :: rest ->
-        --    let
-        --        _ =
-        --            debug4 "recover, RULE" 3
-        --    in
-        --    Loop { state | committed = AST.Text content loc1 :: state.committed, stack = rest }
-        --(Left (Token.Text content loc1)) :: (Left (Symbol "{" _)) :: [] ->
-        --    let
-        --        _ =
-        --            debug1 "RECOVER" 1
-        --    in
-        --    Loop
-        --        { state
-        --            | stack = Left (Symbol "}" loc1) :: state.stack
-        --            , committed = AST.Expr "red" [ AST.Text content loc1 ] loc1 :: tstate.committed
-        --        }
         (Left (Symbol "{" loc1)) :: (Left (Token.Text _ _)) :: (Left (Symbol "{" _)) :: _ ->
             Loop
                 { state
