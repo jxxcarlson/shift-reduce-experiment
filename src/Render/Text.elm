@@ -123,6 +123,7 @@ markupDict =
         , ( "ref", \g s a exprList -> ref g s a exprList )
         , ( "eqref", \g s a exprList -> eqref g s a exprList )
         , ( "label", \g s a exprList -> Element.none )
+        , ( "cite", \g s a exprList -> cite g s a exprList )
 
         -- MiniLaTeX stuff
         , ( "term", \g s a exprList -> term g s a exprList )
@@ -408,6 +409,11 @@ item generation settings accumulator str =
 
 bibitem : Int -> Settings -> Accumulator -> List ExprM -> Element MarkupMsg
 bibitem generation settings accumulator str =
+    Element.paragraph [ Element.width Element.fill ] [ Element.text (ASTTools.exprListToStringList str |> String.join " " |> (\s -> "[" ++ s ++ "]")) ]
+
+
+cite : Int -> Settings -> Accumulator -> List ExprM -> Element MarkupMsg
+cite generation settings accumulator str =
     Element.paragraph [ Element.width Element.fill ] [ Element.text (ASTTools.exprListToStringList str |> String.join " " |> (\s -> "[" ++ s ++ "]")) ]
 
 
