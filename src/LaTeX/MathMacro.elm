@@ -54,17 +54,16 @@ makeEntry mathExpression_ =
             ( "nullMacro", MacroBody 0 [ MathText "0" ] )
 
 
-evalStr : MathMacroDict -> String -> String
-evalStr macroDict_ str =
-    str
-        |> String.split " "
-        |> List.map String.trim
-        |> List.filter (\s -> s /= "")
-        |> List.map (evalStr_ macroDict_)
-        |> String.join " "
 
-
-
+--evalStr : MathMacroDict -> String -> String
+--evalStr macroDict_ str =
+--    str
+--        --|> String.split " "
+--        --|> List.map String.trim
+--        --|> List.filter (\s -> s /= "")
+--        |> evalStr_ macroDict_
+--|> List.map (evalStr_ macroDict_)
+--|> String.join " "
 -- EVAL
 
 
@@ -72,11 +71,18 @@ evalStr macroDict_ str =
 
     > s1 = "\\newcommand{\\bb}[0]{\\bf{B}}"
     "\\newcommand{\\bb}[0]{\\bf{B}}" : String
-    > d = makeMacroDict s1
+    >
     Dict.fromList [("bb",MacroBody 0 [MathList [Macro "bf" [MathList [MathText "B"]]]])]
 
     > evalStr d "This is $\\alpha = \\bb^3$"
     "This is $ \\alpha =  \\bf{B} ^3$
+
+    > s2 = "\\newcommand{\\set}[1]{\\{ #1 \\}}"
+    > dict = makeMacroDict s2
+      Dict.fromList [("set",MacroBody 1 [MathList [Macro "" [MathList [MathText ("#1 "),Macro "" []]]]])]
+    > evalStr dict "\\set{A}"
+    > evalStr dict "\\set{A B}"
+    > s3 = "A \\to (B \\to A)"
 
 
 
@@ -90,8 +96,8 @@ evalStr macroDict_ str =
     --> "\\int_0^1 x^n dx + \\bf{B}+ \\bf{R}"
 
 -}
-evalStr_ : MathMacroDict -> String -> String
-evalStr_ macroDict_ str =
+evalStr : MathMacroDict -> String -> String
+evalStr macroDict_ str =
     case parseMany (String.trim str) of
         Ok result ->
             evalList macroDict_ result
@@ -105,7 +111,7 @@ evalStr_ macroDict_ str =
 evalList : MathMacroDict -> List MathExpression -> String
 evalList macroDict_ list =
     List.map (evalMathExpr macroDict_) list
-        |> String.join ""
+        |> String.join " "
 
 
 evalMathExpr : MathMacroDict -> MathExpression -> String

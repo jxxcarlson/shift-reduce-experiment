@@ -154,7 +154,7 @@ transformMacroNames str =
         "subsection" ->
             "heading2"
 
-        "susubsection" ->
+        "subsubsection" ->
             "heading3"
 
         "subheading" ->
