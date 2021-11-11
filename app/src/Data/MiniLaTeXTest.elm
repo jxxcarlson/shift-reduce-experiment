@@ -1,6 +1,26 @@
 module Data.MiniLaTeXTest exposing (text)
 
 
+text =
+    """
+
+(1)
+
+\\begin{tabular}
+  A & B \\\\
+  C & D \\\\
+\\end{tabular}
+
+
+(2)
+
+\\begin{tabular}
+  \\red{A} & \\blue{B} \\\\
+  C & D \\\\
+\\end{tabular}
+"""
+
+
 textWE =
     """
 \\begin{lemma}
@@ -21,7 +41,7 @@ Take a look at \\eqref{bar}.
 """
 
 
-text =
+textwww =
     """
 
 % logic-macros

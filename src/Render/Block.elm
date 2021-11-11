@@ -207,7 +207,21 @@ blockDict =
         , ( "heading2", \g s a blocks -> heading2 g s a blocks )
         , ( "heading3", \g s a blocks -> heading3 g s a blocks )
         , ( "heading4", \g s a blocks -> heading4 g s a blocks )
+        , ( "table", \g s a blocks -> table g s a blocks )
         ]
+
+
+table g s a blocks =
+    case List.head blocks of
+        Nothing ->
+            Element.none
+
+        Just (Paragraph rows _) ->
+            Element.el [ Element.spacing 8 ] (Render.Text.table g s a rows)
+
+        -- Element.none
+        _ ->
+            Element.none
 
 
 internalLink : String -> String

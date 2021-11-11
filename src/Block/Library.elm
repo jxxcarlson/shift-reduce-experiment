@@ -62,7 +62,7 @@ processLine language state =
                 _ =
                     debugIn "EndVerbatimBlock" state
             in
-            endBlock name { state | inVerbatimBlock = False }
+            endVerbatimBlock name { state | inVerbatimBlock = False }
 
         OrdinaryLine ->
             let
@@ -501,7 +501,65 @@ addLineToBlocks index lineData blocks =
 
 
 
--- END BLOCK
+-- END BfeLOCK
+
+
+endVerbatimBlock : String -> State -> State
+endVerbatimBlock name state =
+    endBlock name state
+        |> adjustVerbatimBlock name
+        |> debugOut "EndBlock (OUT)"
+
+
+adjustVerbatimBlock : String -> State -> State
+adjustVerbatimBlock name state =
+    if name == "tabular" then
+        processTable state
+
+    else
+        state
+
+
+processTable : State -> State
+processTable state =
+    case List.head state.committed of
+        Nothing ->
+            state
+
+        Just (SVerbatimBlock name lines_ meta) ->
+            let
+                lines : List String
+                lines =
+                    List.filter (\line -> String.trim line /= "") lines_
+                        |> List.map (String.replace "\\\\" "" >> tableRow)
+                        |> debugRed "LINES"
+
+                block =
+                    SBlock "table" [ SParagraph lines meta ] meta
+            in
+            { state | committed = block :: List.drop 1 state.committed }
+
+        _ ->
+            state
+
+
+tableRow : String -> String
+tableRow str =
+    str
+        |> String.split "&"
+        |> List.map String.trim
+        |> List.filter (\x -> x /= "")
+        |> debugRed "TABLE ROW (1)"
+        |> List.map (\x -> "\\tableItem{" ++ x ++ "}")
+        |> debugRed "TABLE ROW (2)"
+        |> String.join " "
+        |> debugRed "TABLE ROW (3)"
+        |> (\x -> "\\tableRow{" ++ x ++ "}")
+        |> debugRed "TABLE ROW (4)"
+
+
+
+--state |> debugYellow "PROCESS TABLE"
 
 
 endBlock : String -> State -> State
