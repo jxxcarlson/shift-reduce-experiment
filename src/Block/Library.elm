@@ -419,7 +419,12 @@ classify language inVerbatimBlock verbatimBlockInitialIndent str =
                 Block.Line.VerbatimLine
 
              else
-                provisionalLineType
+                case provisionalLineType of
+                    EndBlock name ->
+                        EndVerbatimBlock name
+
+                    _ ->
+                        provisionalLineType
             )
                 |> debugMagenta "FINAL LINE TYPE"
     in

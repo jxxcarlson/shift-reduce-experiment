@@ -15,7 +15,16 @@ import Markup.Simplify as Simplify
 -- TOP LEVEL FUNCTIONS
 
 
-{-| -}
+{-|
+
+    This function runs the parser that maps the source text to a final State,
+    one field of which is a List SBlock.
+
+    So we get
+
+        Source Text -> List SBlock
+
+-}
 run : Lang -> Int -> List String -> State
 run language generation input =
     loop (Block.State.init language generation input |> debugYellow "INITIAL STATE") (nextStep language)

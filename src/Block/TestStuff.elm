@@ -1,4 +1,4 @@
-module Block.TestStuff exposing (al, ama, ami, ll, m1, ma, mi, qama, qami)
+module Block.TestStuff exposing (al, ama, ami, ll, m1, ma, mi, qama, qami, table, table2)
 
 import Block.Parser
 import Lang.Lang exposing (Lang(..))
@@ -11,6 +11,23 @@ m1 =
 \\begin{mathmacro}
     \\newcommand{\\bra}[0]{\\langle}
 \\end{mathmacro}
+"""
+
+
+table =
+    "\\begin{tabular}{lll}\n  \n  1 & A & B \\\\\n  \n  2 & C & D \\\\\n  \n\\end{tabular}"
+
+
+table2 =
+    "\\begin{tabular2}{lll}\n  \n  1 & A & B \\\\\n  \n  2 & C & D \\\\\n  \n\\end{tabular}"
+
+
+table3 =
+    """
+\\begin{tabular}{lll}
+  1 & $U \\to (V \\to U)$ & HYP \\\\
+  2 & $= Int (U^c \\cup (V \\to U))$ & Def \\\\
+\\end{tabular}
 """
 
 

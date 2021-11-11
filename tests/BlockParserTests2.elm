@@ -87,7 +87,7 @@ suiteMiniLaTeXBlockParser =
                     |> Expect.equal
                         -- TODO: should be an error since there needs to be a blank line after the code block
                         -- TODO: this kind of error should be handled by the code that assembles SBlocks
-                        [ SVerbatimBlockS "code" [ "   abc", "   def" ] BlockComplete ]
+                        [ SVerbatimBlockS "code" [ "   abc", "   def" ] BlockComplete, SParagraphS [ "yada yada" ] BlockComplete ]
         , test "(12) A verbatim with code inside" <|
             \_ ->
                 run Markdown "```\n $$\n  x^2\n```  \n"
