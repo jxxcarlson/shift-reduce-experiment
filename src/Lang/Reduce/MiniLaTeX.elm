@@ -23,7 +23,7 @@ reduceFinal_ state =
             debugYellow "reduceFinal_, IN" state
      in
      case state.stack of
-         -- 1.
+        -- 1.
         (Right (AST.Expr name args loc)) :: [] ->
             { state | committed = AST.Expr (transformMacroNames name) (List.reverse args) loc :: state.committed, stack = [] } |> debugGreen "FINAL RULE 1"
 
@@ -39,10 +39,8 @@ reduceFinal_ state =
             in
             { state | committed = red :: blue :: state.committed, stack = rest }
 
-
         --(Left (Token.Text str loc)) :: rest ->
         --           {state | stack = rest, committed = (AST.Text str loc):: state.committed}  |> debugGreen "FINAL RULE 2"
-
         --
         -- 3.
         (Left (Token.Text str loc)) :: (Right expr) :: [] ->
@@ -74,8 +72,8 @@ reduce state =
 
         -- 3.
         -- Recognize an Expr
-         -- TENTATIVE: REMOVE THIS.  CAUSES PREMATURE REDUCTION
-         -- NO, this seems to be needed
+        -- TENTATIVE: REMOVE THIS.  CAUSES PREMATURE REDUCTION
+        -- NO, this seems to be needed
         (Left (Token.Symbol "}" loc4)) :: (Left (Token.Text arg loc3)) :: (Left (Token.Symbol "{" _)) :: (Left (Token.FunctionName name loc1)) :: rest ->
             { state | stack = Right (AST.Expr (transformMacroNames name) [ AST.Text arg loc3 ] { begin = loc1.begin, end = loc4.end }) :: rest } |> debugGreen "RULE 2"
 
@@ -92,7 +90,6 @@ reduce state =
         -- TENTATIVE: REMOVE THIS.  CAUSES PREMATURE REDUCTION
         --(Left (Token.Symbol "}" loc4)) :: (Right (AST.Expr exprName args loc3)) :: (Left (Token.Symbol "{" _)) :: (Left (Token.FunctionName fName loc1)) :: rest ->
         --    { state | committed = AST.Expr fName [ AST.Expr (transformMacroNames exprName) args loc3 ] { begin = loc1.begin, end = loc4.end } :: state.committed, stack = rest } |> debugGreen "RULE 5"
-
         -- 5.
         -- Transform "{" .... "}" to Right (Arg [....])
         (Left (Token.Symbol "}" _)) :: _ ->
@@ -152,7 +149,7 @@ reduceArg stack =
                 ( Just stackItem, Just exprList ) ->
                     case stackItem of
                         Left (Token.Symbol "{" loc1) ->
-                            Right (AST.Arg exprList { begin = loc1.begin, end = loc2.end }) :: List.drop (n + 1) rest
+                            Right (AST.Arg (List.reverse exprList) { begin = loc1.begin, end = loc2.end }) :: List.drop (n + 1) rest
 
                         _ ->
                             stack
@@ -233,7 +230,6 @@ recoverFromError state =
         -- temporary fix for incomplete macro application
         (Left (Symbol "{" loc2)) :: (Left (FunctionName name loc1)) :: rest ->
             Loop { state | committed = AST.Expr "red" [ AST.Text ("\\" ++ name ++ "{??}") { begin = loc1.begin, end = loc2.end } ] { begin = loc1.begin, end = loc2.end } :: state.committed, stack = rest }
-
 
         -- 4.
         (Left (Symbol "{" loc1)) :: (Left (Token.Text _ _)) :: (Left (Symbol "{" _)) :: _ ->
