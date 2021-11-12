@@ -23,9 +23,11 @@ reduceFinal_ state =
             debugYellow "reduceFinal_, IN" state
      in
      case state.stack of
+         -- 1.
         (Right (AST.Expr name args loc)) :: [] ->
             { state | committed = AST.Expr (transformMacroNames name) (List.reverse args) loc :: state.committed, stack = [] } |> debugGreen "FINAL RULE 1"
 
+        -- 2.
         (Left (FunctionName name loc)) :: rest ->
             -- { state | committed = AST.Expr (transformMacroNames name) [] loc :: state.committed, stack = [] } |> debug1 "FINAL RULE 2"
             let
@@ -37,8 +39,12 @@ reduceFinal_ state =
             in
             { state | committed = red :: blue :: state.committed, stack = rest }
 
+
         --(Left (Token.Text str loc)) :: rest ->
         --           {state | stack = rest, committed = (AST.Text str loc):: state.committed}  |> debugGreen "FINAL RULE 2"
+
+        --
+        -- 3.
         (Left (Token.Text str loc)) :: (Right expr) :: [] ->
             { state | stack = [], committed = AST.Text str loc :: expr :: state.committed } |> debugGreen "FINAL RULE 2"
 
@@ -57,18 +63,23 @@ reduceFinal_ state =
 reduce : State -> State
 reduce state =
     case state.stack of
+        -- 1.
         -- create a text expression from a text token, clearing the stack
         (Left (Token.Text str loc)) :: [] ->
             reduceAux (AST.Text str loc) [] state |> debugGreen "RULE 1"
 
+        -- 2.
         (Left (Token.Text str loc)) :: (Right expr) :: [] ->
             { state | stack = [], committed = AST.Text str loc :: AST.reverseContents expr :: state.committed } |> debugGreen "RULE X"
 
+        -- 3.
         -- Recognize an Expr
          -- TENTATIVE: REMOVE THIS.  CAUSES PREMATURE REDUCTION
+         -- NO, this seems to be needed
         (Left (Token.Symbol "}" loc4)) :: (Left (Token.Text arg loc3)) :: (Left (Token.Symbol "{" _)) :: (Left (Token.FunctionName name loc1)) :: rest ->
             { state | stack = Right (AST.Expr (transformMacroNames name) [ AST.Text arg loc3 ] { begin = loc1.begin, end = loc4.end }) :: rest } |> debugGreen "RULE 2"
 
+        -- 4.
         -- Merge a new Expr into an existing one
         (Left (Token.Symbol "}" loc4)) :: (Left (Token.Text arg loc3)) :: (Left (Token.Symbol "{" _)) :: (Right (AST.Expr name args loc1)) :: rest ->
             { state | stack = Right (AST.Expr (transformMacroNames name) (AST.Text arg loc3 :: args) { begin = loc1.begin, end = loc4.end }) :: rest } |> debugGreen "RULE 3"
@@ -82,18 +93,23 @@ reduce state =
         --(Left (Token.Symbol "}" loc4)) :: (Right (AST.Expr exprName args loc3)) :: (Left (Token.Symbol "{" _)) :: (Left (Token.FunctionName fName loc1)) :: rest ->
         --    { state | committed = AST.Expr fName [ AST.Expr (transformMacroNames exprName) args loc3 ] { begin = loc1.begin, end = loc4.end } :: state.committed, stack = rest } |> debugGreen "RULE 5"
 
+        -- 5.
         -- Transform "{" .... "}" to Right (Arg [....])
         (Left (Token.Symbol "}" _)) :: _ ->
             { state | stack = reduceArg state.stack } |> debugGreen "RULE A"
 
+        -- 6.
         -- reduce  arg :: functionName :: rest to expr :: rest
         (Right (AST.Arg args loc2)) :: (Left (Token.FunctionName name loc1)) :: rest ->
-            { state | stack = Right (AST.Expr name args { begin = loc1.begin, end = loc2.end }) :: rest } |> debugGreen "RULE B"
+            -- TODO: ?? reverse args
+            { state | stack = Right (AST.Expr name (List.reverse args) { begin = loc1.begin, end = loc2.end }) :: rest } |> debugGreen "RULE B"
 
+        -- 7,
         -- handle 0-arg functions
         (Left (Token.Text str loc2)) :: (Left (Token.FunctionName name loc1)) :: [] ->
             { state | committed = AST.Text str loc2 :: AST.Expr name [] loc1 :: state.committed, stack = [] } |> debugGreen "RULE: 0-ARG FN"
 
+        -- 8.
         -- create a verbatim expression from a verbatim token, clearing the stack
         (Left (Token.Verbatim label content loc)) :: [] ->
             reduceAux (AST.Verbatim label content loc) [] state |> debugGreen "RULE 6"
@@ -184,6 +200,7 @@ recoverFromError state =
     -- push an error message onto state.committed, then exit as usual: apply function reduce
     -- to the state and reverse state.committed.
     case state.stack of
+        -- 1.
         -- fix for macro with argument but no closing right brace
         (Left (Token.Text content loc3)) :: (Left (Symbol "{" loc2)) :: (Left (FunctionName name loc1)) :: rest ->
             let
@@ -198,6 +215,7 @@ recoverFromError state =
             in
             Loop { state | committed = red :: blue :: state.committed, stack = rest }
 
+        -- 2.
         (Left (Token.Text content loc3)) :: (Left (Symbol "{" loc2)) :: (Right (AST.Expr name exprList loc1)) :: rest ->
             let
                 loc =
@@ -211,10 +229,13 @@ recoverFromError state =
             in
             Loop { state | committed = red :: blue :: state.committed, stack = rest }
 
+        -- 3.
         -- temporary fix for incomplete macro application
         (Left (Symbol "{" loc2)) :: (Left (FunctionName name loc1)) :: rest ->
             Loop { state | committed = AST.Expr "red" [ AST.Text ("\\" ++ name ++ "{??}") { begin = loc1.begin, end = loc2.end } ] { begin = loc1.begin, end = loc2.end } :: state.committed, stack = rest }
 
+
+        -- 4.
         (Left (Symbol "{" loc1)) :: (Left (Token.Text _ _)) :: (Left (Symbol "{" _)) :: _ ->
             Loop
                 { state
