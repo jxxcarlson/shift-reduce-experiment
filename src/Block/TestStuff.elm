@@ -15,14 +15,23 @@ m1 =
 
 
 table =
-    "\\begin{tabular}{lll}\n  \n  1 & A & B \\\\\n  \n  2 & C & D \\\\\n  \n\\end{tabular}"
+    "\\begin{tabular}\n  1 & A & B \n  2 & C & D\n\\end{tabular}"
 
 
 table2 =
-    "\\begin{tabular2}{lll}\n  \n  1 & A & B \\\\\n  \n  2 & C & D \\\\\n  \n\\end{tabular}"
+    "\\begin{tabular}\n  1 & \\red{A} & B \n  2 & C & D\n\\end{tabular}"
 
 
 table3 =
+    """
+\\begin{tabular}{lll}
+  1 & $U \\to (V \\to U)$ & HYP \\\\
+  2 & $= Int (U^c \\cup (V \\to U))$ & Def \\\\
+\\end{tabular}
+"""
+
+
+table4 =
     """
 \\begin{tabular}{lll}
   1 & $U \\to (V \\to U)$ & HYP \\\\

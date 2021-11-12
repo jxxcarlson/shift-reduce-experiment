@@ -1,4 +1,4 @@
-module Render.Text exposing (heading1, render, viewTOC)
+module Render.Text exposing (heading1, render, table, viewTOC)
 
 import Block.Accumulator exposing (Accumulator)
 import Block.Block exposing (ExprM(..))
@@ -124,6 +124,7 @@ markupDict =
         , ( "eqref", \g s a exprList -> eqref g s a exprList )
         , ( "label", \g s a exprList -> Element.none )
         , ( "cite", \g s a exprList -> cite g s a exprList )
+        , ( "table", \g s a exprList -> table g s a exprList )
 
         -- MiniLaTeX stuff
         , ( "term", \g s a exprList -> term g s a exprList )
@@ -420,6 +421,31 @@ cite generation settings accumulator str =
 numberedItem : Int -> Settings -> Accumulator -> List ExprM -> Element MarkupMsg
 numberedItem generation settings accumulator str =
     Element.paragraph [ Element.width Element.fill ] [ Element.text (ASTTools.exprListToStringList str |> String.join " ") ]
+
+
+table : Int -> Settings -> Accumulator -> List ExprM -> Element MarkupMsg
+table g s a rows =
+    Element.column [ Element.spacing 8 ] (List.map (tableRow g s a) rows)
+
+
+tableRow : Int -> Settings -> Accumulator -> ExprM -> Element MarkupMsg
+tableRow g s a expr =
+    case expr of
+        ExprM "tableRow" items _ ->
+            Element.row [ spacing 8 ] (List.map (tableItem g s a) items)
+
+        _ ->
+            Element.none
+
+
+tableItem : Int -> Settings -> Accumulator -> ExprM -> Element MarkupMsg
+tableItem g s a expr =
+    case expr of
+        ExprM "tableItem" exprList _ ->
+            Element.paragraph [ Element.width (Element.px 100) ] (List.map (render g s a) exprList)
+
+        _ ->
+            Element.none
 
 
 codeColor =
