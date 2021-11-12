@@ -65,6 +65,7 @@ reduce state =
             { state | stack = [], committed = AST.Text str loc :: AST.reverseContents expr :: state.committed } |> debugGreen "RULE X"
 
         -- Recognize an Expr
+         -- TENTATIVE: REMOVE THIS.  CAUSES PREMATURE REDUCTION
         (Left (Token.Symbol "}" loc4)) :: (Left (Token.Text arg loc3)) :: (Left (Token.Symbol "{" _)) :: (Left (Token.FunctionName name loc1)) :: rest ->
             { state | stack = Right (AST.Expr (transformMacroNames name) [ AST.Text arg loc3 ] { begin = loc1.begin, end = loc4.end }) :: rest } |> debugGreen "RULE 2"
 
@@ -77,8 +78,9 @@ reduce state =
         --(Left (Token.Text str loc2)) :: (Right (AST.Expr name args loc1)) :: rest ->
         --    { state | committed = AST.Text str loc2 :: AST.Expr (transformMacroNames name) (List.reverse args) loc1 :: state.committed, stack = rest } |> debugGreen "RULE 4"
         -- create a new expression from an existing one which occurs as a function argument
-        (Left (Token.Symbol "}" loc4)) :: (Right (AST.Expr exprName args loc3)) :: (Left (Token.Symbol "{" _)) :: (Left (Token.FunctionName fName loc1)) :: rest ->
-            { state | committed = AST.Expr fName [ AST.Expr (transformMacroNames exprName) args loc3 ] { begin = loc1.begin, end = loc4.end } :: state.committed, stack = rest } |> debugGreen "RULE 5"
+        -- TENTATIVE: REMOVE THIS.  CAUSES PREMATURE REDUCTION
+        --(Left (Token.Symbol "}" loc4)) :: (Right (AST.Expr exprName args loc3)) :: (Left (Token.Symbol "{" _)) :: (Left (Token.FunctionName fName loc1)) :: rest ->
+        --    { state | committed = AST.Expr fName [ AST.Expr (transformMacroNames exprName) args loc3 ] { begin = loc1.begin, end = loc4.end } :: state.committed, stack = rest } |> debugGreen "RULE 5"
 
         -- Transform "{" .... "}" to Right (Arg [....])
         (Left (Token.Symbol "}" _)) :: _ ->
