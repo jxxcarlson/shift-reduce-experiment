@@ -126,8 +126,6 @@ markupDict =
         , ( "cite", \g s a exprList -> cite g s a exprList )
         , ( "table", \g s a exprList -> table g s a exprList )
 
-        --, ( "tablerow", \g s a exprList -> tableRow g s a exprList )
-        --, ( "tableitem", \g s a exprList -> tableItem g s a exprList )
         -- MiniLaTeX stuff
         , ( "term", \g s a exprList -> term g s a exprList )
         , ( "emph", \g s a exprList -> emph g s a exprList )
