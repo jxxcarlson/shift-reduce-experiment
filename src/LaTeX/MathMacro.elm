@@ -1,4 +1,4 @@
-module LaTeX.MathMacro exposing (MathMacroDict, evalList, evalMacro, evalStr, makeMacroDict, newCommand2, parse, parseMany)
+module LaTeX.MathMacro exposing (MathMacroDict, evalList, evalStr, macroName, makeMacroDict, newCommand2, parseMany)
 
 import Dict exposing (Dict)
 import List.Extra
@@ -395,13 +395,13 @@ newMacroName =
 
 macroName : MXParser String
 macroName =
-    variable
-        { start = \c -> c == '\\'
-        , inner = \c -> Char.isAlphaNum c || c == '*'
-        , reserved = Set.fromList [ "\\item", "\\bibitem" ]
-        , expecting = ExpectingMacroReservedWord
-        }
-        |> map (String.dropLeft 1)
+    succeed String.slice
+        |. chompIf (\c -> c == '\\') ExpectingValidMacroArgWord
+        |= getOffset
+        |. chompIf Char.isAlphaNum ExpectingValidMacroArgWord
+        |. chompWhile Char.isAlphaNum
+        |= getOffset
+        |= getSource
 
 
 
