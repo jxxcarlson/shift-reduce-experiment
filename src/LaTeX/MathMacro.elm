@@ -1,10 +1,18 @@
-module LaTeX.MathMacro exposing (MathMacroDict, evalList, evalStr, macroName, makeMacroDict, newCommand2, parseMany)
+module LaTeX.MathMacro exposing (MathMacroDict, dictDef, evalList, evalStr, macroName, makeMacroDict, newCommand2, parseMany)
 
 import Dict exposing (Dict)
 import List.Extra
 import Parser.Advanced exposing (..)
 import Result.Extra
 import Set
+
+
+dictDef =
+    """
+\\begin{mathmacro}
+  \\newcommand{\\opensets}{\\mathcal{O}}
+\\end{mathmacro}
+"""
 
 
 {-| The type for the syntax tree
