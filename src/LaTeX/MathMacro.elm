@@ -1,18 +1,10 @@
-module LaTeX.MathMacro exposing (MathMacroDict, dictDef, evalList, evalStr, macroName, makeMacroDict, newCommand2, parseMany)
+module LaTeX.MathMacro exposing (MathMacroDict, evalList, evalMacro, evalStr, macroName, macroName2, makeMacroDict, newCommand2, parse, parseMany)
 
 import Dict exposing (Dict)
 import List.Extra
 import Parser.Advanced exposing (..)
 import Result.Extra
 import Set
-
-
-dictDef =
-    """
-\\begin{mathmacro}
-  \\newcommand{\\opensets}{\\mathcal{O}}
-\\end{mathmacro}
-"""
 
 
 {-| The type for the syntax tree
@@ -403,6 +395,17 @@ newMacroName =
 
 macroName : MXParser String
 macroName =
+    variable
+        { start = \c -> c == '\\'
+        , inner = \c -> Char.isAlphaNum c || c == '*'
+        , reserved = Set.fromList [ "\\item", "\\bibitem" ]
+        , expecting = ExpectingMacroReservedWord
+        }
+        |> map (String.dropLeft 1)
+
+
+macroName2 : MXParser String
+macroName2 =
     succeed String.slice
         |. chompIf (\c -> c == '\\') ExpectingValidMacroArgWord
         |= getOffset
